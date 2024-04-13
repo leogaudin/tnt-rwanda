@@ -41,6 +41,15 @@ export const green = withAlphas({
   darkest: '#003923',
 });
 
+export const red = withAlphas({
+  lightest: '#FDEBED',
+  light: '#F25668',
+  main: '#ce1126',
+  dark: '#990D1C',
+  darkest: '#660813',
+  contrastText: '#FFFFFF'
+});
+
 export const success = withAlphas({
   lightest: '#ADFFD4',
   light: '#3FC79A',

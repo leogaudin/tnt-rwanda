@@ -1,6 +1,6 @@
 import { common } from '@mui/material/colors';
 import { alpha } from '@mui/material/styles';
-import { error, blue, info, neutral, success, warning, green } from './colors';
+import { error, info, neutral, success, warning, red } from './colors';
 
 export function createPalette() {
   return {
@@ -21,7 +21,7 @@ export function createPalette() {
     info,
     mode: 'light',
     neutral,
-    primary: green,
+    primary: red,
     success,
     text: {
       primary: neutral[900],
