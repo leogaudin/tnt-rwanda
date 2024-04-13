@@ -10,7 +10,7 @@ const Box = new Schema(
 		zone: { type: String, required: false },
 		school: { type: String, required: true },
 		htName: { type: String, required: false },
-		htPhone: { type: String, required: true },
+		htPhone: { type: String, required: false },
 		institutionType: { type: String, required: false },
 		adminId: { type: String, required: true },
 		createdAt: { type: Date, required: true },
