@@ -71,7 +71,7 @@ export const SideNav = () => {
               paddingTop={2}
               textAlign={'center'}
             >
-              TnT Nigeria 🇳🇬
+              TnT Malawi 🇲🇼
             </Typography>
             <Stack
               direction={'column'}

@@ -93,9 +93,9 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace "com.gaudin.tntnigeria"
+    namespace "com.gaudin.tntmalawi"
     defaultConfig {
-        applicationId "com.gaudin.tntnigeria"
+        applicationId "com.gaudin.tntmalawi"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 10000
