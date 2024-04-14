@@ -21,7 +21,7 @@ export default function Export() {
       <Box paddingX={'15vw'} paddingY={'10vh'} width={'100%'}>
         <Card style={{ width: '100%', height: '100%', overflow: 'auto', alignItems: 'center' }}>
           <CardContent>
-            <Alert severity="info">{t('youHaveNo', {item: t('boxes')})}</Alert>
+            <Alert severity="info">{t('youHaveNo', {item: t('boxes').toLowerCase()})}</Alert>
           </CardContent>
         </Card>
       </Box>
