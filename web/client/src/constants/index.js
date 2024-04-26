@@ -3,13 +3,12 @@ import i18n from './language';
 
 export const boxFields = [
 	'project',
-	'division',
 	'district',
-	'zone',
+	'sector',
+	'cell',
 	'school',
 	'htName',
 	'htPhone',
-	'institutionType',
 ];
 
 export function getItems() {
