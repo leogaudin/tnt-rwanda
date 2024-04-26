@@ -25,11 +25,11 @@ export const neutral = {
 };
 
 export const blue = withAlphas({
-  lightest: '#F5FAFF',
-  light: '#EBF0FE',
-  main: '#0949FF',
-  dark: '#0033C0',
-  darkest: '#00268E',
+  lightest: '#CDF2FF',
+  light: '#82DDFF',
+  main: '#00a3e0',
+  dark: '#006F98',
+  darkest: '#003144',
   contrastText: '#FFFFFF'
 });
 
