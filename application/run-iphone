@@ -6,7 +6,7 @@ if [[ "$@" == *"watchman"* ]]; then
 fi
 
 if [[ "$@" == *"clean"* ]]; then
-    xattr -w com.apple.xcode.CreatedByBuildSystem true /Users/leogaudin/Documents/Repositories/tnt-malawi/application/ios/build
+    xattr -w com.apple.xcode.CreatedByBuildSystem true /Users/leogaudin/Documents/Repositories/tnt-rwanda/application/ios/build
     cd ios
     xcodebuild clean
     cd ../

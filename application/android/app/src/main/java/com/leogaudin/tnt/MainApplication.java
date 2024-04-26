@@ -1,4 +1,4 @@
-package com.gaudin.tntmalawi;
+package com.gaudin.tntrwanda;
 
 import android.app.Application;
 import com.facebook.react.PackageList;
