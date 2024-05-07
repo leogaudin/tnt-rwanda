@@ -169,6 +169,8 @@ i18n
 					htPhone: 'HT Phone',
 					ssoName: 'SSO Name',
 					ssoPhone: 'SSO Phone',
+					sector: 'Sector',
+					cell: 'Cell',
 				}
 			},
 			fr: {
@@ -325,6 +327,8 @@ i18n
 					htPhone: 'Téléphone du HT',
 					ssoName: 'Nom du SSO',
 					ssoPhone: 'Téléphone du SSO',
+					sector: 'Secteur',
+					cell: 'Cellule',
 				},
 			},
 		},
