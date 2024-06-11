@@ -172,6 +172,7 @@ i18n
 					ssoPhone: 'SSO Phone',
 					sector: 'Sector',
 					cell: 'Cell',
+					village: 'Village',
 				}
 			},
 			fr: {
@@ -330,6 +331,7 @@ i18n
 					ssoPhone: 'Téléphone du SSO',
 					sector: 'Secteur',
 					cell: 'Cellule',
+					village: 'Village',
 				},
 			},
 			rw: {
@@ -488,6 +490,7 @@ i18n
 					ssoPhone: 'Telefone ya SSO',
 					sector: 'Umurenge',
 					cell: 'Akagari',
+					village: 'Umudugudu',
 				}
 			}
 		},

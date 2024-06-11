@@ -6,6 +6,7 @@ export const boxFields = [
 	'district',
 	'sector',
 	'cell',
+	'village',
 	'school',
 	'htName',
 	'htPhone',

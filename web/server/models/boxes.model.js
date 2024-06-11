@@ -8,6 +8,7 @@ const Box = new Schema(
 		district: { type: String, required: false },
 		sector: { type: String, required: false },
 		cell: { type: String, required: false },
+		village: { type: String, required: false },
 		school: { type: String, required: true },
 		htName: { type: String, required: false },
 		htPhone: { type: String, required: false },
