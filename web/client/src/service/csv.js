@@ -37,8 +37,8 @@ function parseCSV(text, setUploadProgress, setResults, setIsLoading, setComplete
 				school,
 				htName,
 				htPhone,
-				schoolLatitude: parseFloat(latitude),
-				schoolLongitude: parseFloat(longitude),
+				schoolLatitude: parseFloat(latitude.replace(',', '.')),
+				schoolLongitude: parseFloat(longitude.replace(',', '.')),
 				adminId: user.id,
 				createdAt: new Date().getTime()
 			};
