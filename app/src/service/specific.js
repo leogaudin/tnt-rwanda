@@ -1,10 +1,10 @@
 // Look in /client/src/service/specific.js for the colors object
 export const colors = {
-	lightest: '#F0F5FF',
-	light: '#EBF0FE',
-	main: '#0949FF',
-	dark: '#0033C0',
-	darkest: '#001D6A',
+	lightest: '#E6FCFF',
+	light: '#A3F3FF',
+	main: '#26BFED',
+	dark: '#006394',
+	darkest: '#00456E',
 };
 
-export const API_URL = 'https://track-and-trace-api.vercel.app/api';
+export const API_URL = 'https://tnt-rwanda-api.vercel.app/api';
