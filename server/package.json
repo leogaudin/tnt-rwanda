@@ -5,7 +5,7 @@
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"start": "nodemon --exec babel-node index.js",
-		"deploy": "pm2 start pm2.config.js --env production"
+		"deploy": "pm2 start pm2.config.cjs --env production"
 	},
 	"keywords": [],
 	"author": "",
