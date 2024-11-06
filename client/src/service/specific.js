@@ -13,11 +13,11 @@ export const colors = {
 
 // The corresponding API URL
 export const API_URL =
-						// process.env.NODE_ENV === 'development'
-						// ?
+						process.env.NODE_ENV === 'development'
+						?
 						'http://localhost:3000/api'
-						// :
-						// 'https://tnt-rwanda-api.vercel.app/api'
+						:
+						'https://tnt-rwanda-api.vercel.app/api'
 
 
 // Fields that should be: displayed as information, or the full representation of the object
