@@ -15,7 +15,7 @@ export const colors = {
 export const API_URL =
 						// process.env.NODE_ENV === 'development'
 						// ?
-						'http://localhost:3000/api'
+						'http://10.10.68.214:3000/api'
 						// :
 						// 'https://tnt-rwanda-api.vercel.app/api'
 
