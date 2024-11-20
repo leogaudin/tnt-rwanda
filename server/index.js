@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import compression from 'compression';
+import https from 'https';
+import fs from 'fs';
 
 import boxesController from './controllers/boxes.ctrl.js';
 import scansController from './controllers/scans.ctrl.js';
@@ -31,7 +33,7 @@ database.once('connected', () => {
 
 const app = express();
 app.disable('x-powered-by');
-const apiPort = 3000;
+const apiPort = 80;
 const payloadLimit = '4.5mb';
 
 app.use(compression({
@@ -59,6 +61,9 @@ app.use('/api', adminsController);
 app.use('/api', authController);
 app.use('/api', insightsController);
 
-app.listen(apiPort, () => console.info(`Server running on port ${apiPort}`));
+https.createServer({
+	cert: fs.readFileSync('/etc/letsencrypt/live/booktracking.reb.rw/fullchain.pem'),
+	key: fs.readFileSync('/etc/letsencrypt/live/booktracking.reb.rw/privkey.pem'),
+}, app).listen(apiPort, () => console.info(`Server running on port ${apiPort}`));
 
 export default app;
