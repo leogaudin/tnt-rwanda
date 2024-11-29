@@ -45,7 +45,10 @@ export default function BoxFiltering({
 			}
 		}));
 
-		setPossibleValues(results.reduce((acc, curr) => ({ ...acc, ...curr }), {}));
+
+		const flattened = results.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+		const progress = progresses.map((progress) => t(progress.key));
+		setPossibleValues({ ...flattened, progress });
 
 		setLoading(false);
 	}
@@ -89,6 +92,7 @@ export default function BoxFiltering({
 							</option>
 						)
 					})}
+					<option value='progress'>{t('progress')}</option>
 				</Select>
 				<Select
 					value={filter.value}
