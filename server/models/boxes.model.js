@@ -23,6 +23,7 @@ const Box = new Schema(
 		schoolLongitude: { type: Number, required: true},
 		statusChanges: { type: Object, required: false },
 		content: { type: Object, required: false },
+		progress: { type: String, required: false },
 	}
 )
 

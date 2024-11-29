@@ -14,8 +14,9 @@ export default function Boxes() {
 	useEffect(() => {
 		const newQuery = filters.map(({ field, value }) => {
 			if (value?.length)
-				return `${field}=${value}`
+				return `${field}=${value}`;
 		}).join('&');
+
 		if (newQuery !== query){
 			setQuery(newQuery);
 			setCount(0);
@@ -23,14 +24,13 @@ export default function Boxes() {
 	}, [filters]);
 
 	const fetchBoxes = async (skip, limit) => {
-		console.log('fetchBoxes', skip, limit);
 		const response = await callAPI(
 			'GET',
 			`boxes/${user?.id}?skip=${skip}&limit=${limit}&${query}`
 		);
 		const json = await response.json();
-		console.log(json);
-		return json.data.boxes;
+
+		return json.data?.boxes || [];
 	};
 
 	return (

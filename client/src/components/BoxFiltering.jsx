@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react';
 import { palette } from '../theme';
 import { boxFields } from '../service/specific';
 import { useTranslation } from 'react-i18next';
-import { callAPI, icons } from '../service';
+import { callAPI, icons, progresses } from '../service';
 
 export default function BoxFiltering({
 	filters = [],
@@ -156,11 +156,12 @@ export default function BoxFiltering({
 				wrap='wrap'
 			>
 				{filters.map((filter, index) => (
-					<FilterSelect
-						key={index}
-						filter={filter}
-						index={index}
-					/>
+						<FilterSelect
+							key={index}
+							filter={filter}
+							index={index}
+						/>
+					);
 				))}
 				<IconButton
 					variant='outline'
