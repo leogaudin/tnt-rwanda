@@ -133,16 +133,9 @@ export default function BoxModal({
 								: <Loading />
 							}
 						</Stack>
-						<Button
-							colorScheme='red'
-							onClick={handleDelete}
-							variant='ghost'
-						>
-							{t('delete')}
-						</Button>
 						{box.scans?.length &&
 							<>
-								<Divider marginY='2rem' />
+								<Divider marginY='1rem' />
 								<Flex
 									direction='column'
 									justify={{ base: 'center', md: 'space-between' }}
@@ -174,6 +167,13 @@ export default function BoxModal({
 								</Flex>
 							</>
 						}
+						<Button
+							colorScheme='red'
+							onClick={handleDelete}
+							variant='ghost'
+						>
+							{t('delete')}
+						</Button>
 					</Stack>
 				</ModalBody>
 			</ModalContent>

@@ -1,103 +1,72 @@
-import { useEffect, useState } from 'react';
-import { icons, progresses } from '../service';
 import {
+	HStack,
 	Select,
 	IconButton,
 	Stack,
-	Flex,
-	HStack,
 	Text,
-	Input,
+	Flex,
 } from '@chakra-ui/react';
-import { useTranslation } from 'react-i18next';
+import { useEffect, useState } from 'react';
 import { palette } from '../theme';
-import { getProgress } from '../service/stats';
-import { excludedKeys } from '../service/specific';
+import { boxFields } from '../service/specific';
+import { useTranslation } from 'react-i18next';
+import { callAPI, icons } from '../service';
 
 export default function BoxFiltering({
-	boxes,
-	setFilteredBoxes,
-	setFiltersOutside = () => { }, // If you want to use the filters outside of this component
-	includeProgress = true,
-	includeSearch = true,
+	filters = [],
+	setFilters,
+	setCount,
 }) {
-	const [filters, setLocalFilters] = useState([]);
-	const [progressFilter, setProgressFilter] = useState('any');
-	const [query, setQuery] = useState('');
+	const [loading, setLoading] = useState(false);
+	const [possibleValues, setPossibleValues] = useState({});
+
 	const { t } = useTranslation();
-	const excludedFields = [
-		...excludedKeys,
-		'createdAt',
-	];
 
-	const fitsQuery = (box) => {
-		return Object.values(box).some((value) => {
-			if (typeof value === 'string')
-				return value.toLowerCase().includes(query.toLowerCase());
-		})
+	const updatePossibleValues = async () => {
+		setLoading(true);
+		const results = await Promise.all(Object.keys(boxFields).map(async (filter) => {
+			const query = filters.map(({ field, value }) => {
+				if (value?.length && field !== filter)
+					return `${field}=${value}`
+			}).join('&');
+
+			const response = await callAPI(
+				'GET',
+				`distinct/${filter}?${query}`
+			);
+
+			if (!response.ok)
+				return;
+
+			const json = await response.json();
+
+			return {
+				[filter]: json.data.distinct,
+			}
+		}));
+
+		setPossibleValues(results.reduce((acc, curr) => ({ ...acc, ...curr }), {}));
+
+		setLoading(false);
 	}
 
-	const getFilteredBoxes = () => {
-		return boxes?.filter((box) => {
-			return (
-				(filters.length === 0 || filters.every((filter) => box[filter.field] === filter.value))
-				&&
-				(!includeProgress || (getProgress(box) === progressFilter || progressFilter === 'any'))
-				&&
-				(!includeSearch || !query || fitsQuery(box))
-			)
-		})
-	}
+	const updateCount = async () => {
+		const response = await callAPI(
+			'GET',
+			`count?${filters.map(({ field, value }) => `${field}=${value}`).join('&')}`
+		);
 
-	const setFilters = (filters) => {
-		setLocalFilters(filters);
-		setFiltersOutside(filters);
+		if (!response.ok)
+			return;
+
+		const json = await response.json();
+		setCount(json.data.count);
 	}
 
 	useEffect(() => {
-		const updateFilteredBoxes = () => {
-			setFilteredBoxes(getFilteredBoxes());
-		}
-
-		updateFilteredBoxes();
-	}, [boxes, filters, progressFilter, setFilteredBoxes, query]);
-
-	const availableOptions = boxes?.length
-		? Object.keys(boxes[0]).filter((field) => !excludedFields.includes(field))
-		: null;
-
-	const handleProgressChange = (event) => {
-		setProgressFilter(event.target.value);
-	}
-
-	const addFilter = () => {
-		if (filters.every((filter) => filter.field && filter.value))
-			setFilters([...filters, { field: '', value: '' }]);
-	}
-
-	const removeFilter = (index) => {
-		setFilters(filters.filter((_, i) => i !== index));
-	}
-
-	const handleFieldChange = (index, event) => {
-		const newFilters = [...filters];
-		newFilters[index].field = event.target.value;
-		setFilters(newFilters);
-	}
-
-	const isPossible = (filters, field, value) => {
-		const newFilters = [...filters];
-		const existingFilter = newFilters.findIndex((filter) => filter.field === field); // Check if the field is already selected
-		const index = existingFilter === -1 ? newFilters.length : existingFilter; // If it is, replace it, otherwise add a new filter
-		newFilters[index] = { field, value };
-		return boxes.some((box) => newFilters.every((filter) => box[filter.field] === filter.value));
-	}
-
-	const handleValueChange = (index, event) => {
-		const newFilters = [...filters];
-		newFilters[index].value = event.target.value;
-		setFilters(newFilters);
-	}
+		updatePossibleValues();
+		updateCount();
+	}, [filters]);
 
 	const FilterSelect = ({ filter, index }) => {
 		return (
@@ -107,34 +76,31 @@ export default function BoxFiltering({
 				padding={2.5}
 			>
 				<Select
-					defaultValue={filter.field}
+					value={filter.field}
 					placeholder={t(filter.field) || t('select', { option: t('field') })}
 					onChange={(event) => handleFieldChange(index, event)}
 					focusBorderColor={palette.primary.dark}
 				>
-					{availableOptions.map((field) => {
+					{Object.keys(boxFields).map((field) => {
 						if (filters.some((filter) => filter.field === field)) return null;
 						return (
-							<option key={field} value={field} selected={filter.field === field}>
+							<option key={field} value={field}>
 								{t(field)}
 							</option>
 						)
 					})}
 				</Select>
 				<Select
-					defaultValue={filter.value}
+					value={filter.value}
 					placeholder={filter.value || t('select', { option: t('value') })}
 					onChange={(event) => handleValueChange(index, event)}
 					focusBorderColor={palette.primary.dark}
 				>
-					{Array.from(new Set(boxes.map((box) => box[filter.field]))).map((option) => {
-						if (isPossible(filters, filter.field, option))
-							return (
-								<option key={option} value={option}>
-									{option}
-								</option>
-							)
-					})}
+					{possibleValues[filter.field]?.map((option) => (
+						<option key={option} value={option}>
+							{option}
+						</option>
+					))}
 				</Select>
 				<IconButton
 					variant='outline'
@@ -148,6 +114,27 @@ export default function BoxFiltering({
 		)
 	}
 
+	const addFilter = () => {
+		setFilters((prev) => [...prev, { field: '', value: '' }]);
+	}
+
+	const removeFilter = (index) => {
+		setFilters((prev) => prev.filter((_, i) => i !== index));
+	}
+
+	const handleFieldChange = (index, event) => {
+		const newFilters = [...filters];
+		newFilters[index].field = event.target.value;
+		newFilters[index].value = '';
+		setFilters(newFilters);
+	}
+
+	const handleValueChange = (index, event) => {
+		const newFilters = [...filters];
+		newFilters[index].value = event.target.value;
+		setFilters(newFilters);
+	}
+
 	return (
 		<Stack
 			justify='center'
@@ -157,6 +144,9 @@ export default function BoxFiltering({
 			gap={2.5}
 			bg={palette.gray.lightest}
 			borderRadius={15}
+			pointerEvents={loading ? 'none' : 'auto'}
+			opacity={loading ? 0.5 : 1}
+			transition='opacity 0.2s'
 		>
 			<Text fontWeight='bold'>{t('filters')}</Text>
 			<Flex
@@ -166,7 +156,11 @@ export default function BoxFiltering({
 				wrap='wrap'
 			>
 				{filters.map((filter, index) => (
-					<FilterSelect key={index} filter={filter} index={index} />
+					<FilterSelect
+						key={index}
+						filter={filter}
+						index={index}
+					/>
 				))}
 				<IconButton
 					variant='outline'
@@ -174,44 +168,6 @@ export default function BoxFiltering({
 					onClick={addFilter}
 				/>
 			</Flex>
-			{includeProgress &&
-				(<>
-					<Text fontWeight='bold'>{t('progress')}</Text>
-					<Select
-						width='fit-content'
-						defaultValue='any'
-						onChange={handleProgressChange}
-						focusBorderColor='gray'
-					>
-						<option value='any'>{t('any')}</option>
-						{progresses.map((progress) => {
-							if (progress.key === 'total')
-								return null;
-							return (
-								<option key={progress.key} value={progress.key}>
-									{t(progress.key)}
-								</option>
-							)
-						})}
-					</Select>
-				</>)
-			}
-			<Text
-				fontSize='small'
-				fontWeight='bold'
-				textTransform='uppercase'
-				marginY={5}
-			>
-				{t('itemsSelected', { count: getFilteredBoxes().length })}
-			</Text>
-			{includeSearch &&
-				<Input
-					placeholder={`${t('customSearch')}...`}
-					value={query}
-					onChange={(e) => setQuery(e.target.value)}
-					focusBorderColor={palette.text}
-				/>
-			}
 		</Stack>
-	)
+	);
 }

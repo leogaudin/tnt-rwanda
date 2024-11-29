@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react'
-import BoxFiltering from '../../../components/BoxFiltering'
+import BoxFiltering from '../../../components/OldBoxFiltering'
 import AppContext from '../../../context'
 import { Button, Heading, Stack, useDisclosure } from '@chakra-ui/react';
 import { useTranslation } from 'react-i18next';

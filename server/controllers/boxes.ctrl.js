@@ -77,6 +77,37 @@ router.get('/boxes/:adminId', async (req, res) => {
 	}
 });
 
+router.get('/distinct/:field', async (req, res) => {
+	try {
+		requireApiKey(req, res, async (admin) => {
+			const field = req.params.field;
+			const distinct = await Box.distinct(
+				field,
+				{
+					adminId: admin.id,
+					...req.query,
+				}
+			);
+			return res.status(200).json({ success: true, data: { distinct } });
+		});
+	} catch (error) {
+		console.error(error);
+		return res.status(400).json({ success: false, error: error });
+	}
+});
+
+router.get('/count', async (req, res) => {
+	try {
+		requireApiKey(req, res, async (admin) => {
+			const count = await Box.countDocuments({ adminId: admin.id, ...req.query });
+			return res.status(200).json({ success: true, data: { count } });
+		});
+	} catch (error) {
+		console.error(error);
+		return res.status(400).json({ success: false, error: error });
+	}
+});
+
 router.post('/boxes/coords', async (req, res) => {
 	try {
 		const { boxes } = req.body;

@@ -30,9 +30,9 @@ export const navbarWidth = '250px';
  *
  * @param {String} 			method		HTTP method to be used
  * @param {String} 			endpoint	Endpoint to be called
- * @param {Object}			data?		Data to be sent in the request
- * @param {Object}			headers?	Headers to be sent in the request
- * @param {AbortSignal}		signal?		AbortSignal to be used in the request
+ * @param {Object}			data		Data to be sent in the request
+ * @param {Object}			headers		Headers to be sent in the request
+ * @param {AbortSignal}		signal		AbortSignal to be used in the request
  *
  * @returns {Promise<Response>}			Response of the request
  */

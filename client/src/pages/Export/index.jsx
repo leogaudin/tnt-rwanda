@@ -1,5 +1,5 @@
 import { Flex, Icon, Stack } from '@chakra-ui/react';
-import BoxFiltering from '../../components/BoxFiltering';
+import BoxFiltering from '../../components/OldBoxFiltering';
 import { useContext, useState } from 'react';
 import AppContext from '../../context';
 import PDFExport from './components/PDFExport';

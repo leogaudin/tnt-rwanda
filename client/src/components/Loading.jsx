@@ -9,6 +9,7 @@ export default function Loading({
 			height='100%'
 			justify='center'
 			align='center'
+			marginY='1rem'
 		>
 			<Spinner
 				// color={palette.primary.dark}
