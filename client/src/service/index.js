@@ -1,7 +1,7 @@
 import i18n from '../language';
 
-import Home from '../pages/Home';
 import Login from '../pages/Login'
+import Home from '../pages/Home';
 import Boxes from '../pages/Boxes';
 import Scans from '../pages/Scans';
 import Import from '../pages/Import';
@@ -10,11 +10,13 @@ import Advanced from '../pages/Advanced';
 import PublicInsights from '../pages/PublicInsights';
 
 import { IoHome, IoClose, IoCheckmark, IoPrint } from 'react-icons/io5';
-import { FaBoxOpen, FaChevronUp, FaChevronDown, FaMapPin, FaEye, FaClock, FaQrcode, FaPlus, FaCopy } from 'react-icons/fa';
+import { FaBoxOpen, FaChevronUp, FaChevronDown, FaMapPin, FaEye, FaClock, FaQrcode, FaPlus, FaCopy, FaChevronRight, FaChevronLeft } from 'react-icons/fa';
 import { IoMdExit, IoMdRefresh, IoMdSettings } from 'react-icons/io';
 import { BiImport, BiExport } from 'react-icons/bi';
 import { MdDelete } from 'react-icons/md';
 import { TbProgressCheck } from "react-icons/tb";
+import { BsMailbox } from "react-icons/bs";
+
 import { palette } from '../theme';
 import { API_URL } from './specific';
 
@@ -97,6 +99,8 @@ export const icons = {
 	close: IoClose,
 	up: FaChevronUp,
 	down: FaChevronDown,
+	left: FaChevronLeft,
+	right: FaChevronRight,
 	pin: FaMapPin,
 	eye: FaEye,
 	clock: FaClock,
@@ -110,6 +114,7 @@ export const icons = {
 	settings: IoMdSettings,
 	copy: FaCopy,
 	almost: TbProgressCheck,
+	mailbox: BsMailbox,
 }
 
 export const getRoutes = () => [

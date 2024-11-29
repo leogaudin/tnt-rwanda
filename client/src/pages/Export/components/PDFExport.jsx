@@ -52,9 +52,10 @@ const PDFExport = ({ objects, folderName = 'Documents' }) => {
 			fontWeight: 900,
 		},
 		infoRow: {
-			fontSize: '4mm',
+			fontSize: '3mm',
 			flexDirection: 'row',
 			width: '100%',
+			textAlign: 'center',
 			alignItems: 'center',
 			justifyContent: 'center',
 			marginBottom: '2mm',
@@ -68,7 +69,7 @@ const PDFExport = ({ objects, folderName = 'Documents' }) => {
 			justifyContent: 'center',
 		},
 		qrCodeValue: {
-			fontSize: '4mm',
+			fontSize: '3mm',
 			textAlign: 'center',
 			marginTop: '2mm',
 		},
@@ -117,6 +118,22 @@ const PDFExport = ({ objects, folderName = 'Documents' }) => {
 		});
 	};
 
+	const ContentText = ({ content }) => {
+		if (!Object.keys(content).length) return null;
+		return (
+			<View style={styles.infoRow}>
+				<PDFText>
+					{t('content')}:{' '}
+					{Object.entries(content).map(([element, quantity], i) => {
+						if (quantity)
+							return `${i > 0 ? ', ' : ''}${quantity} ${t(element)}`
+					})}
+				</PDFText>
+			</View>
+		)
+	};
+
+
 	const renderPages = async (chunk, i, totalLength) => {
 		return await Promise.all(chunk.map(async (object, index) => {
 			const { id } = object;
@@ -127,6 +144,7 @@ const PDFExport = ({ objects, folderName = 'Documents' }) => {
 				<Page orientation='portrait' key={id} size={['100mm', '150mm']} style={styles.page}>
 					<View style={styles.documentContainer}>
 						<InfoRows object={object} />
+						<ContentText content={object.content || {}} />
 						{qrComponent}
 						<PDFText style={styles.serial}>{i + index + 1}/{totalLength}</PDFText>
 					</View>
@@ -168,7 +186,7 @@ const PDFExport = ({ objects, folderName = 'Documents' }) => {
 			loadingText={pagesComplete + ' generated'}
 			paddingY='1rem'
 			height='fit-content'
-	>
+		>
 			<HStack
 				width='100%'
 				gap={5}

@@ -3,7 +3,7 @@ import PagedTable from '../../components/PagedTable';
 import AppContext from '../../context';
 import { useTranslation } from 'react-i18next';
 import { useDisclosure } from '@chakra-ui/react';
-import BoxModal from '../Boxes/components/BoxModal';
+import BoxModal from '../../components/BoxModal';
 import { timeAgo } from '../../service/utils';
 
 export default function Scans() {

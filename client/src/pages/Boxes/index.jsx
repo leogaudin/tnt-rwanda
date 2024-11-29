@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react';
 import AppContext from '../../context';
 import PagedGrid from '../../components/PagedGrid';
-import BoxCard from './components/BoxCard';
+import BoxCard from '../../components/BoxCard';
 import BoxFiltering from '../../components/BoxFiltering';
 
 export default function Boxes() {

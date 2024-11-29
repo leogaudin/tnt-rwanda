@@ -13,7 +13,7 @@ export const colors = {
 
 // The corresponding API URL
 export const API_URL =
-						process.env.NODE_ENV === 'development'
+						true
 						?
 						'http://localhost:3000/api'
 						:
@@ -59,4 +59,5 @@ export const excludedKeys = [
 	'schoolLatitude',
 	'schoolLongitude',
 	'statusChanges',
+	'content',
 ];

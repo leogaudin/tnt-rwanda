@@ -31,6 +31,7 @@ export default function Pill({
 				padding: '0.25rem 0.75rem',
 				fontWeight: 600,
 				margin: '0.25rem',
+				cursor: 'inherit',
 				...additionalStyles,
 				...props.style,
 			}}

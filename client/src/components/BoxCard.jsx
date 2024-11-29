@@ -8,12 +8,12 @@ import {
 	Stack,
 	useDisclosure,
 } from '@chakra-ui/react';
-import { palette } from '../../../theme';
+import { palette } from '../theme';
 import { useTranslation } from 'react-i18next';
-import { haversineDistance } from '../../../service/utils';
-import Pill from '../../../components/Pill';
-import { getProgress } from '../../../service/stats';
-import { progresses } from '../../../service';
+import { haversineDistance } from '../service/utils';
+import Pill from './Pill';
+import { getProgress } from '../service/stats';
+import { progresses } from '../service';
 import BoxModal from './BoxModal';
 
 export default function BoxCard({

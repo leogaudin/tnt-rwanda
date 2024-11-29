@@ -27,8 +27,21 @@ router.get('/boxes/:adminId', async (req, res) => {
 		if (!found)
 			return res.status(404).json({ success: false, error: `Admin not found` });
 
+		const skip = parseInt(req.query.skip);
+		const limit = parseInt(req.query.limit);
+		delete req.query.skip;
+		delete req.query.limit;
+
+		const filters = {
+			adminId: req.params.adminId,
+			...req.query,
+		};
+
 		if (found.publicInsights && !req.headers['x-authorization']) {
-			const boxes = await Box.find({ adminId: req.params.adminId }).skip(parseInt(req.query.skip)).limit(parseInt(req.query.limit));
+			const boxes = await Box
+							.find(filters)
+							.skip(skip)
+							.limit(limit);
 
 			indexStatusChanges(boxes);
 
@@ -50,7 +63,10 @@ router.get('/boxes/:adminId', async (req, res) => {
 			if (admin.id !== req.params.adminId)
 				return res.status(401).json({ success: false, error: `Unauthorized` });
 
-			const boxes = await Box.find({ adminId: req.params.adminId }).skip(parseInt(req.query.skip)).limit(parseInt(req.query.limit));
+			const boxes = await Box
+								.find(filters)
+								.skip(skip)
+								.limit(limit);
 
 			indexStatusChanges(boxes);
 

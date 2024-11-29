@@ -79,6 +79,7 @@ export default function Report({ boxes }) {
 				receivedDate: lastMarkedAsReceivedScan ? new Date(lastMarkedAsReceivedScan?.location.timestamp).toLocaleDateString() : '',
 				validated: !!lastValidatedScan & 1,
 				validatedDate: lastValidatedScan ? new Date(lastValidatedScan?.location.timestamp).toLocaleDateString() : '',
+				...(box.content || {}),
 			}
 
 			const translated = Object.keys(raw).reduce((acc, key) => {

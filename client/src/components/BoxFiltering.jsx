@@ -108,7 +108,7 @@ export default function BoxFiltering({
 			>
 				<Select
 					defaultValue={filter.field}
-					placeholder={filter.field || t('select', { option: t('field') })}
+					placeholder={t(filter.field) || t('select', { option: t('field') })}
 					onChange={(event) => handleFieldChange(index, event)}
 					focusBorderColor={palette.primary.dark}
 				>
@@ -116,7 +116,7 @@ export default function BoxFiltering({
 						if (filters.some((filter) => filter.field === field)) return null;
 						return (
 							<option key={field} value={field} selected={filter.field === field}>
-								{field}
+								{t(field)}
 							</option>
 						)
 					})}

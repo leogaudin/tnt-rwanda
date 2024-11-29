@@ -15,31 +15,39 @@ export async function uploadDistributionList(file, setOutput) {
 
 	Papa.parse(data, {
 		skipEmptyLines: true,
+		header: true,
 		step: (element) => {
 			try {
 				const newBox = {};
 				const fields = [...Object.keys(boxFields), 'schoolLatitude', 'schoolLongitude'];
+				const values = Object.values(element.data);
 
 				fields.forEach((field, index) => {
-					if (!element.data[index]
+					if (!values[index]
 						&& (
 							boxFields[field]?.required
 							|| (field === 'schoolLatitude' || field === 'schoolLongitude')
 						)
 					)
 						throw new Error(`Field ${field} is missing.`);
-					newBox[field] = element.data[index];
+					newBox[field] = values[index];
 				});
 				newBox.schoolLatitude = parseFloat(newBox.schoolLatitude.replace(',', '.'));
 				newBox.schoolLongitude = parseFloat(newBox.schoolLongitude.replace(',', '.'));
 				newBox.adminId = user.id;
+
+				const contentFields = element.meta.fields.slice(fields.length);
+				if (contentFields.length) newBox.content = {};
+				contentFields.forEach((field, index) => {
+					newBox.content[field] = parseInt(values[index + fields.length]);
+				});
 
 				boxes.push(newBox);
 			} catch (err) {
 				setOutput(prev => {
 					return [...prev,
 						`Error parsing following item:`,
-						JSON.stringify(element.data),
+						JSON.stringify(Object.values(element.data)),
 						err.message,
 						`-------`,
 					];
@@ -47,8 +55,6 @@ export async function uploadDistributionList(file, setOutput) {
 			}
 		},
 		complete: () => {
-			boxes.shift();
-
 			setOutput(prev => {
 				return [...prev,
 					`Retrieved ${boxes.length} items.`,
