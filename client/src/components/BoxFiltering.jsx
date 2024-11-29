@@ -156,12 +156,11 @@ export default function BoxFiltering({
 				wrap='wrap'
 			>
 				{filters.map((filter, index) => (
-						<FilterSelect
-							key={index}
-							filter={filter}
-							index={index}
-						/>
-					);
+					<FilterSelect
+						key={index}
+						filter={filter}
+						index={index}
+					/>
 				))}
 				<IconButton
 					variant='outline'
