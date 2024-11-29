@@ -1,6 +1,5 @@
 import React, { createContext, useEffect, useState } from 'react';
-import { callAPI, fetchAllBoxes, user } from '../service';
-import { computeInsights } from '../service/stats';
+import { callAPI, fetchInsights, user } from '../service';
 
 const AppContext = createContext({
 	boxes: [],
@@ -23,9 +22,12 @@ export const AppProvider = ({ children }) => {
 		localStorage.setItem('user', JSON.stringify(me));
 		Object.assign(user, me);
 
-		const boxes = await fetchAllBoxes(user.id, setBoxes);
+		// const boxes = await fetchAllBoxes(user.id);
+		// setBoxes(boxes);
 
-		computeInsights(boxes, setInsights)
+		const insights = await fetchInsights(user.id);
+
+		setInsights(insights);
 	}
 
 	useEffect(() => {

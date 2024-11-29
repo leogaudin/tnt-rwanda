@@ -37,27 +37,25 @@ router.get('/boxes/:adminId', async (req, res) => {
 			...req.query,
 		};
 
-		if (found.publicInsights && !req.headers['x-authorization']) {
-			const boxes = await Box
-							.find(filters)
-							.skip(skip)
-							.limit(limit);
+		// if (found.publicInsights && !req.headers['x-authorization']) {
+		// 	const boxes = await Box
+		// 					.find(
+		// 						filters,
+		// 						'statusChanges project'
+		// 					)
+		// 					.skip(skip)
+		// 					.limit(limit);
 
-			indexStatusChanges(boxes);
+		// 	if (!boxes.length)
+		// 		return res.status(404).json({ success: false, error: `No boxes available` });
 
-			if (!boxes.length)
-				return res.status(404).json({ success: false, error: `No boxes available` });
-
-			return res.status(200).json({
-				success: true,
-				data: {
-					boxes: boxes.map(box => ({
-						statusChanges: box.statusChanges,
-						project: box.project,
-					}))
-				}
-			});
-		}
+		// 	return res.status(200).json({
+		// 		success: true,
+		// 		data: {
+		// 			boxes
+		// 		}
+		// 	});
+		// }
 
 		requireApiKey(req, res, async (admin) => {
 			if (admin.id !== req.params.adminId)
@@ -67,8 +65,6 @@ router.get('/boxes/:adminId', async (req, res) => {
 								.find(filters)
 								.skip(skip)
 								.limit(limit);
-
-			indexStatusChanges(boxes);
 
 			if (!boxes.length)
 				return res.status(404).json({ success: false, error: `No boxes available` });

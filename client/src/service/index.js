@@ -19,6 +19,7 @@ import { BsMailbox } from "react-icons/bs";
 
 import { palette } from '../theme';
 import { API_URL } from './specific';
+import { computeInsights } from './stats';
 
 export const user = JSON.parse(localStorage.getItem('user'));
 
@@ -60,11 +61,10 @@ export const callAPI = async (method, endpoint, data = null, headers = {}, signa
  * @param {String}			id			ID of the user
  * @param {Function}		setBoxes	Function to set the boxes
  *
- * @returns {Array}			Array of boxes
+ * @returns {Promise<Array>}			Array of boxes
  */
-export async function fetchAllBoxes(id, setBoxes) {
+export async function fetchAllBoxes(id) {
 	try {
-		setBoxes(null);
 		const BUFFER_LENGTH = 7000;
 		const boxes = [];
 
@@ -83,11 +83,40 @@ export async function fetchAllBoxes(id, setBoxes) {
 		}
 
 		boxes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-		setBoxes(boxes);
 		return boxes;
 	} catch (err) {
 		console.error(err);
-		setBoxes(null);
+		return null;
+	}
+}
+
+export async function fetchInsights(id) {
+	try {
+		const BUFFER_LENGTH = 15_000;
+		const boxes = [];
+
+		while (true) {
+			const skip = boxes.length;
+
+			const request = await callAPI(
+				'GET',
+				`raw_insights/${id}?skip=${skip}&limit=${BUFFER_LENGTH}`
+			);
+
+			if (request.status !== 200 || !request.ok)
+				break;
+
+			const response = await request.json();
+
+			if (response?.data?.boxes)
+				boxes.push(...response?.data?.boxes);
+		}
+
+		boxes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+		return computeInsights(boxes);
+	} catch (err) {
+		console.error(err);
+		return null;
 	}
 }
 

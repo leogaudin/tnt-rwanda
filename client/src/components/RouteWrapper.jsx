@@ -39,14 +39,15 @@ export default function RouteWrapper({ route }) {
 					overflow='hidden'
 					padding={5}
 				>
-					{route.worksWithoutBoxes
+					<route.component />
+					{/* {route.worksWithoutBoxes
 						? <route.component />
 						: loading
 							? <BoxesLoading />
 							: boxes?.length || route.public
 								? <route.component />
 								: <NothingToSee />
-					}
+					} */}
 				</Flex>
 			</Flex>
 		</>

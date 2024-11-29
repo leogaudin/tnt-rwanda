@@ -187,10 +187,9 @@ export function sampleToTimeline(sample) {
  * @param {Array<Box>}	sample
  * @param {Function}	setInsights	The function to set the insights
  */
-export function computeInsights(boxes, setInsights) {
+export function computeInsights(boxes) {
 	if (!boxes || boxes.length === 0) {
-		setInsights({});
-		return;
+		return {};
 	}
 
 	const projects = [...new Set(boxes.map(box => box.project))];
@@ -206,5 +205,5 @@ export function computeInsights(boxes, setInsights) {
 		};
 	}
 
-	setInsights(insights);
+	return insights;
 }
