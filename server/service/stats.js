@@ -32,9 +32,12 @@
  * @returns {Scan | null}
  */
 export function getLastFinalScan(box) {
-	return box.scans?.reduce((acc, scan) => {
-		return scan.finalDestination && (acc?.time || 0) < scan.time ? scan : acc;
-	}, null);
+	for (const scan of box.scans) {
+		if (scan.finalDestination) {
+			return scan;
+		}
+	}
+	return null;
 }
 
 /**
@@ -45,9 +48,12 @@ export function getLastFinalScan(box) {
  * @returns {Scan | null}
  */
 export function getLastMarkedAsReceivedScan(box) {
-	return box.scans?.reduce((acc, scan) => {
-		return scan.markedAsReceived && (acc?.time || 0) < scan.time ? scan : acc;
-	}, null);
+	for (const scan of box.scans) {
+		if (scan.markedAsReceived) {
+			return scan;
+		}
+	}
+	return null;
 }
 
 /**
@@ -57,9 +63,12 @@ export function getLastMarkedAsReceivedScan(box) {
  * @returns {Scan | null}
  */
 export function getLastValidatedScan(box) {
-	return box.scans?.reduce((acc, scan) => {
-		return scan.finalDestination && scan.markedAsReceived && (acc?.time || 0) < scan.time ? scan : acc;
-	}, null);
+	for (const scan of box.scans) {
+		if (scan.finalDestination && scan.markedAsReceived) {
+			return scan;
+		}
+	}
+	return null;
 }
 
 /**
@@ -68,10 +77,25 @@ export function getLastValidatedScan(box) {
  * @param {Box} box
  * @returns {Progress}
  */
-export function getProgress(box) {
+export function getProgress(box, notAfterTimestamp = Date.now()) {
+	if (box.statusChanges) {
+		let lastStatus = 'noScans';
+
+		for (const [status, timestamp] of Object.entries(box.statusChanges)) {
+			if (timestamp && timestamp <= notAfterTimestamp) {
+				lastStatus = status;
+			}
+		}
+
+		return lastStatus;
+	}
+	// Legacy code
 	if (!box?.scans || box?.scans?.length === 0) {
 		return 'noScans';
 	}
+
+	const scans = box.scans.filter(scan => scan.time <= notAfterTimestamp);
+	box = { ...box, scans };
 
 	const lastValidatedScan = getLastValidatedScan(box);
 	if (lastValidatedScan) {
@@ -105,7 +129,7 @@ export function getProgress(box) {
  * @param {Array<Box>} sample	Boxes to index
  */
 export function indexStatusChanges(sample) {
-	sample.forEach(box => {
+	return sample.map(box => {
 		const scans = box.scans;
 		scans.sort((a, b) => a.time - b.time); // First scan is the oldest
 
@@ -120,32 +144,31 @@ export function indexStatusChanges(sample) {
 		for (const scan of scans) {
 			if (scan.finalDestination && scan.markedAsReceived) {
 				statusChanges.validated ??= scan.time;
-				break;
 			}
-
-			if (scan.finalDestination) {
+			else if (scan.finalDestination) {
 				if (statusChanges.received) {
 					statusChanges.reachedAndReceived ??= scan.time;
 				} else {
 					statusChanges.reachedGps ??= scan.time;
 				}
-				continue;
 			}
-
-			if (scan.markedAsReceived) {
+			else if (scan.markedAsReceived) {
 				if (statusChanges.reachedGps) {
 					statusChanges.reachedAndReceived ??= scan.time;
 				} else {
 					statusChanges.received ??= scan.time;
 				}
-				continue;
 			}
-
-			if (Object.values(statusChanges).every(status => !status)) {
+			else if (Object.values(statusChanges).every(status => !status)) {
 				statusChanges.inProgress = scan.time;
 			}
 		}
 
-		box.statusChanges = statusChanges;
+		return {
+			updateOne: {
+				filter: { id: box.id },
+				update: { $set: { statusChanges, progress: getProgress(box) } }
+			}
+		}
 	});
 }

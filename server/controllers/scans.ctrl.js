@@ -1,6 +1,7 @@
 import Box from '../models/boxes.model.js';
 import express from 'express'
 import { generateId, isFinalDestination } from '../service/index.js';
+import { getProgress } from '../service/stats.js';
 
 const router = express.Router()
 
@@ -24,7 +25,7 @@ router.post('/scan', async (req, res) => {
 			accuracy: location.coords.accuracy
 		};
 
-		const newScan = {
+		const scan = {
 			id: generateId(),
 			comment,
 			operatorId,
@@ -42,30 +43,30 @@ router.post('/scan', async (req, res) => {
 			validated: null,
 		};
 
-		if (newScan.finalDestination && newScan.markedAsReceived) {
-			statusChanges.validated ??= newScan.time;
+		if (scan.finalDestination && scan.markedAsReceived) {
+			statusChanges.validated ??= { id: scan.id, time: scan.time };
 		}
-		else if (newScan.finalDestination) {
+		else if (scan.finalDestination) {
 			if (statusChanges.received) {
-				statusChanges.reachedAndReceived ??= newScan.time;
+				statusChanges.reachedAndReceived ??= { id: scan.id, time: scan.time };
 			} else {
-				statusChanges.reachedGps ??= newScan.time;
+				statusChanges.reachedGps ??= { id: scan.id, time: scan.time };
 			}
 		}
-		else if (newScan.markedAsReceived) {
+		else if (scan.markedAsReceived) {
 			if (statusChanges.reachedGps) {
-				statusChanges.reachedAndReceived ??= newScan.time;
+				statusChanges.reachedAndReceived ??= { id: scan.id, time: scan.time };
 			} else {
-				statusChanges.received ??= newScan.time;
+				statusChanges.received ??= { id: scan.id, time: scan.time };
 			}
 		}
 		else if (Object.values(statusChanges).every(status => !status)) {
-			statusChanges.inProgress = newScan.time;
+			statusChanges.inProgress = { id: scan.id, time: scan.time };
 		}
 
 		await Box.updateOne({ id: boxId }, {
-			$push: { scans: newScan },
-			$set: { statusChanges },
+			$push: { scans: scan },
+			$set: { statusChanges, progress: getProgress(box) }
 		});
 
 		return res.status(200).json({ message: 'Scan added successfully', box });
