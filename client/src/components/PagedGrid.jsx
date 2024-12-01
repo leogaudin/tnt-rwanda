@@ -34,6 +34,11 @@ export default function PagedGrid({
 			});
 	}, [currentPage, pageSize, extraParams]);
 
+	useEffect(() => {
+		if (currentPage > Math.ceil(count / pageSize))
+			setCurrentPage(1);
+	}, [count, pageSize]);
+
 	if (loading)
 		return <Loading />;
 
@@ -44,6 +49,13 @@ export default function PagedGrid({
 				align='center'
 				padding={2}
 			>
+				<Pagination
+					length={count}
+					currentPage={currentPage}
+					setCurrentPage={setCurrentPage}
+					pageSize={pageSize}
+					setPageSize={setPageSize}
+				/>
 				<SimpleGrid
 					columns={{ base: 1, lg: 2 }}
 					spacing={5}
@@ -53,13 +65,6 @@ export default function PagedGrid({
 				>
 					{elements.map(renderElement)}
 				</SimpleGrid>
-				<Pagination
-					length={count}
-					currentPage={currentPage}
-					setCurrentPage={setCurrentPage}
-					pageSize={pageSize}
-					setPageSize={setPageSize}
-				/>
 			</Flex>
 		</Stack>
 	)
