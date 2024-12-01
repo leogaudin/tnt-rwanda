@@ -12,10 +12,13 @@ export default function Boxes() {
 	const [count, setCount] = useState(0);
 
 	useEffect(() => {
-		const newQuery = filters.map(({ field, value }) => {
-			if (value?.length)
-				return `${field}=${value}`;
-		}).join('&');
+		const newQuery = filters
+							.map(({ field, value }) => {
+								if (value?.length)
+									return `${field}=${value}`;
+							})
+							.filter((x) => x)
+							.join('&');
 
 		if (newQuery !== query){
 			setQuery(newQuery);
