@@ -1,4 +1,5 @@
 import { Flex, Spinner, Text } from '@chakra-ui/react';
+import { palette } from '../theme';
 
 export default function Loading({
 	message = '',
@@ -10,16 +11,12 @@ export default function Loading({
 			justify='center'
 			align='center'
 			marginY='1rem'
+			gap='1rem'
+			color={palette.primary.dark}
 		>
-			<Spinner
-				// color={palette.primary.dark}
-			/>
+			<Spinner />
 			{message
-				? <Text
-					// color={palette.primary.dark}
-					textTransform='uppercase'
-					fontSize='small'
-				>
+				? <Text>
 					{message}
 				</Text>
 				: null

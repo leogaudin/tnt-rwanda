@@ -3,13 +3,13 @@ import InsightsController from './components/InsightsController';
 import Insights from './components/Insights';
 import { useContext } from 'react';
 import AppContext from '../../context';
-import BoxesLoading from '../../components/BoxesLoading';
+import Loading from '../../components/Loading';
 
 export default function Home() {
 	const { insights } = useContext(AppContext);
 
 	if (!insights)
-		return <BoxesLoading />;
+		return <Loading message={t('insightsLoading')} />;
 	return (
 		<Stack
 			width='100%'
