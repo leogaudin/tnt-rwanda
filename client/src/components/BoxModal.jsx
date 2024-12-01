@@ -20,9 +20,9 @@ import { timeAgo } from '../service/utils';
 import { excludedKeys } from '../service/specific';
 import ContentCard from './ContentCard';
 import SchoolModal from './SchoolModal';
-import { callAPI, icons, user } from "../service";
-import Loading from "./Loading";
-import { useEffect, useState } from "react";
+import { callAPI, icons, user, fetchBoxScans } from '../service';
+import { useEffect, useState } from 'react';
+import Loading from './Loading';
 
 export default function BoxModal({
 	isOpen,
@@ -30,7 +30,7 @@ export default function BoxModal({
 	box,
 }) {
 	const { t } = useTranslation();
-
+	const [scans, setScans] = useState(null);
 	const [school, setSchool] = useState(null);
 	const { isOpen: isSchoolOpen, onOpen: onSchoolOpen, onClose: onSchoolClose } = useDisclosure();
 
@@ -47,9 +47,16 @@ export default function BoxModal({
 	}
 
 	useEffect(() => {
-		if (isOpen)
+		if (isOpen) {
 			fetchSchool();
+			fetchBoxScans(box.id)
+				.then(setScans);
+		}
 	}, [isOpen]);
+
+	const fetchScans = async (_, __) => {
+		return scans.sort((a, b) => new Date(b.time) - new Date(a.time))
+	};
 
 	const handleDelete = async () => {
 		if (window.confirm(t('deletePrompt'))) {
@@ -133,9 +140,9 @@ export default function BoxModal({
 								: <Loading />
 							}
 						</Stack>
-						{box.scans?.length &&
-							<>
-								<Divider marginY='1rem' />
+						{scans?.length
+							?
+							<>						<Divider marginY={5} />
 								<Flex
 									direction='column'
 									justify={{ base: 'center', md: 'space-between' }}
@@ -144,9 +151,9 @@ export default function BoxModal({
 									borderRadius={10}
 									shadow='md'
 								>
-									<ScansMap box={box} />
+									<ScansMap box={{ ...box, scans }} />
 									<PagedTable
-										elements={box.scans}
+										fetchElements={fetchScans}
 										headers={[
 											t('time'),
 											t('comment'),
@@ -166,6 +173,7 @@ export default function BoxModal({
 									/>
 								</Flex>
 							</>
+							: <Loading />
 						}
 						<Button
 							colorScheme='red'
