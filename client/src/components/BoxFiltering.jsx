@@ -15,6 +15,7 @@ import { callAPI, icons, progresses } from '../service';
 export default function BoxFiltering({
 	filters = [],
 	setFilters,
+	count,
 	setCount,
 }) {
 	const [loading, setLoading] = useState(false);
@@ -24,26 +25,39 @@ export default function BoxFiltering({
 
 	const updatePossibleValues = async () => {
 		setLoading(true);
-		const results = await Promise.all(Object.keys(boxFields).map(async (filter) => {
-			const query = filters.map(({ field, value }) => {
-				if (value?.length && field !== filter)
-					return `${field}=${value}`
-			}).join('&');
+		const results = await Promise.all(
+			filters
+				.map(async ({ field: boxField }) => {
+					if (boxField === 'progress')
+						return {
+							progress: progresses
+										.map((progress) => progress.key)
+										.filter((progress) => progress !== 'total')
+						};
 
-			const response = await callAPI(
-				'GET',
-				`distinct/${filter}?${query}`
-			);
+					if (!boxFields[boxField])
+						return;
 
-			if (!response.ok)
-				return;
+					const query = filters.map(({ field, value }) => {
+						if (value?.length && field !== boxField)
+							return `${field}=${value}`
+					}).join('&');
 
-			const json = await response.json();
+					const response = await callAPI(
+						'GET',
+						`distinct/${boxField}?${query}`
+					);
 
-			return {
-				[filter]: json.data.distinct,
-			}
-		}));
+					if (!response.ok)
+						return;
+
+					const json = await response.json();
+
+					return {
+						[boxField]: json.data.distinct,
+					}
+				})
+		);
 
 
 		const flattened = results.reduce((acc, curr) => ({ ...acc, ...curr }), {});
@@ -67,8 +81,10 @@ export default function BoxFiltering({
 	}
 
 	useEffect(() => {
-		updatePossibleValues();
 		updateCount();
+		if (filters[filters.length - 1]?.field.length) {
+			updatePossibleValues();
+		}
 	}, [filters]);
 
 	const FilterSelect = ({ filter, index }) => {
@@ -172,6 +188,14 @@ export default function BoxFiltering({
 					onClick={addFilter}
 				/>
 			</Flex>
+			<Text
+				fontSize='small'
+				fontWeight='bold'
+				textTransform='uppercase'
+				marginY={5}
+			>
+				{t('itemsSelected', { count: count })}
+			</Text>
 		</Stack>
 	);
 }
