@@ -63,18 +63,16 @@ export default function Scans() {
 				count={count}
 				fetchElements={fetchScans}
 				headers={[
-					t('recipient'),
 					t('box'),
 					t('time'),
-					t('comment'),
+					// t('comment'),
 					t('received'),
 					t('reachedGps')
 				]}
 				fields={[
-					'recipient',
 					'boxId',
 					'time',
-					'comment',
+					// 'comment',
 					'markedAsReceived',
 					'finalDestination',
 				]}

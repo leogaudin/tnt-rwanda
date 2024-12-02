@@ -2,7 +2,6 @@ import { useContext, useEffect, useState } from 'react';
 import AppContext from '../../context';
 import PagedGrid from '../../components/PagedGrid';
 import BoxCard from '../../components/BoxCard';
-// import BoxFiltering from '../../components/BoxFiltering';
 import BoxFiltering from '../../components/BoxFiltering';
 import { callAPI, user } from '../../service';
 

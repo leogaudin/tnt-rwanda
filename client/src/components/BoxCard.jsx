@@ -12,7 +12,7 @@ import { palette } from '../theme';
 import { useTranslation } from 'react-i18next';
 import { haversineDistance } from '../service/utils';
 import Pill from './Pill';
-import { getProgress } from '../service/stats';
+import { getLastScanWithConditions, getProgress } from '../service/stats';
 import { callAPI, fetchBoxScans, progresses } from '../service';
 import BoxModal from './BoxModal';
 import { useEffect, useMemo, useState } from 'react';
@@ -31,13 +31,7 @@ export default function BoxCard({
 	}, []);
 
 	const lastScan = useMemo(() => {
-		let last = null;
-		for (const scan of (scans || [])) {
-			if (!last || scan.time > last.time) {
-				last = scan;
-			}
-		}
-		return last;
+		return getLastScanWithConditions(scans);
 	}, [scans]);
 
 	if (!scans) {

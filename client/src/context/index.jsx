@@ -22,9 +22,6 @@ export const AppProvider = ({ children }) => {
 		localStorage.setItem('user', JSON.stringify(me));
 		Object.assign(user, me);
 
-		// const boxes = await fetchAllBoxes(user.id);
-		// setBoxes(boxes);
-
 		const insights = await fetchInsights(user.id);
 
 		setInsights(insights);

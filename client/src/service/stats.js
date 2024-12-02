@@ -30,50 +30,67 @@
  * @typedef {'noScans' | 'inProgress' | 'reachedGps' | 'received' | 'reachedAndReceived' | 'validated'} Progress
  */
 
-/**
- * Returns the last scan with finalDestination set to true.
- * Returns null if none found.
- *
- * @param {Box} box
- * @returns {Scan | null}
- */
-export function getLastFinalScan(box) {
-	let last = null;
-	for (const scan of box.scans) {
-		if (scan.finalDestination && scan.time > (last?.time || 0)) {
-			last = scan;
-		}
-	}
-	return last;
-}
+// /**
+//  * Returns the last scan with finalDestination set to true.
+//  * Returns null if none found.
+//  *
+//  * @param {Box} box
+//  * @returns {Scan | null}
+//  */
+// export function getLastFinalScan(box) {
+// 	let last = null;
+// 	for (const scan of box.scans) {
+// 		if (scan.finalDestination && scan.time > (last?.time || 0)) {
+// 			last = scan;
+// 		}
+// 	}
+// 	return last;
+// }
+
+// /**
+//  * Returns the last scan with markedAsReceived set to true.
+//  * Returns null if none found.
+//  *
+//  * @param {Box} box
+//  * @returns {Scan | null}
+//  */
+// export function getLastMarkedAsReceivedScan(box) {
+// 	let last = null;
+// 	for (const scan of box.scans) {
+// 		if (scan.markedAsReceived && scan.time > (last?.time || 0)) {
+// 			last = scan;
+// 		}
+// 	}
+// 	return last;
+// }
+
+// /**
+//  * Returns the last scan with finalDestination set to true and markedAsReceived set to true.
+//  * Returns null if none found.
+//  * @param {Box} box
+//  * @returns {Scan | null}
+//  */
+// export function getLastValidatedScan(box) {
+// 	let last = null;
+// 	for (const scan of box.scans) {
+// 		if (scan.finalDestination && scan.markedAsReceived && scan.time > (last?.time || 0)) {
+// 			last = scan;
+// 		}
+// 	}
+// 	return last;
+// }
 
 /**
- * Returns the last scan with markedAsReceived set to true.
- * Returns null if none found.
- *
- * @param {Box} box
- * @returns {Scan | null}
- */
-export function getLastMarkedAsReceivedScan(box) {
-	let last = null;
-	for (const scan of box.scans) {
-		if (scan.markedAsReceived && scan.time > (last?.time || 0)) {
-			last = scan;
-		}
-	}
-	return last;
-}
-
-/**
- * Returns the last scan with finalDestination set to true and markedAsReceived set to true.
+ * Returns the last scan that meets the conditions.
  * Returns null if none found.
  * @param {Box} box
+ * @param {Array<string>} conditions
  * @returns {Scan | null}
  */
-export function getLastValidatedScan(box) {
+export function getLastScanWithConditions(scans, conditions = []) {
 	let last = null;
-	for (const scan of box.scans) {
-		if (scan.finalDestination && scan.markedAsReceived && scan.time > (last?.time || 0)) {
+	for (const scan of scans) {
+		if (scan.time > (last?.time || 0) && conditions.every(condition => scan[condition])) {
 			last = scan;
 		}
 	}
@@ -98,6 +115,7 @@ export function getProgress(box, notAfterTimestamp = Date.now()) {
 
 		return lastStatus;
 	}
+	console.log(box);
 	// Legacy code
 	// if (!box?.scans || box?.scans?.length === 0) {
 	// 	return 'noScans';
