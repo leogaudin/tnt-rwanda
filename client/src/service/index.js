@@ -58,20 +58,32 @@ export const callAPI = async (method, endpoint, data = null, headers = {}, signa
 /**
  * Fetches all boxes from the API
  *
- * @param {String}			id			ID of the user
- * @param {Function}		setBoxes	Function to set the boxes
+ * @param {String}										id			ID of the user
+ * @param {Array<{field: String, value: String}>}		filters		Filters to be applied to the request
  *
  * @returns {Promise<Array>}			Array of boxes
  */
-export async function fetchAllBoxes(id) {
+export async function fetchAllBoxes(filters = []) {
 	try {
 		const BUFFER_LENGTH = 7000;
 		const boxes = [];
 
-		while (true) {
+		const query = filters
+						.map(({ field, value }) => {
+							if (value?.length)
+								return `${field}=${value}`
+						})
+						.filter((x) => x)
+						.join('&');
+
+		const response = await callAPI('GET', `boxes/count${query ? `?${query}` : ''}`);
+		const json = await response.json();
+		const count = json?.data?.count || 0;
+
+		while (boxes.length < count) {
 			const skip = boxes.length;
 
-			const request = await callAPI('GET', `boxes/admin/${id}?skip=${skip}&limit=${BUFFER_LENGTH}`);
+			const request = await callAPI('GET', `boxes/admin/${user.id}?skip=${skip}&limit=${BUFFER_LENGTH}${query ? `&${query}` : ''}`);
 
 			if (request.status !== 200 || !request.ok)
 				break;

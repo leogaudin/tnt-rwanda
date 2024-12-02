@@ -53,8 +53,15 @@ router.post('/scans', async (req, res) => {
 	try {
 		requireApiKey(req, res, async (admin) => {
 			const { filters } = req.body;
+			const skip = parseInt(req.query.skip);
+			const limit = parseInt(req.query.limit);
+			delete req.query.skip;
+			delete req.query.limit;
 
-			const scans = await Scan.find({ ...filters, adminId: admin.id });
+			const scans = await Scan
+								.find({ ...filters, adminId: admin.id })
+								.skip(skip)
+								.limit(limit);
 
 			return res.status(200).json({ data: { scans } });
 		});

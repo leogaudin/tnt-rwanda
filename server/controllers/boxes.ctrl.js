@@ -59,7 +59,10 @@ router.get('/boxes/admin/:adminId', async (req, res) => {
 				return res.status(401).json({ success: false, error: `Unauthorized` });
 
 			const boxes = await Box
-								.find(filters, { scans: 0 })
+								.find(
+									filters,
+									{ scans: 0 },
+								)
 								.skip(skip)
 								.limit(limit);
 
@@ -96,7 +99,7 @@ router.get('/distinct/:field', async (req, res) => {
 router.get('/boxes/count', async (req, res) => {
 	try {
 		requireApiKey(req, res, async (admin) => {
-			const count = await Box.countDocuments({ adminId: admin.id, ...req.query });
+			const count = await Box.countDocuments({ adminId: admin.id, ...(req.query || {}) });
 			return res.status(200).json({ success: true, data: { count } });
 		});
 	} catch (error) {
