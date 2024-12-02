@@ -29,7 +29,7 @@ export default function Boxes() {
 	const fetchBoxes = async (skip, limit) => {
 		const response = await callAPI(
 			'GET',
-			`boxes/${user?.id}?skip=${skip}&limit=${limit}&${query}`
+			`boxes/admin/${user?.id}?skip=${skip}&limit=${limit}&${query}`
 		);
 		const json = await response.json();
 

@@ -35,7 +35,7 @@ export default function BoxModal({
 	const { isOpen: isSchoolOpen, onOpen: onSchoolOpen, onClose: onSchoolClose } = useDisclosure();
 
 	const fetchSchool = async () => {
-		const response = await callAPI('GET', `boxes/${user.id}?school=${box.school}`);
+		const response = await callAPI('GET', `boxes/admin/${user.id}?school=${box.school}`);
 		const json = await response.json();
 
 		const school = {

@@ -71,7 +71,7 @@ export async function fetchAllBoxes(id) {
 		while (true) {
 			const skip = boxes.length;
 
-			const request = await callAPI('GET', `boxes/${id}?skip=${skip}&limit=${BUFFER_LENGTH}`);
+			const request = await callAPI('GET', `boxes/admin/${id}?skip=${skip}&limit=${BUFFER_LENGTH}`);
 
 			if (request.status !== 200 || !request.ok)
 				break;

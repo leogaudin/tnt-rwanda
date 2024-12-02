@@ -70,7 +70,7 @@ export default function BoxFiltering({
 	const updateCount = async () => {
 		const response = await callAPI(
 			'GET',
-			`count?${filters.map(({ field, value }) => `${field}=${value}`).join('&')}`
+			`boxes/count?${filters.map(({ field, value }) => `${field}=${value}`).join('&')}`
 		);
 
 		if (!response.ok)

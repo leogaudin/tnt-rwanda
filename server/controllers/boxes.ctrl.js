@@ -38,7 +38,7 @@ router.get('/box/:id', async (req, res) => {
 	}
 });
 
-router.get('/boxes/:adminId', async (req, res) => {
+router.get('/boxes/admin/:adminId', async (req, res) => {
 	try {
 		const found = await Admin.findOne({ id: req.params.adminId });
 		if (!found)
@@ -113,7 +113,7 @@ router.get('/distinct/:field', async (req, res) => {
 	}
 });
 
-router.get('/count', async (req, res) => {
+router.get('/boxes/count', async (req, res) => {
 	try {
 		requireApiKey(req, res, async (admin) => {
 			const count = await Box.countDocuments({ adminId: admin.id, ...req.query });
