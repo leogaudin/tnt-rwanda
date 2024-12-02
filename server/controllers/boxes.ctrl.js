@@ -54,26 +54,6 @@ router.get('/boxes/admin/:adminId', async (req, res) => {
 			...req.query,
 		};
 
-		// if (found.publicInsights && !req.headers['x-authorization']) {
-		// 	const boxes = await Box
-		// 					.find(
-		// 						filters,
-		// 						'statusChanges project'
-		// 					)
-		// 					.skip(skip)
-		// 					.limit(limit);
-
-		// 	if (!boxes.length)
-		// 		return res.status(404).json({ success: false, error: `No boxes available` });
-
-		// 	return res.status(200).json({
-		// 		success: true,
-		// 		data: {
-		// 			boxes
-		// 		}
-		// 	});
-		// }
-
 		requireApiKey(req, res, async (admin) => {
 			if (admin.id !== req.params.adminId)
 				return res.status(401).json({ success: false, error: `Unauthorized` });
