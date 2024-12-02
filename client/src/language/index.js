@@ -133,6 +133,7 @@ i18n
 					insightsLoading: 'Loading insights...',
 					loading: 'Loading',
 					generatingPdf: 'Generating PDF...',
+					scansLoading: 'Loading scans...',
 				},
 			},
 			fr: {
@@ -253,6 +254,7 @@ i18n
 					insightsLoading: 'Chargement des statistiques...',
 					loading: 'Chargement',
 					generatingPdf: 'Génération du PDF...',
+					scansLoading: 'Chargement des scans...',
 				},
 			},
 		},
