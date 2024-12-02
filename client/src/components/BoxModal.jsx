@@ -55,7 +55,7 @@ export default function BoxModal({
 	}, [isOpen]);
 
 	const fetchScans = async (_, __) => {
-		return scans.sort((a, b) => b.time - a.time);
+		return [...scans].sort((a, b) => b.time - a.time);
 	};
 
 	const handleDelete = async () => {
