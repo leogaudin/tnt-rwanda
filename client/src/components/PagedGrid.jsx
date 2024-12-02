@@ -20,7 +20,7 @@ export default function PagedGrid({
 	renderElement,
 }) {
 	const [currentPage, setCurrentPage] = useState(1);
-	const [pageSize, setPageSize] = useState(20);
+	const [pageSize, setPageSize] = useState(10);
 
 	const [elements, setElements] = useState([]);
 	const [loading, setLoading] = useState(false);
