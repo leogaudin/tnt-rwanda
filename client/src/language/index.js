@@ -131,6 +131,8 @@ i18n
 					contentPrompt: 'Every column after latitude and longitude will be treated as content. The headers will be used as keys, make sure they are correct and unique. For example, if you have a column named "Mathematics", the content will be stored as { "Mathematics": number }.',
 					openRecipient: 'Open recipient details',
 					insightsLoading: 'Loading insights...',
+					loading: 'Loading',
+					generatingPdf: 'Generating PDF...',
 				},
 			},
 			fr: {
@@ -249,6 +251,8 @@ i18n
 					contentPrompt: 'Chaque colonne après latitude et longitude sera considérée comme du contenu. Les en-têtes seront utilisés comme clés, assurez-vous qu\'ils sont corrects et uniques. Par exemple, si vous avez une colonne nommée "Mathématiques", le contenu sera stocké { "Mathématiques": nombre }.',
 					openRecipient: 'Ouvrir la fiche destinataire',
 					insightsLoading: 'Chargement des statistiques...',
+					loading: 'Chargement',
+					generatingPdf: 'Génération du PDF...',
 				},
 			},
 		},

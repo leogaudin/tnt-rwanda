@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { fetchInsights } from '../../service';
 import Insights from '../Home/components/Insights';
-import BoxesLoading from '../../components/BoxesLoading';
+import BigLoading from '../../components/BoxesLoading';
 
 export default function PublicInsights() {
 	const { id } = useParams();
@@ -21,7 +21,7 @@ export default function PublicInsights() {
 		<>
 			{insights
 				? <Insights insights={insights} />
-				: <BoxesLoading />
+				: <BigLoading />
 			}
 		</>
 	);

@@ -3,7 +3,6 @@ import { useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { navbarWidth, user } from '../service';
 import AppContext from '../context';
-import BoxesLoading from './BoxesLoading';
 import Navbar from './Navbar';
 import NothingToSee from './NothingToSee';
 import { Helmet } from 'react-helmet-async';
@@ -40,14 +39,6 @@ export default function RouteWrapper({ route }) {
 					padding={5}
 				>
 					<route.component />
-					{/* {route.worksWithoutBoxes
-						? <route.component />
-						: loading
-							? <BoxesLoading />
-							: boxes?.length || route.public
-								? <route.component />
-								: <NothingToSee />
-					} */}
 				</Flex>
 			</Flex>
 		</>
