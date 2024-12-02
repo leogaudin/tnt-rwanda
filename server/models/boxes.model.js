@@ -24,6 +24,7 @@ const Box = new Schema(
 		statusChanges: { type: Object, required: false },
 		content: { type: Object, required: false },
 		progress: { type: String, required: false, default: 'noScans' },
+		lastScan: { type: Object, required: false },
 	}
 )
 
