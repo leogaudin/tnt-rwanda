@@ -23,18 +23,26 @@ export default function BoxCard({
 }) {
 	const { t } = useTranslation();
 	const { onOpen, onClose, isOpen } = useDisclosure();
-	const [scans, setScans] = useState(null);
+	const [lastScan, setLastScan] = useState(null);
+
+	const fetchLastScan = async () => {
+		const response = await callAPI(
+			'POST',
+			`scans`,
+			{ filters: { id: box.lastScan.scan } }
+		);
+
+		const json = await response.json();
+
+		return json.data.scans[0];
+	}
 
 	useEffect(() => {
-		fetchBoxScans(box.id)
-		.then(setScans);
+		fetchLastScan()
+			.then(setLastScan);
 	}, []);
 
-	const lastScan = useMemo(() => {
-		return getLastScanWithConditions(scans);
-	}, [scans]);
-
-	if (!scans) {
+	if (!lastScan) {
 		return <Loading	/>;
 	}
 
