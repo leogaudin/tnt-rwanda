@@ -79,7 +79,7 @@ router.get('/boxes/admin/:adminId', async (req, res) => {
 				return res.status(401).json({ success: false, error: `Unauthorized` });
 
 			const boxes = await Box
-								.find(filters)
+								.find(filters, { scans: 0 })
 								.skip(skip)
 								.limit(limit);
 
