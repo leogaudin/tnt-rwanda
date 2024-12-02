@@ -55,7 +55,7 @@ export default function BoxModal({
 	}, [isOpen]);
 
 	const fetchScans = async (_, __) => {
-		return scans.sort((a, b) => new Date(b.time) - new Date(a.time))
+		return scans.sort((a, b) => b.time - a.time);
 	};
 
 	const handleDelete = async () => {
@@ -142,7 +142,8 @@ export default function BoxModal({
 						</Stack>
 						{scans?.length
 							?
-							<>						<Divider marginY={5} />
+							<>
+								<Divider marginY={5} />
 								<Flex
 									direction='column'
 									justify={{ base: 'center', md: 'space-between' }}
