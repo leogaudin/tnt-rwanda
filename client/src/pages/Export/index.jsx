@@ -26,13 +26,13 @@ export default function Export() {
 				setCount={setCount}
 			/>
 			<Stack>
-				{/* <PDFExport
-					objects={filtered}
+				<PDFExport
+					filters={filters}
 					folderName={`TnT Labels - ${new Date().toISOString().slice(0, 10)}`}
-				/>
+					/>
 				<Report
-					boxes={filtered}
-				/> */}
+					filters={filters}
+				/>
 			</Stack>
 		</Flex>
 	)
