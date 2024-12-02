@@ -1,5 +1,5 @@
 import { Flex, Icon, Stack } from '@chakra-ui/react';
-import BoxFiltering from '../../components/OldBoxFiltering';
+import BoxFiltering from '../../components/BoxFiltering';
 import { useContext, useState } from 'react';
 import AppContext from '../../context';
 import PDFExport from './components/PDFExport';
@@ -8,8 +8,8 @@ import { palette } from '../../theme';
 import Report from './components/Report';
 
 export default function Export() {
-	const { boxes } = useContext(AppContext);
-	const [filtered, setFiltered] = useState(boxes);
+	const [filters, setFilters] = useState([]);
+	const [count, setCount] = useState(0);
 
 	return (
 		<Flex
@@ -20,17 +20,19 @@ export default function Export() {
 			gap={5}
 		>
 			<BoxFiltering
-				boxes={boxes}
-				setFilteredBoxes={setFiltered}
+				filters={filters}
+				setFilters={setFilters}
+				count={count}
+				setCount={setCount}
 			/>
 			<Stack>
-				<PDFExport
+				{/* <PDFExport
 					objects={filtered}
 					folderName={`TnT Labels - ${new Date().toISOString().slice(0, 10)}`}
 				/>
 				<Report
 					boxes={filtered}
-				/>
+				/> */}
 			</Stack>
 		</Flex>
 	)
