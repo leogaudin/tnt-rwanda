@@ -34,7 +34,6 @@ export default function Scans() {
 	}, []);
 
 	const fetchScans = async (skip, limit) => {
-		console.log('fetching scans', skip, limit);
 		const response = await callAPI(
 			'GET',
 			`scans?skip=${skip}&limit=${limit}`
