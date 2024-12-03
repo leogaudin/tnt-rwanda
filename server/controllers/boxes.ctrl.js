@@ -1,14 +1,6 @@
 import express from 'express';
 import Admin from '../models/admins.model.js';
 import Box from '../models/boxes.model.js';
-import {
-	// createOne,
-	// createMany,
-	// deleteOne,
-	// getById,
-	// getAll,
-	// deleteMany,
-} from '../service/crud.js';
 import { requireApiKey } from '../service/apiKey.js';
 import { generateId, isFinalDestination } from '../service/index.js';
 import lzstring from 'lz-string';
@@ -27,7 +19,7 @@ router.post('/', async (req, res) => {
 			const { data } = req.body;
 
 			if (!data) {
-				return res.status(400).json({ success: false, error: 'No data provided' });
+				return res.status(400).json({ error: 'No data provided' });
 			}
 
 			const payload = lzstring.decompressFromEncodedURIComponent(data);
@@ -40,14 +32,13 @@ router.post('/', async (req, res) => {
 
 			const inserted = await Box.insertMany(instances);
 			return res.status(201).json({
-				success: true,
 				message: 'Items created!',
 				insertedCount: inserted.length,
 			});
 		});
 	} catch (error) {
 		console.error('Error occurred during createMany:', error);
-		return res.status(400).json({ success: false, error });
+		return res.status(500).json({ error });
 	}
 });
 
@@ -59,14 +50,14 @@ router.get('/one/:id', async (req, res) => {
 		requireApiKey(req, res, async (admin) => {
 			const box = await Box.findOne({ id: req.params.id, adminId: admin.id });
 			if (!box)
-				return res.status(404).json({ success: false, error: `Box not found` });
+				return res.status(404).json({ error: `Box not found` });
 
-			return res.status(200).json({ success: true, box });
+			return res.status(200).json({ box });
 		});
 	}
 	catch (error) {
 		console.error(error);
-		return res.status(400).json({ success: false, error: error });
+		return res.status(500).json({ error });
 	}
 });
 
@@ -78,7 +69,7 @@ router.post('/query', async (req, res) => {
 		requireApiKey(req, res, async (admin) => {
 			const found = await Admin.findOne({ id: admin.id });
 			if (!found)
-				return res.status(404).json({ success: false, error: `Admin not found` });
+				return res.status(404).json({ error: `Admin not found` });
 
 			const skip = parseInt(req.query.skip);
 			const limit = parseInt(req.query.limit);
@@ -97,13 +88,13 @@ router.post('/query', async (req, res) => {
 				.limit(limit);
 
 			if (!boxes.length)
-				return res.status(404).json({ success: false, error: `No boxes available` });
+				return res.status(404).json({ error: `No boxes available` });
 
-			return res.status(200).json({ success: true, boxes });
+			return res.status(200).json({ boxes });
 		});
 	} catch (error) {
 		console.error(error);
-		return res.status(400).json({ success: false, error: error });
+		return res.status(500).json({ error });
 	}
 });
 
@@ -122,11 +113,11 @@ router.post('/distinct/:field', async (req, res) => {
 					...(filters || {}),
 				}
 			);
-			return res.status(200).json({ success: true, distinct });
+			return res.status(200).json({ distinct });
 		});
 	} catch (error) {
 		console.error(error);
-		return res.status(400).json({ success: false, error: error });
+		return res.status(500).json({ error });
 	}
 });
 
@@ -138,11 +129,11 @@ router.post('/count', async (req, res) => {
 		requireApiKey(req, res, async (admin) => {
 			const { filters } = req.body;
 			const count = await Box.countDocuments({ adminId: admin.id, ...(filters || {}) });
-			return res.status(200).json({ success: true, count });
+			return res.status(200).json({ count });
 		});
 	} catch (error) {
 		console.error(error);
-		return res.status(400).json({ success: false, error: error });
+		return res.status(500).json({ error });
 	}
 });
 
@@ -155,7 +146,7 @@ router.delete('/', async (req, res) => {
 			const { deleteConditions } = req.body;
 
 			if (!deleteConditions) {
-				return res.status(400).json({ success: false, error: 'No delete conditions provided' });
+				return res.status(400).json({ error: 'No delete conditions provided' });
 			}
 
 			const boxes = await Box.find({ ...deleteConditions, adminId: admin.id }, 'id');
@@ -165,11 +156,11 @@ router.delete('/', async (req, res) => {
 				Scan.deleteMany({ boxId: { $in: boxes.map((box) => box.id) } }),
 			])
 
-			return res.status(200).json({ success: true, deletedCount: results[0].deletedCount });
+			return res.status(200).json({ deletedCount: results[0].deletedCount });
 		});
 	} catch (error) {
 		console.error(error);
-		return res.status(400).json({ success: false, error });
+		return res.status(500).json({ error });
 	}
 });
 
@@ -195,7 +186,7 @@ router.post('/coords', async (req, res) => {
 			const matched = coordsUpdateResult.matchedCount;
 
 			if (updated === 0)
-				return res.status(200).json({ success: true, updated, matched, recalculated: 0 });
+				return res.status(200).json({ updated, matched, recalculated: 0 });
 
 			const boxes = await Box
 				.find(
@@ -244,11 +235,11 @@ router.post('/coords', async (req, res) => {
 			const indexing = indexStatusChanges(boxes);
 			await Box.bulkWrite(indexing);
 
-			return res.status(200).json({ success: true, updated, matched });
+			return res.status(200).json({ updated, matched });
 		});
 	} catch (error) {
 		console.error(error);
-		return res.status(400).json({ success: false, error: error });
+		return res.status(500).json({ error });
 	}
 });
 

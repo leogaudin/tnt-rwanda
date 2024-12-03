@@ -13,8 +13,7 @@ export const AppProvider = ({ children }) => {
 	const [loading, setLoading] = useState(true);
 	const [insights, setInsights] = useState(null);
 
-	const initTnT = async (setters) => {
-		const { setInsights } = setters;
+	const initTnT = async () => {
 		const res = await callAPI('GET', 'auth/me')
 							.then(res => res.json())
 		const me = res.user;
@@ -22,15 +21,17 @@ export const AppProvider = ({ children }) => {
 		Object.assign(user, me);
 
 		const insights = await fetchInsights(user.id);
-
-		setInsights(insights);
+		return { insights };
 	}
 
 	useEffect(() => {
 		if (!user?.id) return;
 
-		initTnT({ setInsights })
-			.then(() => setLoading(false))
+		initTnT()
+			.then((data) => {
+				setInsights(data.insights);
+				setLoading(false);
+			})
 			.catch((e) => {
 				console.error(e);
 			});

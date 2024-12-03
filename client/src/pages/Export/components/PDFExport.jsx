@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { saveAs } from 'file-saver';
-// import { Button, Tooltip } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import {
 	Document,
@@ -16,7 +15,7 @@ import QRCode from 'qrcode';
 import JSZip from 'jszip';
 import { fetchBoxes, icons } from '../../../service';
 import { boxFields } from '../../../service/specific';
-import { Button, Tooltip, Text, Stack, HStack, Icon } from '@chakra-ui/react';
+import { Button, Text, Stack, HStack, Icon } from '@chakra-ui/react';
 
 const PDFExport = ({ filters, folderName = 'Documents' }) => {
 	const { t } = useTranslation();

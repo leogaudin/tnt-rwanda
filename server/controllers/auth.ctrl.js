@@ -2,7 +2,6 @@ import Admin from '../models/admins.model.js'
 import express from 'express'
 import { generateApiKey, requireApiKey } from '../service/apiKey.js';
 import { generateId } from '../service/index.js';
-// import { handle200Success } from '../service/errorHandlers.js';
 
 const router = express.Router();
 
@@ -42,7 +41,6 @@ router.post('/register', async (req, res) => {
 		const existent = await Admin.findOne({ email: username });
 		if (existent)
 			return res.status(409).json({
-				success: false,
 				error: `User with ID ${existent.id} already exists`,
 			});
 
@@ -69,7 +67,6 @@ router.post('/register', async (req, res) => {
 router.get('/me', async (req, res) => {
 	try {
 		requireApiKey(req, req, (admin) => {
-			// return handle200Success(res, admin);
 			return res.status(200).json({ user: admin })
 		})
 	} catch (err) {

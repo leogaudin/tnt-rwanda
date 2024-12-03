@@ -56,10 +56,10 @@ router.get('/box/:id', async (req, res) => {
 			const box = await Box.findOne({ id });
 
 			if (!box)
-				return res.status(404).json({ success: false, error: `Box not found` });
+				return res.status(404).json({ error: `Box not found` });
 
 			if (box.adminId !== admin.id)
-				return res.status(401).json({ success: false, error: `Unauthorized` });
+				return res.status(401).json({ error: `Unauthorized` });
 
 			const filters = {
 				boxId: id,
@@ -67,11 +67,11 @@ router.get('/box/:id', async (req, res) => {
 
 			const scans = await Scan.find(filters)
 
-			return res.status(200).json({ success: true, scans });
+			return res.status(200).json({ scans });
 		});
 	} catch (error) {
 		console.error(error);
-		return res.status(400).json({ success: false, error: error });
+		return res.status(500).json({ error });
 	}
 });
 

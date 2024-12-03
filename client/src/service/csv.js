@@ -74,7 +74,6 @@ export async function uploadDistributionList(file, setOutput) {
 				};
 				uploadedBytes += payload.data.length;
 				callAPI('POST', 'boxes', payload)
-				// addBoxes(payload)
 					.then((res) => {
 						if (res.status >= 400)
 							throw new Error(res.statusText);

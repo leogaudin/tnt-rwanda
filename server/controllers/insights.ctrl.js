@@ -34,7 +34,7 @@ router.get('/admin/:adminId', async (req, res) => {
 	try {
 		const found = await Admin.findOne({ id: req.params.adminId });
 		if (!found)
-			return res.status(404).json({ success: false, error: `Admin not found` });
+			return res.status(404).json({ error: `Admin not found` });
 
 		const skip = parseInt(req.query.skip);
 		const limit = parseInt(req.query.limit);
@@ -56,18 +56,15 @@ router.get('/admin/:adminId', async (req, res) => {
 							.limit(limit);
 
 			if (!boxes.length)
-				return res.status(404).json({ success: false, error: `No boxes available` });
+				return res.status(404).json({ error: `No boxes available` });
 
-			return res.status(200).json({
-				success: true,
-				boxes,
-			});
+			return res.status(200).json({ boxes });
 		} else {
-			return res.status(401).json({ success: false, error: `Unauthorized` });
+			return res.status(401).json({ error: `Unauthorized` });
 		}
 	} catch (error) {
 		console.error(error);
-		return res.status(500).json({ success: false, error: error });
+		return res.status(500).json({ error: error });
 	}
 });
 
