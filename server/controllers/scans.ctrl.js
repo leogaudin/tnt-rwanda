@@ -71,6 +71,20 @@ router.post('/scans', async (req, res) => {
 	}
 });
 
+router.post('/scans/count', async (req, res) => {
+	try {
+		requireApiKey(req, res, async (admin) => {
+			const { filters } = req.body;
+
+			const count = await Scan.countDocuments({ ...filters, adminId: admin.id });
+			return res.status(200).json({ data: { count } });
+		});
+	} catch (error) {
+		console.error('Error getting scans count:', error);
+		return res.status(500).json({ error: 'An error occurred while getting scans count' });
+	}
+});
+
 router.get('/box/:id/scans', async (req, res) => {
 	try {
 		const { id } = req.params;

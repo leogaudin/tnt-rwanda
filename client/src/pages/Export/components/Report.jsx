@@ -11,7 +11,7 @@ import {
 	Text,
 	Stack,
 } from '@chakra-ui/react';
-import { callAPI, fetchAllBoxes, icons } from '../../../service';
+import { fetchBoxes, fetchScans, icons } from '../../../service';
 import { useTranslation } from 'react-i18next';
 import { getLastScanWithConditions } from '../../../service/stats';
 import { haversineDistance } from '../../../service/utils';
@@ -38,26 +38,27 @@ export default function Report({ filters }) {
 		try {
 			setLoading(true);
 			setLoadingText(t('boxesLoading'));
-			const boxes = await fetchAllBoxes(filters);
+			const boxes = await fetchBoxes(filters);
 
 			if (!boxes || !boxes.length) {
 				throw new Error('No boxes available');
 			}
 
 			setLoadingText(t('scansLoading'));
-			const response = await callAPI(
-				'POST',
-				'scans',
-				{
-					filters: {
-						boxId: { $in: boxes.map(box => box.id) }
+
+			const scanIds = [];
+			for (const box of boxes) {
+				if (box.lastScan?.scan) {
+					scanIds.push(box.lastScan.scan);
+				}
+				for (const [key, change] of Object.entries(box.statusChanges || {})) {
+					if (change && change.scan) {
+						scanIds.push(change.scan);
 					}
 				}
-			);
+			}
 
-			const json = await response.json();
-
-			const scans = json.data?.scans || [];
+			const scans = await fetchScans({ id: { $in: scanIds } });
 
 			boxes.forEach(box => {
 				box.scans = [];

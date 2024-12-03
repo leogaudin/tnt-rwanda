@@ -56,16 +56,15 @@ export const callAPI = async (method, endpoint, data = null, headers = {}, signa
 }
 
 /**
- * Fetches all boxes from the API
+ * Fetches boxes from the API
  *
- * @param {String}										id			ID of the user
  * @param {Array<{field: String, value: String}>}		filters		Filters to be applied to the request
  *
  * @returns {Promise<Array>}			Array of boxes
  */
-export async function fetchAllBoxes(filters = []) {
+export async function fetchBoxes(filters = []) {
 	try {
-		const BUFFER_LENGTH = 7000;
+		const BUFFER_LENGTH = 10_000;
 		const boxes = [];
 
 		const query = filters
@@ -102,12 +101,61 @@ export async function fetchAllBoxes(filters = []) {
 	}
 }
 
+/**
+ * Fetches scans from the API
+ *
+ * @param {Object}		filters			Filters to be applied to the request
+ *
+ * @returns {Promise<Array>}			Array of scans
+ */
+export async function fetchScans(filters = {}) {
+	try {
+		const BUFFER_LENGTH = 10_000;
+		const scans = [];
+
+		const response = await callAPI(
+			'POST',
+			`scans/count`,
+			{ filters }
+		);
+		const json = await response.json();
+		const count = json?.data?.count || 0;
+
+		while (scans.length < count) {
+			const skip = scans.length;
+
+			const request = await callAPI(
+				'POST',
+				`scans?skip=${skip}&limit=${BUFFER_LENGTH}`,
+				{ filters }
+			);
+
+			if (request.status !== 200 || !request.ok)
+				break;
+
+			const response = await request.json();
+
+			if (response?.data?.scans)
+				scans.push(...response?.data?.scans);
+		}
+
+		return scans;
+	} catch (err) {
+		console.error(err);
+		return null;
+	}
+}
+
 export async function fetchInsights(id) {
 	try {
 		const BUFFER_LENGTH = 15_000;
 		const boxes = [];
 
-		while (true) {
+		const response = await callAPI('GET', `boxes/count`);
+		const json = await response.json();
+		const count = json?.data?.count || 0;
+
+		while (boxes.length < count) {
 			const skip = boxes.length;
 
 			const request = await callAPI(
@@ -126,32 +174,6 @@ export async function fetchInsights(id) {
 
 		boxes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 		return computeInsights(boxes);
-	} catch (err) {
-		console.error(err);
-		return null;
-	}
-}
-
-export async function fetchAllScans() {
-	try {
-		const BUFFER_LENGTH = 10000;
-		const scans = [];
-
-		while (true) {
-			const skip = scans.length;
-
-			const request = await callAPI('GET', `scans?skip=${skip}&limit=${BUFFER_LENGTH}`);
-
-			if (request.status !== 200 || !request.ok)
-				break;
-
-			const response = await request.json();
-
-			if (response?.data?.scans)
-				scans.push(...response?.data?.scans);
-		}
-
-		return scans;
 	} catch (err) {
 		console.error(err);
 		return null;

@@ -14,7 +14,7 @@ import {
 } from '@react-pdf/renderer';
 import QRCode from 'qrcode';
 import JSZip from 'jszip';
-import { fetchAllBoxes, icons } from '../../../service';
+import { fetchBoxes, icons } from '../../../service';
 import { boxFields } from '../../../service/specific';
 import { Button, Tooltip, Text, Stack, HStack, Icon } from '@chakra-ui/react';
 
@@ -158,11 +158,11 @@ const PDFExport = ({ filters, folderName = 'Documents' }) => {
 		try {
 			setLoading(true);
 			setLoadingText(t('boxesLoading'));
-			const boxes = await fetchAllBoxes(filters);
+			const boxes = await fetchBoxes(filters);
 			if (!boxes || !boxes.length) {
 				throw new Error('No boxes available');
 			}
-			setLoadingText('generatingPdf');
+			setLoadingText(t('generatingPdf'));
 			const zip = new JSZip();
 			let chunkIndex = 0;
 			const CHUNK_SIZE = 1000;
