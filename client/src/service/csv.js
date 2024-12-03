@@ -194,7 +194,8 @@ export async function updateGPSCoordinates(file, setOutput) {
 			const responses = [];
 
 			const processBuffer = (buffer) => {
-				callAPI('POST', 'boxes/coords', { boxes: buffer })
+				const payload = { coords: buffer };
+				callAPI('POST', 'boxes/coords', payload)
 					.then((res) => {
 						if (res.status >= 400)
 							throw new Error(res.statusText);
@@ -204,12 +205,11 @@ export async function updateGPSCoordinates(file, setOutput) {
 					.then((res) => {
 						responses.push(res);
 						uploaded += buffer.length;
-						uploadedBytes += JSON.stringify({boxes: buffer}).length;
-						updated += res.updatedCount;
-						recalculated = res.recalculatedCount;
+						uploadedBytes += JSON.stringify(payload).length;
+						updated += res.updated;
 						setOutput(prev => {
 							return [...prev,
-								`${res.updatedCount} objects updated.`,
+								`${res.updated} objects updated.`,
 							];
 						})
 						if (uploaded < numBoxes) {
@@ -223,7 +223,6 @@ export async function updateGPSCoordinates(file, setOutput) {
 									`-------`,
 									`Uploaded ${uploaded} coordinates (${Math.round(uploadedBytes / 1000)} KB).`,
 									`Updated coordinates of ${updated} objects.`,
-									`Recalculated scans in ${recalculated} objects.`,
 									`-------`,
 									`Reload the page to see the changes.`,
 									`-------`,

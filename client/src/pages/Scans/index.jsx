@@ -20,10 +20,12 @@ export default function Scans() {
 	}
 
 	const fetchCount = async () => {
-		const response = await callAPI('GET', 'scans/count');
+		const response = await callAPI('POST', 'scan/count');
 		const json = await response.json();
 
-		return json.data?.count || 0;
+		console.log(json);
+
+		return json.count || 0;
 	};
 
 	useEffect(() => {
@@ -35,19 +37,19 @@ export default function Scans() {
 
 	const fetchScans = async (skip, limit) => {
 		const response = await callAPI(
-			'GET',
-			`scans?skip=${skip}&limit=${limit}`
+			'POST',
+			`scan/query?skip=${skip}&limit=${limit}`
 		);
 		const json = await response.json();
 
-		return json.data?.scans || [];
+		return json.scans || [];
 	};
 
 	const fetchBox = async (id) => {
-		const response = await callAPI('GET', `box/${id}`);
+		const response = await callAPI('GET', `boxes/one/${id}`);
 		const json = await response.json();
 
-		return json.data?.box || null;
+		return json.box || null;
 	};
 
 	return (

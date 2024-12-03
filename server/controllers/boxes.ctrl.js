@@ -2,34 +2,66 @@ import express from 'express';
 import Admin from '../models/admins.model.js';
 import Box from '../models/boxes.model.js';
 import {
-	createOne,
-	createMany,
-	deleteOne,
-	getById,
-	getAll,
-	deleteMany,
+	// createOne,
+	// createMany,
+	// deleteOne,
+	// getById,
+	// getAll,
+	// deleteMany,
 } from '../service/crud.js';
 import { requireApiKey } from '../service/apiKey.js';
-import { isFinalDestination } from '../service/index.js';
+import { generateId, isFinalDestination } from '../service/index.js';
+import lzstring from 'lz-string';
+import Scan from '../models/scans.model.js';
 import { indexStatusChanges } from '../service/stats.js';
 
 const router = express.Router();
 
-router.post('/box', createOne(Box));
-router.post('/boxes', createMany(Box));
-router.delete('/box/:id', deleteOne(Box));
-router.delete('/boxes', deleteMany(Box))
-// router.get('/box/:id', getById(Box));
-// router.get('/boxes', getAll(Box));
+/**
+ * @description	Create new boxes
+ * The boxes must be compressed and encoded in the data field.
+ */
+router.post('/', async (req, res) => {
+	try {
+		requireApiKey(req, res, async (admin) => {
+			const { data } = req.body;
 
-router.get('/box/:id', async (req, res) => {
+			if (!data) {
+				return res.status(400).json({ success: false, error: 'No data provided' });
+			}
+
+			const payload = lzstring.decompressFromEncodedURIComponent(data);
+			const instances = JSON.parse(payload);
+			instances.forEach((instance) => {
+				instance.createdAt = new Date().getTime();
+				instance.id = generateId();
+				instance.adminId = admin.id;
+			});
+
+			const inserted = await Box.insertMany(instances);
+			return res.status(201).json({
+				success: true,
+				message: 'Items created!',
+				insertedCount: inserted.length,
+			});
+		});
+	} catch (error) {
+		console.error('Error occurred during createMany:', error);
+		return res.status(400).json({ success: false, error });
+	}
+});
+
+/**
+ * @description	Retrieve a single box by its id
+ */
+router.get('/one/:id', async (req, res) => {
 	try {
 		requireApiKey(req, res, async (admin) => {
 			const box = await Box.findOne({ id: req.params.id, adminId: admin.id });
 			if (!box)
 				return res.status(404).json({ success: false, error: `Box not found` });
 
-			return res.status(200).json({ success: true, data: { box } });
+			return res.status(200).json({ success: true, box });
 		});
 	}
 	catch (error) {
@@ -38,38 +70,36 @@ router.get('/box/:id', async (req, res) => {
 	}
 });
 
-router.get('/boxes/admin/:adminId', async (req, res) => {
+/**
+ * @description	Retrieve all boxes for the provided filters
+ */
+router.post('/query', async (req, res) => {
 	try {
-		const found = await Admin.findOne({ id: req.params.adminId });
-		if (!found)
-			return res.status(404).json({ success: false, error: `Admin not found` });
-
-		const skip = parseInt(req.query.skip);
-		const limit = parseInt(req.query.limit);
-		delete req.query.skip;
-		delete req.query.limit;
-
-		const filters = {
-			adminId: req.params.adminId,
-			...req.query,
-		};
-
 		requireApiKey(req, res, async (admin) => {
-			if (admin.id !== req.params.adminId)
-				return res.status(401).json({ success: false, error: `Unauthorized` });
+			const found = await Admin.findOne({ id: admin.id });
+			if (!found)
+				return res.status(404).json({ success: false, error: `Admin not found` });
+
+			const skip = parseInt(req.query.skip);
+			const limit = parseInt(req.query.limit);
+
+			const { filters } = req.body;
 
 			const boxes = await Box
-								.find(
-									filters,
-									{ scans: 0 },
-								)
-								.skip(skip)
-								.limit(limit);
+				.find(
+					{
+						adminId: admin.id,
+						...(filters || {}),
+					},
+					{ scans: 0 },
+				)
+				.skip(skip)
+				.limit(limit);
 
 			if (!boxes.length)
 				return res.status(404).json({ success: false, error: `No boxes available` });
 
-			return res.status(200).json({ success: true, data: { boxes } });
+			return res.status(200).json({ success: true, boxes });
 		});
 	} catch (error) {
 		console.error(error);
@@ -77,18 +107,22 @@ router.get('/boxes/admin/:adminId', async (req, res) => {
 	}
 });
 
-router.get('/distinct/:field', async (req, res) => {
+/**
+ * @description	Retrieve all possible values for a field based on the provided filters
+ */
+router.post('/distinct/:field', async (req, res) => {
 	try {
 		requireApiKey(req, res, async (admin) => {
+			const { filters } = req.body;
 			const field = req.params.field;
 			const distinct = await Box.distinct(
 				field,
 				{
 					adminId: admin.id,
-					...req.query,
+					...(filters || {}),
 				}
 			);
-			return res.status(200).json({ success: true, data: { distinct } });
+			return res.status(200).json({ success: true, distinct });
 		});
 	} catch (error) {
 		console.error(error);
@@ -96,11 +130,15 @@ router.get('/distinct/:field', async (req, res) => {
 	}
 });
 
-router.get('/boxes/count', async (req, res) => {
+/**
+ * @description	Retrieve the count of boxes for the provided filters
+ */
+router.post('/count', async (req, res) => {
 	try {
 		requireApiKey(req, res, async (admin) => {
-			const count = await Box.countDocuments({ adminId: admin.id, ...(req.query || {}) });
-			return res.status(200).json({ success: true, data: { count } });
+			const { filters } = req.body;
+			const count = await Box.countDocuments({ adminId: admin.id, ...(filters || {}) });
+			return res.status(200).json({ success: true, count });
 		});
 	} catch (error) {
 		console.error(error);
@@ -108,12 +146,41 @@ router.get('/boxes/count', async (req, res) => {
 	}
 });
 
-router.post('/boxes/coords', async (req, res) => {
+/**
+ * @description	Delete all boxes that match the provided filters
+ */
+router.delete('/', async (req, res) => {
 	try {
-		const { boxes } = req.body;
-
 		requireApiKey(req, res, async (admin) => {
-			const boxUpdate = boxes.map((box) => {
+			const { deleteConditions } = req.body;
+
+			if (!deleteConditions) {
+				return res.status(400).json({ success: false, error: 'No delete conditions provided' });
+			}
+
+			const boxes = await Box.find({ ...deleteConditions, adminId: admin.id }, 'id');
+
+			const results = await Promise.all([
+				Box.deleteMany({ ...deleteConditions, adminId: admin.id }),
+				Scan.deleteMany({ boxId: { $in: boxes.map((box) => box.id) } }),
+			])
+
+			return res.status(200).json({ success: true, deletedCount: results[0].deletedCount });
+		});
+	} catch (error) {
+		console.error(error);
+		return res.status(400).json({ success: false, error });
+	}
+});
+
+/**
+ * @description	Update the coordinates of the provided boxes
+ */
+router.post('/coords', async (req, res) => {
+	try {
+		requireApiKey(req, res, async (admin) => {
+			const { coords } = req.body;
+			const coordsUpdate = coords.map((box) => {
 				return {
 					updateMany: {
 						filter: { school: box.school, district: box.district, adminId: admin.id },
@@ -123,51 +190,61 @@ router.post('/boxes/coords', async (req, res) => {
 				};
 			});
 
-			const boxUpdateResult = await Box.bulkWrite(boxUpdate);
-			const updated = boxUpdateResult.modifiedCount;
-			const matched = boxUpdateResult.matchedCount;
+			const coordsUpdateResult = await Box.bulkWrite(coordsUpdate);
+			const updated = coordsUpdateResult.modifiedCount;
+			const matched = coordsUpdateResult.matchedCount;
 
 			if (updated === 0)
 				return res.status(200).json({ success: true, updated, matched, recalculated: 0 });
 
-			const boxesToUpdate = await Box.find({
-				adminId: admin.id,
-				$or: boxes.map((box) => ({ school: box.school, district: box.district }))
+			const boxes = await Box
+				.find(
+					{
+						adminId: admin.id,
+						$or: coords.map((box) => ({ school: box.school, district: box.district }))
+					},
+					'schoolLatitude schoolLongitude id'
+				);
+
+			const scans = await Scan.find({ boxId: { $in: boxes.map((box) => box.id) } });
+
+			const scansUpdate = [];
+
+			scans.forEach((scan) => {
+				const box = boxes.find((box) => box.id === scan.boxId);
+				if (!box) return;
+				const schoolCoords = {
+					latitude: box.schoolLatitude,
+					longitude: box.schoolLongitude,
+				};
+				const scanCoords = {
+					latitude: scan.location.coords.latitude,
+					longitude: scan.location.coords.longitude,
+				};
+				const newFinalDestination = isFinalDestination(schoolCoords, scanCoords);
+
+				if (newFinalDestination !== scan.finalDestination) {
+					scan.finalDestination = newFinalDestination;
+					scansUpdate.push({
+						updateOne: {
+							filter: { id: scan.id },
+							update: { $set: { finalDestination: scan.finalDestination } },
+						},
+					});
+				}
 			});
 
-			const scansUpdate = boxesToUpdate
-				.filter((box) => {
-					const boxFromRequest = boxes.find((b) => b.school === box.school && b.district === box.district);
-					return boxFromRequest.schoolLatitude !== box.schoolLatitude || boxFromRequest.schoolLongitude !== box.schoolLongitude;
-				})
-				.map((box) => {
-					const newScans = box.scans.map((scan) => {
-						const schoolCoords = {
-							latitude: boxFromRequest.schoolLatitude,
-							longitude: boxFromRequest.schoolLongitude,
-						};
-						const scanCoords = {
-							latitude: scan.location.coords.latitude,
-							longitude: scan.location.coords.longitude,
-						};
-						scan.finalDestination = isFinalDestination(schoolCoords, scanCoords);
-						return scan;
-					});
+			await Scan.bulkWrite(scansUpdate);
 
-					if (newScans.some((scan, index) => scan.finalDestination !== box.scans[index].finalDestination)) {
-						return {
-							updateOne: {
-								filter: { id: box.id },
-								update: { $set: { scans: box.scans } },
-							},
-						};
-					}
-				});
+			boxes.forEach((box) => {
+				const newScans = scans.filter((scan) => scan.boxId === box.id);
+				box.scans = newScans;
+			});
 
-			const scansUpdateResult = await Box.bulkWrite(scansUpdate);
-			const recalculated = scansUpdateResult.modifiedCount;
+			const indexing = indexStatusChanges(boxes);
+			await Box.bulkWrite(indexing);
 
-			return res.status(200).json({ success: true, updated, matched, recalculated });
+			return res.status(200).json({ success: true, updated, matched });
 		});
 	} catch (error) {
 		console.error(error);

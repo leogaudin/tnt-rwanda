@@ -38,14 +38,16 @@ export default function BoxFiltering({
 					if (!boxFields[boxField])
 						return;
 
-					const query = filters.map(({ field, value }) => {
-						if (value?.length && field !== boxField)
-							return `${field}=${value}`
-					}).join('&');
-
 					const response = await callAPI(
-						'GET',
-						`distinct/${boxField}?${query}`
+						'POST',
+						`boxes/distinct/${boxField}`,
+						{
+							filters: filters.reduce((acc, { field, value }) => {
+										if (value?.length && field !== boxField)
+											return ({ ...acc, [field]: value });
+										return acc;
+									}, {})
+						}
 					);
 
 					if (!response.ok)
@@ -54,7 +56,7 @@ export default function BoxFiltering({
 					const json = await response.json();
 
 					return {
-						[boxField]: json.data.distinct,
+						[boxField]: json.distinct,
 					}
 				})
 		);
@@ -69,15 +71,16 @@ export default function BoxFiltering({
 
 	const updateCount = async () => {
 		const response = await callAPI(
-			'GET',
-			`boxes/count?${filters.map(({ field, value }) => `${field}=${value}`).join('&')}`
+			'POST',
+			`boxes/count`,
+			{ filters: filters.reduce((acc, { field, value }) => ({ ...acc, [field]: value }), {}) }
 		);
 
 		if (!response.ok)
 			return;
 
 		const json = await response.json();
-		setCount(json.data.count);
+		setCount(json.count);
 	}
 
 	useEffect(() => {

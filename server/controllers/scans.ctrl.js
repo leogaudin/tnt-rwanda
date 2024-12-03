@@ -7,63 +7,23 @@ import { requireApiKey } from '../service/apiKey.js';
 
 const router = express.Router();
 
-router.get('/scans/count', async (req, res) => {
-	try {
-		requireApiKey(req, res, async (admin) => {
-			const count = await Scan.countDocuments({ adminId: admin.id, ...req.query });
-			return res.status(200).json({ success: true, data: { count } });
-		});
-	} catch (error) {
-		console.error(error);
-		return res.status(400).json({ success: false, error: error });
-	}
-});
-
-router.get('/scans', async (req, res) => {
-	try {
-		const skip = parseInt(req.query.skip);
-		const limit = parseInt(req.query.limit);
-		delete req.query.skip;
-		delete req.query.limit;
-
-		requireApiKey(req, res, async (admin) => {
-			const filters = {
-				adminId: admin.id,
-				...req.query,
-			};
-
-			const scans = await Scan
-								.find(filters)
-								.skip(skip)
-								.limit(limit)
-								.sort({ time: -1 });
-
-			if (!scans.length)
-				return res.status(404).json({ success: false, error: `No scans available` });
-
-			return res.status(200).json({ success: true, data: { scans } });
-		});
-	} catch (error) {
-		console.error('Error getting scans:', error);
-		return res.status(500).json({ error: 'An error occurred while getting scans' });
-	}
-});
-
-router.post('/scans', async (req, res) => {
+/**
+ * @description	Retrieve all scans for the provided filters
+ */
+router.post('/query', async (req, res) => {
 	try {
 		requireApiKey(req, res, async (admin) => {
 			const { filters } = req.body;
 			const skip = parseInt(req.query.skip);
 			const limit = parseInt(req.query.limit);
-			delete req.query.skip;
-			delete req.query.limit;
 
 			const scans = await Scan
-								.find({ ...filters, adminId: admin.id })
+								.find({ ...(filters || {}), adminId: admin.id })
 								.skip(skip)
-								.limit(limit);
+								.limit(limit)
+								.sort({ time: -1 });
 
-			return res.status(200).json({ data: { scans } });
+			return res.status(200).json({ scans });
 		});
 	} catch (error) {
 		console.error('Error getting scans:', error);
@@ -71,13 +31,16 @@ router.post('/scans', async (req, res) => {
 	}
 });
 
-router.post('/scans/count', async (req, res) => {
+/**
+ * @description	Retrieve the count of scans for the provided filters
+ */
+router.post('/count', async (req, res) => {
 	try {
 		requireApiKey(req, res, async (admin) => {
 			const { filters } = req.body;
 
 			const count = await Scan.countDocuments({ ...filters, adminId: admin.id });
-			return res.status(200).json({ data: { count } });
+			return res.status(200).json({ count });
 		});
 	} catch (error) {
 		console.error('Error getting scans count:', error);
@@ -85,7 +48,7 @@ router.post('/scans/count', async (req, res) => {
 	}
 });
 
-router.get('/box/:id/scans', async (req, res) => {
+router.get('/box/:id', async (req, res) => {
 	try {
 		const { id } = req.params;
 
@@ -104,7 +67,7 @@ router.get('/box/:id/scans', async (req, res) => {
 
 			const scans = await Scan.find(filters)
 
-			return res.status(200).json({ success: true, data: { scans } });
+			return res.status(200).json({ success: true, scans });
 		});
 	} catch (error) {
 		console.error(error);
@@ -112,7 +75,10 @@ router.get('/box/:id/scans', async (req, res) => {
 	}
 });
 
-router.post('/scan', async (req, res) => {
+/**
+ * @description	Add a new scan
+ */
+router.post('/', async (req, res) => {
 	try {
 		const { boxId, comment, operatorId, time, location, markedAsReceived } = req.body;
 
@@ -185,7 +151,7 @@ router.post('/scan', async (req, res) => {
 			},
 		});
 
-		return res.status(200).json({ message: 'Scan added successfully', newScan });
+		return res.status(200).json({ message: 'Scan added successfully', scan: newScan });
 	} catch (error) {
 		console.error('Error adding scan:', error);
 		return res.status(500).json({ error: 'An error occurred while adding the scan' });

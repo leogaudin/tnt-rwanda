@@ -20,7 +20,7 @@ import { timeAgo } from '../service/utils';
 import { excludedKeys } from '../service/specific';
 import ContentCard from './ContentCard';
 import SchoolModal from './SchoolModal';
-import { callAPI, icons, user, fetchBoxScans } from '../service';
+import { callAPI, icons, user, fetchBoxScans, deleteBoxes } from '../service';
 import { useEffect, useState } from 'react';
 import Loading from './Loading';
 
@@ -35,12 +35,16 @@ export default function BoxModal({
 	const { isOpen: isSchoolOpen, onOpen: onSchoolOpen, onClose: onSchoolClose } = useDisclosure();
 
 	const fetchSchool = async () => {
-		const response = await callAPI('GET', `boxes/admin/${user.id}?school=${box.school}`);
+		const response = await callAPI(
+			'POST',
+			`boxes/query`,
+			{ filters: { school: box.school } }
+		);
 		const json = await response.json();
 
 		const school = {
 			name: box.school,
-			boxes: json.data.boxes,
+			boxes: json.boxes,
 		};
 
 		setSchool(school);
@@ -60,12 +64,7 @@ export default function BoxModal({
 
 	const handleDelete = async () => {
 		if (window.confirm(t('deletePrompt'))) {
-			await callAPI(
-				'DELETE',
-				'boxes',
-				{ deleteConditions: { id: box.id } }
-			);
-
+			await deleteBoxes([{ field: 'id', value: box.id }]);
 			onClose();
 			window.location.reload();
 		}
@@ -174,7 +173,7 @@ export default function BoxModal({
 									/>
 								</Flex>
 							</>
-							: <Loading />
+							: !scans && <Loading />
 						}
 						<Button
 							colorScheme='red'

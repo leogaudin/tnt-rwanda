@@ -2,10 +2,13 @@ import Admin from '../models/admins.model.js'
 import express from 'express'
 import { generateApiKey, requireApiKey } from '../service/apiKey.js';
 import { generateId } from '../service/index.js';
-import { handle200Success } from '../service/errorHandlers.js';
+// import { handle200Success } from '../service/errorHandlers.js';
 
 const router = express.Router();
 
+/**
+ * @description	Login an admin
+ */
 router.post('/login', async (req, res) => {
 	try {
 		const { username, password } = req.body;
@@ -26,6 +29,9 @@ router.post('/login', async (req, res) => {
 	}
 });
 
+/**
+ * @description	Register a new admin
+ */
 router.post('/register', async (req, res) => {
 	try {
 		const { username, password } = req.body;
@@ -57,10 +63,14 @@ router.post('/register', async (req, res) => {
 	}
 });
 
+/**
+ * @description	Get the current admin
+ */
 router.get('/me', async (req, res) => {
 	try {
 		requireApiKey(req, req, (admin) => {
-			return handle200Success(res, admin);
+			// return handle200Success(res, admin);
+			return res.status(200).json({ user: admin })
 		})
 	} catch (err) {
 		console.error(err);

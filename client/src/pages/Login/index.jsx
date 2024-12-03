@@ -50,7 +50,7 @@ export default function Login() {
 			password: sha512(password),
 		};
 		setLoading(true);
-		callAPI('POST', userExists ? 'login' : 'register', user)
+		callAPI('POST', `auth/${userExists ? 'login' : 'register'}`, user)
 			.then(res => res.json())
 			.then((res) => {
 				if (!res['user'])
@@ -66,7 +66,7 @@ export default function Login() {
 		if (!username.length)
 			return;
 		setLoading(true);
-		callAPI('POST', 'login', { username, password: '42' })
+		callAPI('POST', 'auth/login', { username, password: '42' })
 			.then((res) => {
 				setUserExists(res.status !== 404);
 				setShowFullForm(true);

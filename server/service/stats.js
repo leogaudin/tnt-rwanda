@@ -80,22 +80,22 @@
 // 	return last;
 // }
 
-/**
- * Returns the last scan that meets the conditions.
- * Returns null if none found.
- * @param {Box} box
- * @param {Array<string>} conditions
- * @returns {Scan | null}
- */
-export function getLastScanWithConditions(scans, conditions = []) {
-	let last = null;
-	for (const scan of (scans || [])) {
-		if (scan.time > (last?.time || 0) && conditions.every(condition => scan[condition])) {
-			last = scan;
-		}
-	}
-	return last;
-}
+// /**
+//  * Returns the last scan that meets the conditions.
+//  * Returns null if none found.
+//  * @param {Box} box
+//  * @param {Array<string>} conditions
+//  * @returns {Scan | null}
+//  */
+// export function getLastScanWithConditions(scans, conditions = []) {
+// 	let last = null;
+// 	for (const scan of (scans || [])) {
+// 		if (scan.time > (last?.time || 0) && conditions.every(condition => scan[condition])) {
+// 			last = scan;
+// 		}
+// 	}
+// 	return last;
+// }
 
 /**
  * Returns the progress of the box.
@@ -106,11 +106,9 @@ export function getLastScanWithConditions(scans, conditions = []) {
 export function getProgress(box, notAfterTimestamp = Date.now()) {
 	let lastStatus = 'noScans';
 
-	if (box.statusChanges) {
-		for (const [status, change] of Object.entries(box.statusChanges)) {
-			if (change?.time && change.time <= notAfterTimestamp) {
-				lastStatus = status;
-			}
+	for (const [status, change] of Object.entries(box.statusChanges || {})) {
+		if (change?.time && change.time <= notAfterTimestamp) {
+			lastStatus = status;
 		}
 	}
 
@@ -148,9 +146,7 @@ export function getProgress(box, notAfterTimestamp = Date.now()) {
 
 /**
  *
- * Adds to each box an object of statuses.
- * For each status, determine when it was reached for the first time.
- * Mutates the input array.
+ * Reindexes the status changes and progress of the boxes.
  *
  * @param {Array<Box>} sample	Boxes to index
  */
@@ -193,7 +189,7 @@ export function indexStatusChanges(sample) {
 		return {
 			updateOne: {
 				filter: { id: box.id },
-				update: { $set: { statusChanges, progress: getProgress(box) } }
+				update: { $set: { statusChanges, progress: getProgress({ statusChanges }) } }
 			}
 		}
 	});

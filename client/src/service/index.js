@@ -75,22 +75,30 @@ export async function fetchBoxes(filters = []) {
 						.filter((x) => x)
 						.join('&');
 
-		const response = await callAPI('GET', `boxes/count${query ? `?${query}` : ''}`);
+		const response = await callAPI(
+			'POST',
+			`boxes/count`,
+			{ filters: filters.reduce((acc, { field, value }) => ({ ...acc, [field]: value }), {}) }
+		);
 		const json = await response.json();
-		const count = json?.data?.count || 0;
+		const count = json.count || 0;
 
 		while (boxes.length < count) {
 			const skip = boxes.length;
 
-			const request = await callAPI('GET', `boxes/admin/${user.id}?skip=${skip}&limit=${BUFFER_LENGTH}${query ? `&${query}` : ''}`);
+			const request = await callAPI(
+				'POST',
+				`boxes/query?skip=${skip}&limit=${BUFFER_LENGTH}`,
+				{ filters: filters.reduce((acc, { field, value }) => ({ ...acc, [field]: value }), {}) }
+			);
 
 			if (request.status !== 200 || !request.ok)
 				break;
 
 			const response = await request.json();
 
-			if (response?.data?.boxes)
-				boxes.push(...response?.data?.boxes);
+			if (response.boxes)
+				boxes.push(...response.boxes);
 		}
 
 		boxes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -99,6 +107,21 @@ export async function fetchBoxes(filters = []) {
 		console.error(err);
 		return null;
 	}
+}
+
+/**
+ * Deletes boxes from the API
+ *
+ * @param {Array<{field: String, value: String}>}		filters		Filters to be applied to the request
+ *
+ * @returns {Promise<{deletedCount: Number}>}			Number of deleted boxes
+ */
+export async function deleteBoxes(filters) {
+	const deleteConditions = filters.reduce((acc, { field, value }) => ({ ...acc, [field]: value }), {});
+	const response = await callAPI('DELETE', 'boxes', { deleteConditions });
+	const json = await response.json();
+
+	return { deletedCount: json.deletedCount };
 }
 
 /**
@@ -115,18 +138,18 @@ export async function fetchScans(filters = {}) {
 
 		const response = await callAPI(
 			'POST',
-			`scans/count`,
+			`scan/count`,
 			{ filters }
 		);
 		const json = await response.json();
-		const count = json?.data?.count || 0;
+		const count = json.count || 0;
 
 		while (scans.length < count) {
 			const skip = scans.length;
 
 			const request = await callAPI(
 				'POST',
-				`scans?skip=${skip}&limit=${BUFFER_LENGTH}`,
+				`scan/query?skip=${skip}&limit=${BUFFER_LENGTH}`,
 				{ filters }
 			);
 
@@ -135,8 +158,8 @@ export async function fetchScans(filters = {}) {
 
 			const response = await request.json();
 
-			if (response?.data?.scans)
-				scans.push(...response?.data?.scans);
+			if (response.scans)
+				scans.push(...response.scans);
 		}
 
 		return scans;
@@ -151,16 +174,16 @@ export async function fetchInsights(id) {
 		const BUFFER_LENGTH = 15_000;
 		const boxes = [];
 
-		const response = await callAPI('GET', `boxes/count`);
+		const response = await callAPI('POST', `boxes/count`);
 		const json = await response.json();
-		const count = json?.data?.count || 0;
+		const count = json.count || 0;
 
 		while (boxes.length < count) {
 			const skip = boxes.length;
 
 			const request = await callAPI(
 				'GET',
-				`raw_insights/${id}?skip=${skip}&limit=${BUFFER_LENGTH}`
+				`insights/admin/${id}?skip=${skip}&limit=${BUFFER_LENGTH}`
 			);
 
 			if (request.status !== 200 || !request.ok)
@@ -168,8 +191,8 @@ export async function fetchInsights(id) {
 
 			const response = await request.json();
 
-			if (response?.data?.boxes)
-				boxes.push(...response?.data?.boxes);
+			if (response.boxes)
+				boxes.push(...response.boxes);
 		}
 
 		boxes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -183,12 +206,10 @@ export async function fetchInsights(id) {
 export async function fetchBoxScans(boxId) {
 	const response = await callAPI(
 		'GET',
-		`box/${boxId}/scans`
+		`scan/box/${boxId}`
 	);
-
 	const json = await response.json();
-
-	return json.data.scans;
+	return json.scans;
 }
 
 export const icons = {

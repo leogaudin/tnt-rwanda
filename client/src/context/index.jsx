@@ -2,7 +2,6 @@ import React, { createContext, useEffect, useState } from 'react';
 import { callAPI, fetchInsights, user } from '../service';
 
 const AppContext = createContext({
-	boxes: [],
 	insights: [],
 	language: 'en',
 	setLanguage: () => { },
@@ -10,15 +9,15 @@ const AppContext = createContext({
 });
 
 export const AppProvider = ({ children }) => {
-	const [boxes, setBoxes] = useState(null);
 	const [language, setLanguage] = useState('en');
 	const [loading, setLoading] = useState(true);
 	const [insights, setInsights] = useState(null);
 
 	const initTnT = async (setters) => {
-		const { setBoxes, setInsights } = setters;
-		const res = await callAPI('GET', 'me').then(res => res.json())
-		const me = res.data;
+		const { setInsights } = setters;
+		const res = await callAPI('GET', 'auth/me')
+							.then(res => res.json())
+		const me = res.user;
 		localStorage.setItem('user', JSON.stringify(me));
 		Object.assign(user, me);
 
@@ -30,7 +29,7 @@ export const AppProvider = ({ children }) => {
 	useEffect(() => {
 		if (!user?.id) return;
 
-		initTnT({ setBoxes, setInsights })
+		initTnT({ setInsights })
 			.then(() => setLoading(false))
 			.catch((e) => {
 				console.error(e);
@@ -40,7 +39,6 @@ export const AppProvider = ({ children }) => {
 	return (
 		<AppContext.Provider
 			value={{
-				boxes,
 				insights,
 				language,
 				setLanguage,

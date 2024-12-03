@@ -27,12 +27,12 @@ export default function Boxes() {
 
 	const fetchBoxes = async (skip, limit) => {
 		const response = await callAPI(
-			'GET',
-			`boxes/admin/${user?.id}?skip=${skip}&limit=${limit}&${query}`
+			'POST',
+			`boxes/query?skip=${skip}&limit=${limit}`,
+			{ filters: filters.reduce((acc, { field, value }) => ({ ...acc, [field]: value }), {}) }
 		);
 		const json = await response.json();
-
-		return json.data?.boxes || [];
+		return json.boxes || [];
 	};
 
 	return (
@@ -47,7 +47,7 @@ export default function Boxes() {
 				// elements={filtered}
 				count={count}
 				fetchElements={fetchBoxes}
-				extraParams={query}
+				extraParams={filters}
 				renderElement={(box) => (
 					<BoxCard box={box} key={box.id} />
 				)}
