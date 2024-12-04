@@ -10,7 +10,7 @@ import Advanced from '../pages/Advanced';
 import PublicInsights from '../pages/PublicInsights';
 
 import { IoHome, IoClose, IoCheckmark, IoPrint } from 'react-icons/io5';
-import { FaBoxOpen, FaChevronUp, FaChevronDown, FaMapPin, FaEye, FaClock, FaQrcode, FaPlus, FaCopy, FaChevronRight, FaChevronLeft } from 'react-icons/fa';
+import { FaBoxOpen, FaChevronUp, FaChevronDown, FaMapPin, FaEye, FaClock, FaQrcode, FaPlus, FaCopy, FaChevronRight, FaChevronLeft, FaSearch } from 'react-icons/fa';
 import { IoMdExit, IoMdRefresh, IoMdSettings } from 'react-icons/io';
 import { BiImport, BiExport } from 'react-icons/bi';
 import { MdDelete } from 'react-icons/md';
@@ -117,8 +117,11 @@ export async function fetchBoxes(filters = []) {
  * @returns {Promise<{deletedCount: Number}>}			Number of deleted boxes
  */
 export async function deleteBoxes(filters) {
-	const deleteConditions = filters.reduce((acc, { field, value }) => ({ ...acc, [field]: value }), {});
-	const response = await callAPI('DELETE', 'boxes', { deleteConditions });
+	const response = await callAPI(
+		'DELETE',
+		'boxes',
+		{ filters: filters.reduce((acc, { field, value }) => ({ ...acc, [field]: value }), {}) }
+	);
 	const json = await response.json();
 
 	return { deletedCount: json.deletedCount };
@@ -236,6 +239,7 @@ export const icons = {
 	copy: FaCopy,
 	almost: TbProgressCheck,
 	mailbox: BsMailbox,
+	search: FaSearch,
 }
 
 export const getRoutes = () => [

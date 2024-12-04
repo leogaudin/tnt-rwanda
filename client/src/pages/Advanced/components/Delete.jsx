@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import BoxFiltering from '../../../components/BoxFiltering'
-import { Button, Heading, Stack, useDisclosure } from '@chakra-ui/react';
+import { Button, Heading, Stack } from '@chakra-ui/react';
 import { useTranslation } from 'react-i18next';
-import { callAPI, deleteBoxes } from '../../../service';
+import { deleteBoxes } from '../../../service';
 
 export default function Delete() {
 	const [filters, setFilters] = useState([]);
@@ -12,8 +12,8 @@ export default function Delete() {
 	const handleDelete = () => {
 		if (window.confirm(t('deletePrompt'))) {
 			deleteBoxes(filters)
-				.then((count) => {
-					alert(`${count} boxes deleted`);
+				.then((res) => {
+					alert(`${res.deletedCount} boxes deleted`);
 					window.location.reload();
 				})
 				.catch(console.error);
@@ -31,14 +31,8 @@ export default function Delete() {
 				setFilters={setFilters}
 				count={count}
 				setCount={setCount}
+				// enableSearch={false}
 			/>
-			{/* <BoxFiltering
-				boxes={boxes}
-				setFilteredBoxes={() => { }}
-				setFiltersOutside={setFilters}
-				includeProgress={false}
-				includeSearch={false}
-			/> */}
 			<Button
 				colorScheme='red'
 				variant='solid'

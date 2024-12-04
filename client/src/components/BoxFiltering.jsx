@@ -5,6 +5,7 @@ import {
 	Stack,
 	Text,
 	Flex,
+	Input,
 } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { palette } from '../theme';
@@ -20,8 +21,16 @@ export default function BoxFiltering({
 }) {
 	const [loading, setLoading] = useState(false);
 	const [possibleValues, setPossibleValues] = useState({});
+	const [query, setQuery] = useState('');
 
 	const { t } = useTranslation();
+
+	useEffect(() => {
+		updateCount();
+		if (filters[filters.length - 1]?.field.length) {
+			updatePossibleValues();
+		}
+	}, [filters]);
 
 	const updatePossibleValues = async () => {
 		setLoading(true);
@@ -31,8 +40,8 @@ export default function BoxFiltering({
 					if (boxField === 'progress')
 						return {
 							progress: progresses
-										.map((progress) => progress.key)
-										.filter((progress) => progress !== 'total')
+								.map((progress) => progress.key)
+								.filter((progress) => progress !== 'total')
 						};
 
 					if (!boxFields[boxField])
@@ -43,10 +52,10 @@ export default function BoxFiltering({
 						`boxes/distinct/${boxField}`,
 						{
 							filters: filters.reduce((acc, { field, value }) => {
-										if (value?.length && field !== boxField)
-											return ({ ...acc, [field]: value });
-										return acc;
-									}, {})
+								if (value?.length && field !== boxField)
+									return ({ ...acc, [field]: value });
+								return acc;
+							}, {})
 						}
 					);
 
@@ -83,12 +92,38 @@ export default function BoxFiltering({
 		setCount(json.count);
 	}
 
-	useEffect(() => {
-		updateCount();
-		if (filters[filters.length - 1]?.field.length) {
-			updatePossibleValues();
+	const addFilter = () => {
+		setFilters((prev) => [...prev, { field: '', value: '' }]);
+	}
+
+	const removeFilter = (index) => {
+		setFilters((prev) => prev.filter((_, i) => i !== index));
+	}
+
+	const handleFieldChange = (index, event) => {
+		const newFilters = [...filters];
+		newFilters[index].field = event.target.value;
+		newFilters[index].value = '';
+		setFilters(newFilters);
+	}
+
+	const handleValueChange = (index, event) => {
+		const newFilters = [...filters];
+		newFilters[index].value = event.target.value;
+		setFilters(newFilters);
+	}
+
+	const handleCustomSearch = (event) => {
+		event.preventDefault();
+		const newFilters = [...filters];
+		if (filters.some((filter) => filter.field === 'custom')) {
+			const i = filters.findIndex((filter) => filter.field === 'custom');
+			newFilters[i].value = query;
+		} else {
+			newFilters.push({ field: 'custom', value: query });
 		}
-	}, [filters]);
+		setFilters(newFilters);
+	}
 
 	const FilterSelect = ({ filter, index }) => {
 		return (
@@ -137,27 +172,6 @@ export default function BoxFiltering({
 		)
 	}
 
-	const addFilter = () => {
-		setFilters((prev) => [...prev, { field: '', value: '' }]);
-	}
-
-	const removeFilter = (index) => {
-		setFilters((prev) => prev.filter((_, i) => i !== index));
-	}
-
-	const handleFieldChange = (index, event) => {
-		const newFilters = [...filters];
-		newFilters[index].field = event.target.value;
-		newFilters[index].value = '';
-		setFilters(newFilters);
-	}
-
-	const handleValueChange = (index, event) => {
-		const newFilters = [...filters];
-		newFilters[index].value = event.target.value;
-		setFilters(newFilters);
-	}
-
 	return (
 		<Stack
 			justify='center'
@@ -178,13 +192,16 @@ export default function BoxFiltering({
 				gap={2.5}
 				wrap='wrap'
 			>
-				{filters.map((filter, index) => (
-					<FilterSelect
-						key={index}
-						filter={filter}
-						index={index}
-					/>
-				))}
+				{filters.map((filter, index) => {
+					if (filter.field === 'custom') return null;
+					return (
+						<FilterSelect
+							key={index}
+							filter={filter}
+							index={index}
+						/>
+					)
+				})}
 				<IconButton
 					variant='outline'
 					icon={<icons.plus />}
@@ -199,6 +216,24 @@ export default function BoxFiltering({
 			>
 				{t('itemsSelected', { count: count })}
 			</Text>
+			<Flex
+				as='form'
+				onSubmit={handleCustomSearch}
+				width='100%'
+				gap='.5rem'
+			>
+				<Input
+					placeholder={`${t('customSearch')}...`}
+					value={query}
+					onChange={(e) => setQuery(e.target.value)}
+					focusBorderColor={palette.text}
+				/>
+				<IconButton
+					variant='outline'
+					icon={<icons.search />}
+					type='submit'
+				/>
+			</Flex>
 		</Stack>
 	);
 }

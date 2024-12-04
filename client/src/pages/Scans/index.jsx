@@ -22,9 +22,6 @@ export default function Scans() {
 	const fetchCount = async () => {
 		const response = await callAPI('POST', 'scan/count');
 		const json = await response.json();
-
-		console.log(json);
-
 		return json.count || 0;
 	};
 

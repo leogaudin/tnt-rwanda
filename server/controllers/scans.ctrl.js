@@ -35,8 +35,7 @@ router.post('/query', async (req, res) => {
 router.post('/count', async (req, res) => {
 	try {
 		requireApiKey(req, res, async (admin) => {
-			const { filters } = req.body;
-
+			const { filters } = getQuery(req);
 			const count = await Scan.countDocuments({ ...filters, adminId: admin.id });
 			return res.status(200).json({ count });
 		});
@@ -56,14 +55,7 @@ router.get('/box/:id', async (req, res) => {
 			if (!box)
 				return res.status(404).json({ error: `Box not found` });
 
-			if (box.adminId !== admin.id)
-				return res.status(401).json({ error: `Unauthorized` });
-
-			const filters = {
-				boxId: id,
-			};
-
-			const scans = await Scan.find(filters)
+			const scans = await Scan.find({ boxId: id, adminId: admin.id });
 
 			return res.status(200).json({ scans });
 		});

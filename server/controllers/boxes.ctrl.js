@@ -98,15 +98,14 @@ router.post('/query', async (req, res) => {
 router.post('/distinct/:field', async (req, res) => {
 	try {
 		requireApiKey(req, res, async (admin) => {
-			const { filters } = req.body;
+			const { filters } = getQuery(req);
+
 			const field = req.params.field;
-			const distinct = await Box.distinct(
-				field,
-				{
-					adminId: admin.id,
-					...(filters || {}),
-				}
-			);
+			const distinct = await Box
+									.distinct(
+										field,
+										{ ...filters, adminId: admin.id }
+									);
 			return res.status(200).json({ distinct });
 		});
 	} catch (error) {
@@ -121,8 +120,8 @@ router.post('/distinct/:field', async (req, res) => {
 router.post('/count', async (req, res) => {
 	try {
 		requireApiKey(req, res, async (admin) => {
-			const { filters } = req.body;
-			const count = await Box.countDocuments({ adminId: admin.id, ...(filters || {}) });
+			const { filters } = getQuery(req);
+			const count = await Box.countDocuments({ ...filters, adminId: admin.id });
 			return res.status(200).json({ count });
 		});
 	} catch (error) {
@@ -137,16 +136,12 @@ router.post('/count', async (req, res) => {
 router.delete('/', async (req, res) => {
 	try {
 		requireApiKey(req, res, async (admin) => {
-			const { deleteConditions } = req.body;
+			const { filters } = getQuery(req);
 
-			if (!deleteConditions) {
-				return res.status(400).json({ error: 'No delete conditions provided' });
-			}
-
-			const boxes = await Box.find({ ...deleteConditions, adminId: admin.id }, 'id');
+			const boxes = await Box.find({ ...filters, adminId: admin.id }, 'id');
 
 			const results = await Promise.all([
-				Box.deleteMany({ ...deleteConditions, adminId: admin.id }),
+				Box.deleteMany({ ...filters, adminId: admin.id }),
 				Scan.deleteMany({ boxId: { $in: boxes.map((box) => box.id) } }),
 			])
 
