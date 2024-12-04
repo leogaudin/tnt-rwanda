@@ -83,9 +83,10 @@ export default function BoxModal({
 				<ModalBody>
 					<Stack>
 						<Stack
-							padding={5}
-							borderRadius={10}
 							shadow='md'
+							gap='1.5rem'
+							padding='1.5rem'
+							borderRadius={15}
 						>
 							<Stack
 								direction={{ base: 'column', md: 'row' }}

@@ -25,27 +25,82 @@ export default function SchoolModal({
 	}
 	const { t } = useTranslation();
 
-	const calculateContent = (boxes, key) => {
-		return boxes.reduce((acc, box) => {
-			const contents = Object.keys(box.content || {});
+	const projects = [...new Set(school.boxes.map((box) => box.project))];
 
-			for (const item of contents) {
-				if (!acc[item]) {
-					acc[item] = 0;
+	const getContent = () => {
+		const content = {};
+
+		for (const project of projects) {
+			content[project] = school.boxes.reduce((acc, box) => {
+				if (box.project === project) {
+					const contents = Object.keys(box.content || {});
+
+					for (const item of contents) {
+						if (!acc[item]) {
+							acc[item] = { validated: 0, total: 0 };
+						}
+						if (box.statusChanges?.validated) {
+							acc[item]['validated'] += box.content[item];
+						}
+						acc[item]['total'] += box.content[item];
+					}
 				}
-				if (key === 'validated' && box.statusChanges?.validated) {
-					acc[item] += box.content[item];
-				} else if (key === 'total') {
-					acc[item] += box.content[item];
-				}
-			}
 
-			return acc;
-		}, {});
-	};
+				return acc;
+			}, {});
+		}
 
-	const validated = calculateContent(school.boxes, 'validated');
-	const totals = calculateContent(school.boxes, 'total');
+		return content;
+	}
+
+	const content = getContent();
+
+	const ContentCard = ({ title, content }) => {
+		return (
+			<Stack
+				align='center'
+				width='100%'
+				padding='1.5rem'
+				shadow='md'
+				borderRadius={15}
+			>
+				<Flex
+					wrap='wrap'
+					width='100%'
+					gap='1rem'
+				>
+					{Object.keys(content).map((item) => {
+						const validated = content[item].validated;
+						const total = content[item].total;
+
+						return (
+							<Stack
+								align='center'
+								key={item}
+							>
+								<Heading
+									size='md'
+								>
+									{t(item)}
+								</Heading>
+								<CircularProgress
+									value={100 * validated / total}
+									color={palette.text}
+									size='42px'
+								/>
+								<Heading
+									size='sm'
+									fontWeight='light'
+								>
+									<code>{validated}/{total}</code>
+								</Heading>
+							</Stack>
+						);
+					})}
+				</Flex>
+			</Stack >
+		);
+	}
 
 	return (
 		<Modal isOpen={isOpen} onClose={onClose} size='5xl'>
@@ -61,7 +116,7 @@ export default function SchoolModal({
 					<Stack
 						align='center'
 					>
-						{Object.keys(totals || {}).length > 0 &&
+						{Object.keys(content).length > 0 &&
 							<>
 								<Heading
 									color={palette.gray.main}
@@ -72,31 +127,30 @@ export default function SchoolModal({
 								</Heading>
 								<Stack
 									justify='center'
-									direction={{ base: 'column', md: 'row' }}
+									direction='column'
 									gap={5}
 								>
-									{Object.keys(totals).map((item) => {
+									{projects.map((project) => {
+										if (!Object.keys(content[project]).length) {
+											return null;
+										}
 										return (
 											<Stack
 												align='center'
-												key={item}
+												key={project}
 											>
 												<Heading
 													size='md'
+													width='100%'
+													textAlign='center'
+													fontWeight='normal'
 												>
-													{t(item)}
+													{project}
 												</Heading>
-												<CircularProgress
-													value={100 * validated[item] / totals[item]}
-													color={palette.text}
-													size='42px'
+												<ContentCard
+													title={project}
+													content={content[project]}
 												/>
-												<Heading
-													size='sm'
-													fontWeight='light'
-												>
-													<code>{validated[item]}/{totals[item]}</code>
-												</Heading>
 											</Stack>
 										);
 									})}
@@ -107,14 +161,33 @@ export default function SchoolModal({
 							color={palette.gray.main}
 							fontWeight='light'
 							size='lg'
+							marginTop='1rem'
 						>
 							{t('boxes')}
 						</Heading>
 						<Stack
 							width='100%'
 						>
-							{school.boxes.map((box) => {
-								return (<BoxCard key={box.id} box={box} />);
+							{projects.map((project) => {
+								return (
+									<Stack
+										key={project}
+									>
+										<Heading
+											size='md'
+											marginTop='.5rem'
+											textAlign='center'
+											fontWeight='normal'
+										>
+											{project}
+										</Heading>
+										{school.boxes.map((box) => {
+											if (box.project === project) {
+												return (<BoxCard key={box.id} box={box} />);
+											}
+										})}
+									</Stack>
+								);
 							})}
 						</Stack>
 					</Stack>
