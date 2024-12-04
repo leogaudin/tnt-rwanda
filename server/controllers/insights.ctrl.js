@@ -1,6 +1,7 @@
 import express from 'express';
 import Admin from '../models/admins.model.js';
 import Box from '../models/boxes.model.js';
+import { getQuery } from '../service/index.js';
 const router = express.Router();
 
 /**
@@ -36,20 +37,12 @@ router.get('/admin/:adminId', async (req, res) => {
 		if (!found)
 			return res.status(404).json({ error: `Admin not found` });
 
-		const skip = parseInt(req.query.skip);
-		const limit = parseInt(req.query.limit);
-		delete req.query.skip;
-		delete req.query.limit;
-
-		const filters = {
-			adminId: req.params.adminId,
-			...req.query,
-		};
+		const { skip, limit, filters } = getQuery(req);
 
 		if (found.publicInsights || req.headers['x-authorization']) {
 			const boxes = await Box
 							.find(
-								filters,
+								{ ...filters, adminId: req.params.adminId },
 								'statusChanges project'
 							)
 							.skip(skip)

@@ -2,7 +2,7 @@ import express from 'express';
 import Admin from '../models/admins.model.js';
 import Box from '../models/boxes.model.js';
 import { requireApiKey } from '../service/apiKey.js';
-import { generateId, isFinalDestination } from '../service/index.js';
+import { generateId, getQuery, isFinalDestination } from '../service/index.js';
 import lzstring from 'lz-string';
 import Scan from '../models/scans.model.js';
 import { indexStatusChanges } from '../service/stats.js';
@@ -71,17 +71,11 @@ router.post('/query', async (req, res) => {
 			if (!found)
 				return res.status(404).json({ error: `Admin not found` });
 
-			const skip = parseInt(req.query.skip);
-			const limit = parseInt(req.query.limit);
-
-			const { filters } = req.body;
+			const { skip, limit, filters } = getQuery(req);
 
 			const boxes = await Box
 				.find(
-					{
-						adminId: admin.id,
-						...(filters || {}),
-					},
+					{ ...filters, adminId: admin.id },
 					{ scans: 0 },
 				)
 				.skip(skip)

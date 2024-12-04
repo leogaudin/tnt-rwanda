@@ -1,4 +1,5 @@
 import crypto from 'crypto'
+import { boxFields } from '../models/boxes.model.js';
 
 /**
  *
@@ -56,4 +57,31 @@ export function isFinalDestination(schoolCoords, boxCoords) {
 	const threshold = toleranceInMeters + (boxCoords.accuracy || 0);
 
 	return distance <= threshold;
+}
+
+/**
+ *
+ * @param {Request}		req		Request object
+ * @returns {Object}	{ skip, limit, filters }
+ */
+export function getQuery(req) {
+	const skip = parseInt(req.query.skip);
+	const limit = parseInt(req.query.limit);
+	delete req.query.skip;
+	delete req.query.limit;
+
+	const filters = req.body.filters || {};
+
+	const custom = filters.custom;
+	delete filters.custom;
+
+	if (custom && typeof custom === 'string') {
+		const customRegex = new RegExp(custom, 'i');
+		filters.$or = [
+			...Object.keys(boxFields).map((field) => ({ [field]: customRegex })),
+			{ id: customRegex },
+		];
+	}
+
+	return { skip, limit, filters };
 }

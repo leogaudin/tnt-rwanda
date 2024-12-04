@@ -1,7 +1,7 @@
 import Box from '../models/boxes.model.js';
 import Scan from '../models/scans.model.js';
 import express from 'express'
-import { generateId, isFinalDestination } from '../service/index.js';
+import { generateId, getQuery, isFinalDestination } from '../service/index.js';
 import { getProgress } from '../service/stats.js';
 import { requireApiKey } from '../service/apiKey.js';
 
@@ -13,12 +13,10 @@ const router = express.Router();
 router.post('/query', async (req, res) => {
 	try {
 		requireApiKey(req, res, async (admin) => {
-			const { filters } = req.body;
-			const skip = parseInt(req.query.skip);
-			const limit = parseInt(req.query.limit);
+			const { skip, limit, filters } = getQuery(req);
 
 			const scans = await Scan
-								.find({ ...(filters || {}), adminId: admin.id })
+								.find({ ...filters, adminId: admin.id })
 								.skip(skip)
 								.limit(limit)
 								.sort({ time: -1 });

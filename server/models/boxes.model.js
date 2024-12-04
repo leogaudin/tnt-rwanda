@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
-const boxFields = {
+export const boxFields = {
 	project: { type: String, required: true },
 	division: { type: String, required: false },
 	district: { type: String, required: true },
