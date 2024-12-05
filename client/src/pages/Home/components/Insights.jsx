@@ -1,9 +1,9 @@
 import Timeline from './Timeline';
-import { Card, Heading, HStack, Progress, Stack } from '@chakra-ui/react';
-import { progresses } from '../../../service';
+import { Card, Heading, Progress, Stack } from '@chakra-ui/react';
 import { useTranslation } from 'react-i18next';
-import { palette } from '../../../theme';
 import Loading from '../../../components/Loading';
+import Repartition from './Repartition';
+import ContentDelivered from '../../../components/ContentDelivered';
 
 export default function Insights({ insights }) {
 	const { t } = useTranslation();
@@ -61,44 +61,14 @@ export default function Insights({ insights }) {
 							key={i}
 							data={timeline}
 						/>
-						<Stack
-							// width='100%'
-							align='center'
-							textAlign='center'
-							padding={5}
-						>
-							<Heading
-								color={palette.gray.main}
-								fontWeight='light'
-							>
-								{t('currently')}
-							</Heading>
-							<Stack
-								direction={{ base: 'column', md: 'row' }}
-								gap={5}
-							>
-								{Object.keys(repartition).map((key, i) => {
-									const progress = progresses.find(p => p.key === key);
-									return (
-										<Stack
-											color={progress.color}
-											align='center'
-											key={key}
-										>
-											<Heading>
-												{repartition[key]}
-											</Heading>
-											<Heading
-												size='sm'
-												fontWeight='light'
-											>
-												{t(progress.key)}
-											</Heading>
-										</Stack>
-									);
-								})}
-							</Stack>
-						</Stack>
+						<Repartition
+							key={i}
+							repartition={repartition}
+						/>
+						<ContentDelivered
+							key={i}
+							content={insights[project].content}
+						/>
 					</Card>
 				);
 			})}

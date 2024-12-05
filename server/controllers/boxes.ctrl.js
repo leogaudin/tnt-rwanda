@@ -48,7 +48,10 @@ router.post('/', async (req, res) => {
 router.get('/one/:id', async (req, res) => {
 	try {
 		requireApiKey(req, res, async (admin) => {
-			const box = await Box.findOne({ id: req.params.id, adminId: admin.id });
+			const box = await Box.findOne(
+				{ id: req.params.id, adminId: admin.id },
+				{ scans: 0 }
+			);
 			if (!box)
 				return res.status(404).json({ error: `Box not found` });
 

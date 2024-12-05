@@ -18,11 +18,11 @@ import ScansMap from '../pages/Boxes/components/ScansMap';
 import PagedTable from './PagedTable';
 import { timeAgo } from '../service/utils';
 import { excludedKeys } from '../service/specific';
-import ContentCard from './ContentCard';
 import SchoolModal from './SchoolModal';
 import { callAPI, icons, user, fetchBoxScans, deleteBoxes } from '../service';
 import { useEffect, useState } from 'react';
 import Loading from './Loading';
+import BoxContent from './BoxContent';
 
 export default function BoxModal({
 	isOpen,
@@ -116,7 +116,7 @@ export default function BoxModal({
 							{box.content && (
 								<>
 									<Divider marginY='1rem' />
-									<ContentCard box={box} />
+									<BoxContent content={box.content} />
 								</>
 							)}
 							{school

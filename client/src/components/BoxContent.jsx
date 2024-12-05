@@ -1,22 +1,17 @@
 import {
-	Button,
-	Flex,
 	Heading,
 	Stack,
-	Text,
-	useDisclosure,
 } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import { palette } from "../theme";
 
-export default function ContentCard({
-	box,
+export default function BoxContent({
+	content,
 }) {
 	const { t } = useTranslation();
 
 	return (
 		<Stack
-			// width='100%'
 			align='center'
 			textAlign='center'
 			padding='1rem'
@@ -34,7 +29,7 @@ export default function ContentCard({
 				direction={{ base: 'column', md: 'row' }}
 				gap={5}
 			>
-				{Object.entries(box.content).map(([element, quantity]) => {
+				{Object.entries(content).map(([element, quantity]) => {
 					if (!quantity) return null;
 
 					return (

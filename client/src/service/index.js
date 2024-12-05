@@ -174,7 +174,7 @@ export async function fetchScans(filters = {}) {
 
 export async function fetchInsights(id) {
 	try {
-		const BUFFER_LENGTH = 15_000;
+		const BUFFER_LENGTH = 10_000;
 		const boxes = [];
 
 		const response = await callAPI('POST', `boxes/count`);

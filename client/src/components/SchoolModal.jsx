@@ -6,14 +6,14 @@ import {
 	ModalBody,
 	ModalCloseButton,
 	Stack,
-	CircularProgress,
 	Heading,
-	SimpleGrid,
-	Flex,
+	Text,
 } from '@chakra-ui/react'
 import { useTranslation } from 'react-i18next';
 import { palette } from '../theme';
 import BoxCard from './BoxCard';
+import ContentDelivered from './ContentDelivered';
+import { sampleToContent } from '../service/stats';
 
 export default function SchoolModal({
 	isOpen,
@@ -27,79 +27,42 @@ export default function SchoolModal({
 
 	const projects = [...new Set(school.boxes.map((box) => box.project))];
 
-	const getContent = () => {
-		const content = {};
-
-		for (const project of projects) {
-			content[project] = school.boxes.reduce((acc, box) => {
-				if (box.project === project) {
-					const contents = Object.keys(box.content || {});
-
-					for (const item of contents) {
-						if (!acc[item]) {
-							acc[item] = { validated: 0, total: 0 };
-						}
-						if (box.statusChanges?.validated) {
-							acc[item]['validated'] += box.content[item];
-						}
-						acc[item]['total'] += box.content[item];
-					}
-				}
-
-				return acc;
-			}, {});
-		}
-
-		return content;
-	}
-
-	const content = getContent();
-
-	const ContentCard = ({ title, content }) => {
+	const ContentDeliveredByProject = () => {
 		return (
-			<Stack
-				align='center'
-				width='100%'
-				padding='1.5rem'
-				shadow='md'
-				borderRadius={15}
-			>
-				<Flex
-					wrap='wrap'
-					width='100%'
-					gap='1rem'
-				>
-					{Object.keys(content).map((item) => {
-						const validated = content[item].validated;
-						const total = content[item].total;
+			<>
+				{projects.map((project) => {
+					const sample = school.boxes.filter((box) => box.project === project);
+					const content = sampleToContent(sample);
 
-						return (
-							<Stack
-								align='center'
-								key={item}
+					return (
+						<Stack
+							align='center'
+							key={project}
+						>
+							<Heading
+								size='md'
+								width='100%'
+								textAlign='center'
+								fontWeight='normal'
 							>
-								<Heading
-									size='md'
-								>
-									{t(item)}
-								</Heading>
-								<CircularProgress
-									value={100 * validated / total}
-									color={palette.text}
-									size='42px'
-								/>
-								<Heading
-									size='sm'
-									fontWeight='light'
-								>
-									<code>{validated}/{total}</code>
-								</Heading>
-							</Stack>
-						);
-					})}
-				</Flex>
-			</Stack >
-		);
+								{project}
+							</Heading>
+							{Object.keys(content).length
+								? <ContentDelivered content={content} />
+								: (
+									<Text
+										color={palette.gray.main}
+										fontWeight='light'
+									>
+										{t('noContent')}
+									</Text>
+								)
+							}
+						</Stack>
+					);
+				})}
+			</>
+		)
 	}
 
 	return (
@@ -116,7 +79,7 @@ export default function SchoolModal({
 					<Stack
 						align='center'
 					>
-						{Object.keys(content).length > 0 &&
+						{true &&
 							<>
 								<Heading
 									color={palette.gray.main}
@@ -130,30 +93,7 @@ export default function SchoolModal({
 									direction='column'
 									gap={5}
 								>
-									{projects.map((project) => {
-										if (!Object.keys(content[project]).length) {
-											return null;
-										}
-										return (
-											<Stack
-												align='center'
-												key={project}
-											>
-												<Heading
-													size='md'
-													width='100%'
-													textAlign='center'
-													fontWeight='normal'
-												>
-													{project}
-												</Heading>
-												<ContentCard
-													title={project}
-													content={content[project]}
-												/>
-											</Stack>
-										);
-									})}
+									<ContentDeliveredByProject />
 								</Stack>
 							</>
 						}

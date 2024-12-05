@@ -1,3 +1,8 @@
+
+/**
+ * @typedef {'noScans' | 'inProgress' | 'reachedGps' | 'received' | 'reachedAndReceived' | 'validated'} Progress
+ */
+
 /**
  *	@typedef {Object} Scan
  *	@property {Date} time
@@ -24,10 +29,9 @@
  * @typedef {Object} Box
  * @property {Array<Scan>} scans
  * @property {StatusChanges} statusChanges
- */
-
-/**
- * @typedef {'noScans' | 'inProgress' | 'reachedGps' | 'received' | 'reachedAndReceived' | 'validated'} Progress
+ * @property {string} project
+ * @property {Progress} progress
+ * @property {Object} content
  */
 
 /**

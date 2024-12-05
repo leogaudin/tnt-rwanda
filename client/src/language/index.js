@@ -134,6 +134,7 @@ i18n
 					loading: 'Loading',
 					generatingPdf: 'Generating PDF...',
 					scansLoading: 'Loading scans...',
+					noContent: 'No content',
 				},
 			},
 			fr: {
@@ -255,6 +256,7 @@ i18n
 					loading: 'Chargement',
 					generatingPdf: 'Génération du PDF...',
 					scansLoading: 'Chargement des scans...',
+					noContent: 'Pas de contenu',
 				},
 			},
 		},

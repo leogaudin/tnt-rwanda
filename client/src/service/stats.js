@@ -1,3 +1,8 @@
+
+/**
+ * @typedef {'noScans' | 'inProgress' | 'reachedGps' | 'received' | 'reachedAndReceived' | 'validated'} Progress
+ */
+
 /**
  *	@typedef {Object} Scan
  *	@property {Date} time
@@ -24,10 +29,9 @@
  * @typedef {Object} Box
  * @property {Array<Scan>} scans
  * @property {StatusChanges} statusChanges
- */
-
-/**
- * @typedef {'noScans' | 'inProgress' | 'reachedGps' | 'received' | 'reachedAndReceived' | 'validated'} Progress
+ * @property {string} project
+ * @property {Progress} progress
+ * @property {Object} content
  */
 
 /**
@@ -66,28 +70,13 @@ export function getProgress(box, notAfterTimestamp = Date.now()) {
 }
 
 /**
- * Returns the percentage of boxes with a given status.
- *
- * @param {Array<Box>}	sample
- * @param {Progress}	status?
- * @returns {number}
- */
-export function getStatusPercentage(sample, status = 'validated') {
-	const boxes = sample.map(box => { return { ...box, progress: box.progress || getProgress(box) } });
-
-	const deliveredBoxes = boxes.filter(box => box.progress === status).length;
-
-	return (deliveredBoxes / sample.length) * 100;
-}
-
-/**
  * Returns the repartition of boxes in a sample.
  *
  * @param {Array<Box>}	sample
  * @param {number}		notAfterTimestamp?
  * @returns {Object}
  */
-export function sampleToRepartition(sample, notAfterTimestamp = Date.now()) {
+function sampleToRepartition(sample, notAfterTimestamp = Date.now()) {
 	const repartition = {
 		noScans: 0,
 		inProgress: 0,
@@ -112,12 +101,12 @@ export function sampleToRepartition(sample, notAfterTimestamp = Date.now()) {
  * @param {Array<Box>}	sample
  * @returns {Array<Object>}
  */
-export function sampleToTimeline(sample) {
+function sampleToTimeline(sample) {
 	const allTimestamps = sample
-	.map(box => box.statusChanges)
-	.map(statusChanges => Object.values(statusChanges || {}).filter(change => !!change))
-	.flat()
-	.map(change => change.time);
+		.map(box => box.statusChanges)
+		.map(statusChanges => Object.values(statusChanges || {}).filter(change => !!change))
+		.flat()
+		.map(change => change.time);
 
 	const oneDay = 86400000;
 
@@ -143,6 +132,26 @@ export function sampleToTimeline(sample) {
 	return data;
 }
 
+export function sampleToContent(sample) {
+	const content = {};
+
+	for (const box of sample) {
+		const contents = Object.keys(box.content || {});
+
+		for (const item of contents) {
+			if (!content[item]) {
+				content[item] = { validated: 0, total: 0 };
+			}
+			if (box.progress === 'validated' || box.statusChanges?.validated) {
+				content[item]['validated'] += box.content[item];
+			}
+			content[item]['total'] += box.content[item];
+		}
+	}
+
+	return content;
+}
+
 /**
  * Computes the insights for a sample of boxes.
  *
@@ -163,7 +172,8 @@ export function computeInsights(boxes) {
 
 		insights[project] = {
 			timeline: sampleToTimeline(sample),
-			repartition: sampleToRepartition(sample)
+			repartition: sampleToRepartition(sample),
+			content: sampleToContent(sample),
 		};
 	}
 
