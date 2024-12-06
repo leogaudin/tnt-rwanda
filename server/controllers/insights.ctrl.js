@@ -43,7 +43,7 @@ router.get('/admin/:adminId', async (req, res) => {
 			const boxes = await Box
 							.find(
 								{ ...filters, adminId: req.params.adminId },
-								'project statusChanges content'
+								{ project: 1, statusChanges: 1, content: 1, _id: 0 }
 							)
 							.skip(skip)
 							.limit(limit);

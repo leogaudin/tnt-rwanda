@@ -100,13 +100,7 @@ router.post('/', async (req, res) => {
 			finalDestination: isFinalDestination(schoolCoords, scanCoords),
 		};
 
-		const statusChanges = box.statusChanges || {
-			inProgress: null,
-			reachedGps: null,
-			reachedAndReceived: null,
-			received: null,
-			validated: null,
-		};
+		const statusChanges = box.statusChanges || {};
 
 		if (scan.finalDestination && scan.markedAsReceived) {
 			statusChanges.validated ??= { scan: scan.id, time: scan.time };

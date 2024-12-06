@@ -63,13 +63,7 @@ export function indexStatusChanges(sample) {
 		const scans = box.scans;
 		scans.sort((a, b) => a.time - b.time); // First scan is the oldest
 
-		const statusChanges = {
-			inProgress: null,
-			reachedGps: null,
-			reachedAndReceived: null,
-			received: null,
-			validated: null
-		};
+		const statusChanges = {};
 
 		for (const scan of scans) {
 			if (scan.finalDestination && scan.markedAsReceived) {

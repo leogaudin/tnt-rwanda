@@ -141,11 +141,11 @@ router.delete('/', async (req, res) => {
 		requireApiKey(req, res, async (admin) => {
 			const { filters } = getQuery(req);
 
-			const boxes = await Box.find({ ...filters, adminId: admin.id }, 'id');
+			// const boxes = await Box.find({ ...filters, adminId: admin.id }, 'id');
 
 			const results = await Promise.all([
 				Box.deleteMany({ ...filters, adminId: admin.id }),
-				Scan.deleteMany({ boxId: { $in: boxes.map((box) => box.id) } }),
+				// Scan.deleteMany({ boxId: { $in: boxes.map((box) => box.id) } }),
 			])
 
 			return res.status(200).json({ deletedCount: results[0].deletedCount });
@@ -186,7 +186,7 @@ router.post('/coords', async (req, res) => {
 						adminId: admin.id,
 						$or: coords.map((box) => ({ school: box.school, district: box.district }))
 					},
-					'schoolLatitude schoolLongitude id'
+					{ schoolLatitude: 1, schoolLongitude: 1, id: 1, _id: 0 }
 				);
 
 			const scans = await Scan.find({ boxId: { $in: boxes.map((box) => box.id) } });
