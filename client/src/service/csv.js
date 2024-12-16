@@ -36,6 +36,9 @@ export async function uploadDistributionList(file, setOutput) {
 				newBox.schoolLongitude = parseFloat(newBox.schoolLongitude.replace(',', '.'));
 				newBox.adminId = user.id;
 
+				if (isNaN(newBox.schoolLatitude) || isNaN(newBox.schoolLongitude))
+					throw new Error(`Latitude ${newBox.schoolLatitude} or Longitude ${newBox.schoolLongitude} is invalid.`);
+
 				const contentFields = element.meta.fields.slice(fields.length);
 				if (contentFields.length) newBox.content = {};
 				contentFields.forEach((field, index) => {
@@ -152,6 +155,9 @@ export async function updateGPSCoordinates(file, setOutput) {
 
 				newBox.schoolLatitude = parseFloat(newBox.schoolLatitude.replace(',', '.'));
 				newBox.schoolLongitude = parseFloat(newBox.schoolLongitude.replace(',', '.'));
+
+				if (isNaN(newBox.schoolLatitude) || isNaN(newBox.schoolLongitude))
+					throw new Error(`Latitude ${newBox.schoolLatitude} or Longitude ${newBox.schoolLongitude} is invalid.`);
 
 				boxes.push(newBox);
 			} catch (err) {
