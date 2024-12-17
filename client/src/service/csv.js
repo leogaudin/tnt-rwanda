@@ -50,8 +50,6 @@ export async function uploadDistributionList(file, setOutput) {
 			}
 		},
 		complete: () => {
-			boxes.shift();
-
 			setOutput(prev => {
 				return [...prev,
 					`Retrieved ${boxes.length} items.`,
@@ -167,8 +165,6 @@ export async function updateGPSCoordinates(file, setOutput) {
 			}
 		},
 		complete: () => {
-			boxes.shift();
-
 			if (!boxes.length) {
 				setOutput(prev => {
 					return [...prev,
@@ -185,7 +181,7 @@ export async function updateGPSCoordinates(file, setOutput) {
 				];
 			});
 
-			const BUFFER_LENGTH = 100;
+			const BUFFER_LENGTH = 75;
 			const numBoxes = boxes.length;
 			let uploaded = 0;
 			let uploadedBytes = 0;
@@ -205,11 +201,11 @@ export async function updateGPSCoordinates(file, setOutput) {
 						responses.push(res);
 						uploaded += buffer.length;
 						uploadedBytes += JSON.stringify({boxes: buffer}).length;
-						updated += res.updatedCount;
-						recalculated = res.recalculatedCount;
+						updated += res.updated;
+						recalculated = res.recalculated;
 						setOutput(prev => {
 							return [...prev,
-								`${res.updatedCount} objects updated.`,
+								`${res.updated} objects updated.`,
 							];
 						})
 						if (uploaded < numBoxes) {
