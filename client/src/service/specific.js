@@ -36,12 +36,18 @@ export const boxFields = {
 	htPhone: { type: String, required: false },
 };
 
-// Minimal fields that are used to differentiate boxes (e.g. for updating coordinates)
+// Fields that characterize a school in the GPS update list
 // Used in:
 // - UpdateGPS.jsx
-// - Report.jsx
 // - csv.js
-export const essentialFields = [
+export const gpsUpdateFields = [
+	'schoolCode',
+]
+
+// Fields that characterize a school in the Delivery report
+// Used in:
+// - Report.jsx
+export const reportFields = [
 	'school',
 	'district',
 ]
