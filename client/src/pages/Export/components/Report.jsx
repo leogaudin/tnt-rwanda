@@ -15,7 +15,7 @@ import { fetchBoxes, fetchScans, icons } from '../../../service';
 import { useTranslation } from 'react-i18next';
 import { getLastScanWithConditions } from '../../../service/stats';
 import { haversineDistance } from '../../../service/utils';
-import { essentialFields } from '../../../service/specific';
+import { reportFields } from '../../../service/specific';
 import { useState } from 'react';
 
 function downloadJson(data, filename) {
@@ -91,11 +91,11 @@ export default function Report({ filters }) {
 					id: box.id,
 				};
 
-				essentialFields.forEach(field => {
-					if (box[field]) {
-						result[field] = box[field];
-					}
-				});
+			reportFields.forEach(field => {
+				if (box[field]) {
+					result[field] = box[field];
+				}
+			});
 
 				const raw = {
 					...result,

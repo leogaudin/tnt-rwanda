@@ -1,7 +1,7 @@
 import Papa from 'papaparse';
 import { callAPI } from '.';
 import lzstring from 'lz-string';
-import { boxFields, essentialFields } from './specific';
+import { boxFields, gpsUpdateFields } from './specific';
 
 /**
  *
@@ -142,7 +142,7 @@ export async function updateGPSCoordinates(file, setOutput) {
 		step: (element) => {
 			try {
 				const newBox = {};
-				const fields = [...essentialFields, 'schoolLatitude', 'schoolLongitude'];
+				const fields = [...gpsUpdateFields, 'schoolLatitude', 'schoolLongitude'];
 
 				fields.forEach((field, index) => {
 					if (!element.data[index])
@@ -172,8 +172,6 @@ export async function updateGPSCoordinates(file, setOutput) {
 			}
 		},
 		complete: () => {
-			boxes.shift();
-
 			if (!boxes.length) {
 				setOutput(prev => {
 					return [...prev,
@@ -190,7 +188,7 @@ export async function updateGPSCoordinates(file, setOutput) {
 				];
 			});
 
-			const BUFFER_LENGTH = 100;
+			const BUFFER_LENGTH = 75;
 			const numBoxes = boxes.length;
 			let uploaded = 0;
 			let uploadedBytes = 0;
@@ -210,8 +208,9 @@ export async function updateGPSCoordinates(file, setOutput) {
 					.then((res) => {
 						responses.push(res);
 						uploaded += buffer.length;
-						uploadedBytes += JSON.stringify(payload).length;
-						updated += res.updated;
+						uploadedBytes += JSON.stringify({boxes: buffer}).length;
+						updated += res.updatedCount;
+						recalculated = res.recalculatedCount;
 						setOutput(prev => {
 							return [...prev,
 								`${res.updated} objects updated.`,
