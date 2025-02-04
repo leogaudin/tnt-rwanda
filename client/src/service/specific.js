@@ -15,9 +15,9 @@ export const colors = {
 export const API_URL =
 						// process.env.NODE_ENV === 'development'
 						// ?
-						'https://booktracking.reb.rw:80/api'
+						// 'http://localhost:3000/api'
 						// :
-						// 'https://tnt-rwanda-api.vercel.app/api'
+						'https://booktracking.reb.rw:80/api'
 
 
 // Fields that should be: displayed as information, or the full representation of the object

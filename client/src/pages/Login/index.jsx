@@ -178,14 +178,25 @@ export default function Login() {
 					</Button>
 				)}
 			</Flex>
-			<Image
-				src='/favicon.svg'
-				alt='logo'
-				width='100%'
-				height='auto'
-				maxWidth='33vw'
+			<Flex
+				direction='column'
+				justify='center'
 				mx='auto'
-			/>
+				maxWidth='25vw'
+			>
+				<Image
+					src='/reb.webp'
+					alt='REB logo'
+					width='100%'
+					height='auto'
+				/>
+				<Image
+					src='/favicon.svg'
+					alt='TnT logo'
+					width='100%'
+					height='auto'
+				/>
+			</Flex>
 		</Flex>
 	);
 }
