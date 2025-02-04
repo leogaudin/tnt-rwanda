@@ -95,7 +95,11 @@ export default function Login() {
 	}, [showFullForm]);
 
 	return (
-		<Flex height='90vh' direction={{ base: 'column', md: 'row' }} justify='center'>
+		<Flex
+			height='90vh'
+			direction='column-reverse'
+			justify='start'
+		>
 			<Flex
 				width='xs'
 				mx='auto'
@@ -162,7 +166,7 @@ export default function Login() {
 						showFullForm
 						? (
 							userExists
-							? `${t('welcomeBack')} ${t('login')}`
+							? `${t('login')}`
 							: t('createNewAccount')
 						)
 						: t('continue')
@@ -179,22 +183,24 @@ export default function Login() {
 				)}
 			</Flex>
 			<Flex
-				direction='column'
-				justify='center'
+				width='20vw'
 				mx='auto'
-				maxWidth='25vw'
+				direction='row'
+				justify='center'
 			>
 				<Image
 					src='/reb.webp'
 					alt='REB logo'
 					width='100%'
 					height='auto'
+					alignSelf='center'
 				/>
 				<Image
 					src='/favicon.svg'
 					alt='TnT logo'
 					width='100%'
 					height='auto'
+					alignSelf='center'
 				/>
 			</Flex>
 		</Flex>
