@@ -25,6 +25,7 @@ export const API_URL =
 // - PDFExport.jsx
 // - UploadBoxes.jsx
 // - csv.js
+// MUST MATCH boxFields VARIABLE IN server/models/boxes.model.js
 export const boxFields = {
 	project: { type: String, required: true },
 	district: { type: String, required: true },
