@@ -1,7 +1,7 @@
 // Here are all the country-specific configurations, to facilitate the process of adapting the application to a new country.
 
 // TnT + name of the country + flag
-export const name = 'TnT Rwanda 🇷🇼';
+export const name = 'Rwanda Textbooks Distribution Tracking System 🇷🇼';
 
 export const colors = {
 	lightest: '#E6FCFF',
