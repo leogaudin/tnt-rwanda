@@ -10,6 +10,7 @@ import Report from './components/Report';
 export default function Export() {
 	const { boxes } = useContext(AppContext);
 	const [filtered, setFiltered] = useState(boxes);
+	const [filters, setFilters] = useState([]);
 
 	return (
 		<Flex
@@ -22,6 +23,8 @@ export default function Export() {
 			<BoxFiltering
 				boxes={boxes}
 				setFilteredBoxes={setFiltered}
+				setFiltersOutside={setFilters}
+				includeSearch={false}
 			/>
 			<Stack>
 				<PDFExport
@@ -30,6 +33,7 @@ export default function Export() {
 				/>
 				<Report
 					boxes={filtered}
+					filters={filters}
 				/>
 			</Stack>
 		</Flex>
