@@ -60,18 +60,42 @@ export function getLastScanWithConditions(scans, conditions = []) {
 export function getProgress(box, notAfterTimestamp = Date.now()) {
     let lastStatus = 'noScans';
     if (box.statusChanges) {
-        let lastTime = 0;
-        for (const [status, change] of Object.entries(box.statusChanges || {})) {
+		const orderedChanges = [
+			'inProgress',
+			'received',
+			'reachedGps',
+			'reachedAndReceived',
+			'validated',
+		];
+		const changes = orderedChanges.reduce((acc, status) => ({
+			...acc,
+			[status]: box.statusChanges[status] || null,
+		}), {});
+
+        for (const [status, change] of Object.entries(changes)) {
             if (change?.time
                 && change.time <= notAfterTimestamp
-                && change.time > lastTime
             ) {
                 lastStatus = status;
-                lastTime = change.time;
             }
         }
     }
 	return lastStatus;
+}
+
+/**
+ * Returns the percentage of boxes with a given status.
+ *
+ * @param {Array<Box>}	sample
+ * @param {Progress}	status?
+ * @returns {number}
+ */
+export function getStatusPercentage(sample, status = 'validated') {
+	const boxes = sample.map(box => { return { ...box, progress: box.progress || getProgress(box) } });
+
+	const deliveredBoxes = boxes.filter(box => box.progress === status).length;
+
+	return (deliveredBoxes / sample.length) * 100;
 }
 
 /**
