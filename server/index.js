@@ -33,7 +33,7 @@ database.once('connected', () => {
 
 const app = express();
 app.disable('x-powered-by');
-const apiPort = 80;
+const apiPort = 8000;
 const payloadLimit = '4.5mb';
 
 app.use(compression({
