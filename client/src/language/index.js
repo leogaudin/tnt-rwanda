@@ -82,7 +82,7 @@ i18n
 					import: 'Import',
 					export: 'Export',
 					lastSeen: 'Last seen',
-					uploadPrompt: 'Upload a distribution list',
+					uploadPrompt: 'Upload a packing list',
 					upload: 'Upload',
 					addBoxes: 'Add boxes',
 					columnOrder: 'Column order',
