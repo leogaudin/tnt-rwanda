@@ -20,7 +20,7 @@ export const AppProvider = ({ children }) => {
 		localStorage.setItem('user', JSON.stringify(me));
 		Object.assign(user, me);
 
-		const insights = await fetchInsights(user.id);
+		const insights = await fetchInsights({ adminId: user.id });
 		return { insights };
 	}
 

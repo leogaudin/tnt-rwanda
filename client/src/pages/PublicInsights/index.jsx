@@ -9,7 +9,7 @@ export default function PublicInsights() {
 	const [insights, setInsights] = useState(null);
 
 	useEffect(() => {
-		fetchInsights(id)
+		fetchInsights({ adminId: id })
 			.then((insights) => {
 				setInsights(insights);
 			})

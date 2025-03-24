@@ -172,12 +172,27 @@ export async function fetchScans(filters = {}) {
 	}
 }
 
-export async function fetchInsights(id) {
+/**
+ * Fetches insights from the API
+ *
+ * @param {object}		filters		Filters to be applied to the request
+ *
+ * @returns {Promise<object>}		Insights
+ */
+export async function fetchInsights(filters = {}) {
 	try {
+		const id = filters.adminId;
+		if (!id)
+			throw new Error('No adminId provided');
+
 		const BUFFER_LENGTH = 25_000;
 		const boxes = [];
 
-		const response = await callAPI('POST', `boxes/count`);
+		const response = await callAPI(
+			'POST',
+			`boxes/count`,
+			{ filters }
+		);
 		const json = await response.json();
 		const count = json.count || 0;
 
@@ -186,7 +201,8 @@ export async function fetchInsights(id) {
 
 			const request = await callAPI(
 				'GET',
-				`insights/admin/${id}?skip=${skip}&limit=${BUFFER_LENGTH}`
+				`insights/admin/${id}?skip=${skip}&limit=${BUFFER_LENGTH}`,
+				{ filters }
 			);
 
 			if (request.status !== 200 || !request.ok)
