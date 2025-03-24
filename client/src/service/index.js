@@ -301,52 +301,45 @@ export const getRoutes = () => [
 	},
 ];
 
-export const progresses = [
-	{
-		key: 'total',
+export const progresses = {
+	total: {
 		color: palette.text,
 		userAvailable: false,
 	},
-	{
-		key: 'noScans',
+	noScans: {
 		color: palette.error.main,
 		userAvailable: true,
 		icon: icons.close,
 		inTimeline: true,
 	},
-	{
-		key: 'inProgress',
+	inProgress: {
 		color: palette.warning.main,
 		userAvailable: true,
 		icon: icons.clock,
 		inTimeline: true,
 	},
-	{
-		key: 'received',
+	received: {
 		color: palette.blue.main,
 		userAvailable: true,
 		icon: icons.eye,
 		inTimeline: true,
 	},
-	{
-		key: 'reachedGps',
+	reachedGps: {
 		color: palette.cyan.main,
 		userAvailable: true,
 		icon: icons.pin,
 		inTimeline: true,
 	},
-	{
-		key: 'reachedAndReceived',
+	reachedAndReceived: {
 		color: palette.teal.main,
 		userAvailable: true,
 		icon: icons.almost,
 		inTimeline: true,
 	},
-	{
-		key: 'validated',
+	validated: {
 		color: palette.success.main,
 		userAvailable: true,
 		icon: icons.check,
 		inTimeline: true,
 	},
-]
+};

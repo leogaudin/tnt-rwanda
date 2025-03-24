@@ -39,9 +39,7 @@ export default function BoxFiltering({
 				.map(async ({ field: boxField }) => {
 					if (boxField === 'progress')
 						return {
-							progress: progresses
-								.map((progress) => progress.key)
-								.filter((progress) => progress !== 'total')
+							progress: Object.keys(progresses).filter((key) => key !== 'total')
 						};
 
 					if (!boxFields[boxField])
@@ -72,7 +70,7 @@ export default function BoxFiltering({
 
 
 		const flattened = results.reduce((acc, curr) => ({ ...acc, ...curr }), {});
-		const progress = progresses.map((progress) => progress.key);
+		const progress = Object.keys(progresses).filter((key) => key !== 'total');
 		setPossibleValues({ ...flattened, progress });
 
 		setLoading(false);

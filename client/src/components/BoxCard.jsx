@@ -55,9 +55,9 @@ export default function BoxCard({
 		return <Loading	/>;
 	}
 
-	const progress = box.progress || getProgress(box);
+	const progressKey = box.progress || getProgress(box);
 
-	const progressMeta = progresses.find((p) => p.key === progress);
+	const progress = progresses[progressKey];
 
 	const lastSeen = lastScan
 						? Math.round(haversineDistance(
@@ -136,14 +136,14 @@ export default function BoxCard({
 							>
 								<Pill
 									variant='solid'
-									text={t(progress)}
-									color={progressMeta.color}
-									icon={<progressMeta.icon />}
+									text={t(progressKey)}
+									color={progress.color}
+									icon={<progress.icon />}
 								/>
 								{lastScan &&
 									(
 										<Text
-											color={progressMeta.color}
+											color={progress.color}
 											opacity={.8}
 											textAlign='center'
 										>
