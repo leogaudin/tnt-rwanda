@@ -200,7 +200,7 @@ export async function fetchInsights(filters = {}) {
 			const skip = boxes.length;
 
 			const request = await callAPI(
-				'GET',
+				'POST',
 				`insights/admin/${id}?skip=${skip}&limit=${BUFFER_LENGTH}`,
 				{ filters }
 			);

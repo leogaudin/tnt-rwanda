@@ -31,7 +31,7 @@ router.post('/toggle', async (req, res) => {
 /**
  * @description	Retrieve the status changes of the current admin's boxes
  */
-router.get('/admin/:adminId', async (req, res) => {
+router.post('/admin/:adminId', async (req, res) => {
 	try {
 		const found = await Admin.findOne({ id: req.params.adminId });
 		if (!found)
