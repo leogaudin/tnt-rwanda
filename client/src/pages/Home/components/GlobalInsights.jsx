@@ -10,8 +10,7 @@ import { useEffect, useState } from 'react';
 import ProjectInsights from './ProjectInsights';
 import Loading from '../../../components/Loading';
 import { useTranslation } from 'react-i18next';
-import { callAPI, icons } from '../../../service';
-import { computeInsights } from '../../../service/stats';
+import { callAPI, fetchInsights, icons } from '../../../service';
 
 export default function GlobalInsights({ id }) {
     const [projects, setProjects] = useState(null);
@@ -38,20 +37,13 @@ export default function GlobalInsights({ id }) {
      * @param {Array} projects
      */
     const getGlobalInsights = async (projects) => {
-        const response = await callAPI(
-            'POST',
-            `insights/admin/${id}`,
+        return await fetchInsights(
             {
-                filters: {
-                    $or: projects.map((project) => ({ project }))
-                }
-            }
-        )
-
-        const json = await response.json();
-        const boxes = json.boxes;
-		boxes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        return computeInsights(boxes, false);
+                adminId: id,
+                $or: projects.map((project) => ({ project }))
+            },
+            false
+        );
     }
 
     /**

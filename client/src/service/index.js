@@ -176,12 +176,14 @@ export async function fetchScans(filters = {}) {
  * Fetches insights from the API
  *
  * @param {object}		filters		Filters to be applied to the request
+ * @param {boolean}		grouped		Whether the insights should be grouped or not
  *
  * @returns {Promise<object>}		Insights
  */
-export async function fetchInsights(filters = {}) {
+export async function fetchInsights(filters = {}, grouped = true) {
 	try {
 		const id = filters.adminId;
+		delete filters.adminId;
 		if (!id)
 			throw new Error('No adminId provided');
 
@@ -215,7 +217,7 @@ export async function fetchInsights(filters = {}) {
 		}
 
 		boxes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-		return computeInsights(boxes);
+		return computeInsights(boxes, grouped);
 	} catch (err) {
 		console.error(err);
 		return null;
