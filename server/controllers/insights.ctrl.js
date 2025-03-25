@@ -31,18 +31,20 @@ router.post('/toggle', async (req, res) => {
 /**
  * @description	Retrieve the status changes of the current admin's boxes
  */
-router.post('/admin/:adminId', async (req, res) => {
+router.post('/', async (req, res) => {
 	try {
-		const found = await Admin.findOne({ id: req.params.adminId });
-		if (!found)
+		const { skip, limit, filters } = getQuery(req);
+		if (!filters.adminId)
+			return res.status(400).json({ error: 'Admin ID required' });
+
+		const admin = await Admin.findOne({ id: filters.adminId });
+		if (!admin)
 			return res.status(404).json({ error: `Admin not found` });
 
-		const { skip, limit, filters } = getQuery(req);
-
-		if (found.publicInsights || req.headers['x-authorization']) {
+		if (admin.publicInsights || req.headers['x-authorization'] === admin.apiKey) {
 			const boxes = await Box
 							.find(
-								{ ...filters, adminId: req.params.adminId },
+								{ ...filters },
 								{ project: 1, statusChanges: 1, content: 1, _id: 0 }
 							)
 							.skip(skip)

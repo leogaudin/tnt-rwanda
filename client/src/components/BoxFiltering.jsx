@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 import { palette } from '../theme';
 import { boxFields } from '../service/specific';
 import { useTranslation } from 'react-i18next';
-import { callAPI, icons, progresses } from '../service';
+import { callAPI, icons, progresses, user } from '../service';
 
 export default function BoxFiltering({
 	filters = [],
@@ -53,7 +53,7 @@ export default function BoxFiltering({
 								if (value?.length && field !== boxField)
 									return ({ ...acc, [field]: value });
 								return acc;
-							}, {})
+							}, { adminId: user.id }),
 						}
 					);
 

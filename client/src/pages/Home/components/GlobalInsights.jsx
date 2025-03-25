@@ -27,6 +27,7 @@ export default function GlobalInsights({ id }) {
         const response = await callAPI(
             'POST',
             'boxes/distinct/project',
+            { filters: { adminId: id } }
         )
         const json = await response.json();
         return json.distinct;

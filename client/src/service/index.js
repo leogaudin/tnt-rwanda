@@ -182,11 +182,6 @@ export async function fetchScans(filters = {}) {
  */
 export async function fetchInsights(filters = {}, grouped = true) {
 	try {
-		const id = filters.adminId;
-		delete filters.adminId;
-		if (!id)
-			throw new Error('No adminId provided');
-
 		const BUFFER_LENGTH = 25_000;
 		const boxes = [];
 
@@ -203,7 +198,7 @@ export async function fetchInsights(filters = {}, grouped = true) {
 
 			const request = await callAPI(
 				'POST',
-				`insights/admin/${id}?skip=${skip}&limit=${BUFFER_LENGTH}`,
+				`insights?skip=${skip}&limit=${BUFFER_LENGTH}`,
 				{ filters }
 			);
 
