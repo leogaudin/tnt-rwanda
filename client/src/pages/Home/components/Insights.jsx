@@ -1,76 +1,29 @@
-import Timeline from './Timeline';
-import { Card, Heading, Progress, Stack } from '@chakra-ui/react';
-import { useTranslation } from 'react-i18next';
 import Loading from '../../../components/Loading';
-import Repartition from './Repartition';
-import ContentDelivered from '../../../components/ContentDelivered';
+import ProjectInsights from './ProjectInsights';
+import GlobalInsights from './GlobalInsights';
+import { Divider } from '@chakra-ui/react';
 
-export default function Insights({ insights }) {
-	const { t } = useTranslation();
-
+export default function Insights({ insights, id }) {
 	if (!insights)
 		return <Loading />;
 
 	return (
 		<>
+			<GlobalInsights
+				id={id}
+			/>
+			<Divider marginY={5} />
 			{Object.keys(insights).map((project, i) => {
 				if (!insights[project])
 					return <Loading />;
 
-				const { timeline, repartition } = insights[project];
-				const progress = (repartition.validated / repartition.total) * 100;
-
 				return (
-					<Card
+					<ProjectInsights
 						key={project + i}
-						width='100%'
-						direction='column'
-						borderRadius={15}
-						overflow='hidden'
-						shadow='md'
-					>
-						<Stack
-							marginTop={5}
-							marginBottom={10}
-						>
-							<Heading
-								size='md'
-								paddingX={4}
-								fontWeight='normal'
-							>
-								{project}
-							</Heading>
-							<Heading
-								size='lg'
-								paddingX={4}
-								fontWeight='light'
-							>
-								<span style={{ fontWeight: 'bold' }}>{progress.toFixed(2)}%</span>
-								{' '}{t('validated').toLowerCase()}
-							</Heading>
-							<Progress
-								hasStripe
-								isAnimated
-								colorScheme='green'
-								// bgColor={palette.success.main}
-								size='sm'
-								value={progress}
-							/>
-						</Stack>
-						<Timeline
-							key={i}
-							data={timeline}
-						/>
-						<Repartition
-							key={i}
-							repartition={repartition}
-						/>
-						<ContentDelivered
-							key={i}
-							content={insights[project].content}
-						/>
-					</Card>
-				);
+						insights={insights[project]}
+						project={project}
+					/>
+				)
 			})}
 		</>
 	)

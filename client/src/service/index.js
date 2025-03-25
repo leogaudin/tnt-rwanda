@@ -13,7 +13,7 @@ import { IoHome, IoClose, IoCheckmark, IoPrint } from 'react-icons/io5';
 import { FaBoxOpen, FaChevronUp, FaChevronDown, FaMapPin, FaEye, FaClock, FaQrcode, FaPlus, FaCopy, FaChevronRight, FaChevronLeft, FaSearch } from 'react-icons/fa';
 import { IoMdExit, IoMdRefresh, IoMdSettings } from 'react-icons/io';
 import { BiImport, BiExport } from 'react-icons/bi';
-import { MdDelete } from 'react-icons/md';
+import { MdDelete, MdEdit } from 'react-icons/md';
 import { TbProgressCheck } from "react-icons/tb";
 import { BsMailbox } from "react-icons/bs";
 
@@ -256,6 +256,7 @@ export const icons = {
 	almost: TbProgressCheck,
 	mailbox: BsMailbox,
 	search: FaSearch,
+	edit: MdEdit,
 }
 
 export const getRoutes = () => [

@@ -14,13 +14,15 @@ export default function PublicInsights() {
 				setInsights(insights);
 			})
 			.catch((e) => console.error(e))
-
 	}, [id])
 
 	return (
 		<>
 			{insights
-				? <Insights insights={insights} />
+				? <Insights
+					insights={insights}
+					id={id}
+				/>
 				: <BigLoading />
 			}
 		</>

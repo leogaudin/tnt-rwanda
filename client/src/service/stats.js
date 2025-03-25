@@ -170,11 +170,20 @@ export function sampleToContent(sample) {
  * Computes the insights for a sample of boxes.
  *
  * @param {Array<Box>}	sample
+ * @param {boolean}		[grouped=true]	Whether to group the insights by project
  * @param {Function}	setInsights	The function to set the insights
  */
-export function computeInsights(boxes) {
+export function computeInsights(boxes, grouped = true) {
 	if (!boxes || boxes.length === 0) {
 		return {};
+	}
+
+	if (!grouped) {
+		return {
+			timeline: sampleToTimeline(boxes),
+			repartition: sampleToRepartition(boxes),
+			content: sampleToContent(boxes)
+		};
 	}
 
 	const projects = [...new Set(boxes.map(box => box.project))];
