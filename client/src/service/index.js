@@ -19,7 +19,6 @@ import { BsMailbox } from 'react-icons/bs';
 
 import { palette } from '../theme';
 import { API_URL } from './specific';
-import { computeInsights } from './stats';
 
 export const user = JSON.parse(localStorage.getItem('user'));
 
@@ -180,7 +179,7 @@ export async function fetchScans(filters = {}) {
  *
  * @returns {Promise<object>}		Insights
  */
-export async function fetchInsights(filters = {}, grouped = true) {
+export async function fetchInsights(filters = {}) {
 	try {
 		const BUFFER_LENGTH = 25_000;
 		const boxes = [];
@@ -212,7 +211,7 @@ export async function fetchInsights(filters = {}, grouped = true) {
 		}
 
 		boxes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-		return computeInsights(boxes, grouped);
+		return boxes;
 	} catch (err) {
 		console.error(err);
 		return null;

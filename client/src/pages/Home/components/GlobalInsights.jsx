@@ -10,14 +10,14 @@ import { useEffect, useState } from 'react';
 import ProjectInsights from './ProjectInsights';
 import Loading from '../../../components/Loading';
 import { useTranslation } from 'react-i18next';
-import { callAPI, fetchInsights, icons } from '../../../service';
+import { callAPI, icons } from '../../../service';
+import { computeInsights } from '../../../service/stats';
 
-export default function GlobalInsights({ id }) {
+export default function GlobalInsights({ rawInsights, id }) {
     const [projects, setProjects] = useState(null);
     const [selected, setSelected] = useState(null);
     const [accumulated, setAccumulated] = useState(null);
     const [edit, setEdit] = useState(false);
-    const [loading, setLoading] = useState(true);
     const { t } = useTranslation();
 
     /**
@@ -33,18 +33,8 @@ export default function GlobalInsights({ id }) {
         return json.distinct;
     }
 
-    /**
-     * Fetches combined insights for selected projects
-     * @param {Array} projects
-     */
-    const getGlobalInsights = async (projects) => {
-        return await fetchInsights(
-            {
-                adminId: id,
-                $or: projects.map((project) => ({ project }))
-            },
-            false
-        );
+    const getInsights = (selection) => {
+        return computeInsights(rawInsights, { grouped: false, only: selection });
     }
 
     /**
@@ -56,27 +46,11 @@ export default function GlobalInsights({ id }) {
                 setProjects(projects)
                 setSelected(projects)
 
-                getGlobalInsights(projects)
-                    .then((insights) => setAccumulated(insights))
-                    .then(() => setLoading(false))
+                const insights = getInsights(projects)
+                setAccumulated(insights)
             })
             .catch((e) => console.error(e));
     }, [])
-
-    /**
-     * Handles the "apply" action and fetches updated insights
-     */
-    const handleApply = () => {
-        if (!selected || !selected.length)
-            return;
-
-        setEdit(false);
-        setLoading(true);
-        getGlobalInsights(selected)
-            .then((insights) => setAccumulated(insights))
-            .then(() => setLoading(false))
-            .catch((e) => console.error(e));
-    }
 
     /**
      * Edit mode
@@ -84,6 +58,22 @@ export default function GlobalInsights({ id }) {
     const Edit = () => {
         if (!projects)
             return <Loading />;
+
+        const [loading, setLoading] = useState(false);
+
+        /**
+         * Handles the "apply" action and fetches updated insights
+         */
+        const handleApply = () => {
+            if (!selected || !selected.length)
+                return;
+
+            setEdit(false);
+            setLoading(true);
+            const insights = getInsights(selected)
+            setAccumulated(insights)
+            setLoading(false)
+        }
 
         return (
             <Card
@@ -118,6 +108,7 @@ export default function GlobalInsights({ id }) {
                     colorScheme='gray'
                     onClick={handleApply}
                     marginTop={5}
+                    isLoading={loading}
                 >
                     {t('apply')}
                 </Button>
@@ -129,7 +120,7 @@ export default function GlobalInsights({ id }) {
         return <Edit />
     }
 
-    if (!accumulated || loading) {
+    if (!accumulated) {
         return <Loading />;
     }
 
@@ -145,7 +136,7 @@ export default function GlobalInsights({ id }) {
                 </Flex>
             )}
             insights={accumulated}
-            project={t('globalInsights')}
+            project={`${t('globalInsights')} (${selected.join(', ')})`}
         />
     )
 }

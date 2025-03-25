@@ -8,10 +8,10 @@ import BigLoading from '../../components/BoxesLoading';
 import { user } from '../../service';
 
 export default function Home() {
-	const { insights } = useContext(AppContext);
+	const { rawInsights } = useContext(AppContext);
 	const { t } = useTranslation();
 
-	if (!insights)
+	if (!rawInsights)
 		return <BigLoading message={t('insightsLoading')} />
 
 	return (
@@ -20,7 +20,7 @@ export default function Home() {
 		>
 			<InsightsController />
 			<Insights
-				insights={insights}
+				rawInsights={rawInsights}
 				id={user.id}
 			/>
 		</Stack>

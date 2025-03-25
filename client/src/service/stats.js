@@ -110,7 +110,6 @@ function sampleToRepartition(sample, notAfterTimestamp = Date.now()) {
 }
 
 function getMinMax(arr) {
-	console.log('arr', arr);
     let max = -Number.MAX_VALUE;
     let min = Number.MAX_VALUE;
 
@@ -192,16 +191,19 @@ export function sampleToContent(sample) {
  * @param {boolean}		[grouped=true]	Whether to group the insights by project
  * @param {Function}	setInsights	The function to set the insights
  */
-export function computeInsights(boxes, grouped = true) {
+export function computeInsights(boxes, options = {}) {
+	const { grouped = true, only = null } = options;
+
 	if (!boxes || boxes.length === 0) {
 		return {};
 	}
 
 	if (!grouped) {
+		const filtered = only ? boxes.filter(box => only.includes(box.project)) : boxes;
 		return {
-			timeline: sampleToTimeline(boxes),
-			repartition: sampleToRepartition(boxes),
-			content: sampleToContent(boxes)
+			timeline: sampleToTimeline(filtered),
+			repartition: sampleToRepartition(filtered),
+			content: sampleToContent(filtered)
 		};
 	}
 
@@ -210,6 +212,10 @@ export function computeInsights(boxes, grouped = true) {
 	const insights = {};
 
 	for (const project of projects) {
+		if (only && !only.includes(project)) {
+			continue;
+		}
+
 		const sample = boxes.filter((box) => box.project === project);
 
 		insights[project] = {

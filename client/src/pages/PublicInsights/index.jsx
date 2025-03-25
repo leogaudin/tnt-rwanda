@@ -6,21 +6,21 @@ import BigLoading from '../../components/BoxesLoading';
 
 export default function PublicInsights() {
 	const { id } = useParams();
-	const [insights, setInsights] = useState(null);
+	const [rawInsights, setRawInsights] = useState(null);
 
 	useEffect(() => {
 		fetchInsights({ adminId: id })
-			.then((insights) => {
-				setInsights(insights);
+			.then((raw) => {
+				setRawInsights(raw);
 			})
 			.catch((e) => console.error(e))
 	}, [id])
 
 	return (
 		<>
-			{insights
+			{rawInsights
 				? <Insights
-					insights={insights}
+					rawInsights={rawInsights}
 					id={id}
 				/>
 				: <BigLoading />
