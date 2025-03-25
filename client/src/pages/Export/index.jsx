@@ -1,10 +1,7 @@
-import { Flex, Icon, Stack } from '@chakra-ui/react';
+import { Flex, Stack } from '@chakra-ui/react';
 import BoxFiltering from '../../components/BoxFiltering';
-import { useContext, useState } from 'react';
-import AppContext from '../../context';
+import { useState } from 'react';
 import PDFExport from './components/PDFExport';
-import { icons } from '../../service';
-import { palette } from '../../theme';
 import Report from './components/Report';
 
 export default function Export() {

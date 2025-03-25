@@ -14,8 +14,8 @@ import { FaBoxOpen, FaChevronUp, FaChevronDown, FaMapPin, FaEye, FaClock, FaQrco
 import { IoMdExit, IoMdRefresh, IoMdSettings } from 'react-icons/io';
 import { BiImport, BiExport } from 'react-icons/bi';
 import { MdDelete, MdEdit } from 'react-icons/md';
-import { TbProgressCheck } from "react-icons/tb";
-import { BsMailbox } from "react-icons/bs";
+import { TbProgressCheck } from 'react-icons/tb';
+import { BsMailbox } from 'react-icons/bs';
 
 import { palette } from '../theme';
 import { API_URL } from './specific';

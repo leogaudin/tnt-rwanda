@@ -12,10 +12,10 @@ import { palette } from '../theme';
 import { useTranslation } from 'react-i18next';
 import { haversineDistance } from '../service/utils';
 import Pill from './Pill';
-import { getLastScanWithConditions, getProgress } from '../service/stats';
-import { callAPI, fetchBoxScans, progresses } from '../service';
+import { getProgress } from '../service/stats';
+import { callAPI, progresses } from '../service';
 import BoxModal from './BoxModal';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Loading from '../components/Loading';
 
 export default function BoxCard({
