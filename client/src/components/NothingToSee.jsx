@@ -14,7 +14,7 @@ export default function NothingToSee() {
 			align='center'
 			justify='center'
 			direction='column'
-			bg={palette.gray.light}
+			// bg={palette.gray.light}
 			color={palette.primary.dark}
 			borderRadius={15}
 			padding={10}
@@ -27,7 +27,7 @@ export default function NothingToSee() {
 			<Heading>
 				{t('nothingToSee')}
 			</Heading>
-			<Heading
+			{/* <Heading
 				marginY={2.5}
 				fontWeight='light'
 				size='md'
@@ -35,7 +35,7 @@ export default function NothingToSee() {
 				<Link to='/import'>
 					{t('nothingToSeePrompt')}
 				</Link>
-			</Heading>
+			</Heading> */}
 		</Flex>
 	)
 }
