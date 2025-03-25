@@ -109,6 +109,23 @@ function sampleToRepartition(sample, notAfterTimestamp = Date.now()) {
 	return repartition;
 }
 
+function getMinMax(arr) {
+	console.log('arr', arr);
+    let max = -Number.MAX_VALUE;
+    let min = Number.MAX_VALUE;
+
+	for (const e of arr) {
+		if (e > max) {
+			max = e;
+		}
+		if (e < min) {
+			min = e;
+		}
+	}
+
+    return { min, max };
+}
+
 /**
  * Returns the timeline of a sample.
  *
@@ -124,9 +141,11 @@ function sampleToTimeline(sample) {
 
 	const oneDay = 86400000;
 
-	const final = Math.max(...allTimestamps) + oneDay;
+	const { min: minTimestamp, max: maxTimestamp } = getMinMax(allTimestamps);
+
+	const final = maxTimestamp + oneDay;
 	const initial = Math.max(
-		Math.min(...allTimestamps),
+		minTimestamp,
 		final - (365 * oneDay / 2)
 	) - oneDay;
 
