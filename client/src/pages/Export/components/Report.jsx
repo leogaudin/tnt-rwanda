@@ -98,11 +98,11 @@ export default function Report({ filters }) {
 					id: box.id,
 				};
 
-			reportFields.forEach(field => {
-				if (box[field]) {
-					result[field] = box[field];
-				}
-			});
+				reportFields.forEach(field => {
+					if (box[field]) {
+						result[field] = box[field];
+					}
+				});
 
 				const raw = {
 					...result,
@@ -112,12 +112,12 @@ export default function Report({ filters }) {
 					lastScanLongitude: lastScan?.location?.coords.longitude || '',
 					lastScanDistanceInMeters,
 					lastScanDate: lastScan ? new Date(lastScan?.location.timestamp).toLocaleDateString() : '',
-					reachedGps: !!lastReachedScan & 1,
+					reachedGps: Number(Boolean(lastReachedScan)),
 					reachedDate: lastReachedScan ? new Date(lastReachedScan?.location.timestamp).toLocaleDateString() : '',
-					received: !!lastMarkedAsReceivedScan & 1,
+					received: Number(Boolean(lastMarkedAsReceivedScan)),
 					receivedDistanceInMeters,
 					receivedDate: lastMarkedAsReceivedScan ? new Date(lastMarkedAsReceivedScan?.location.timestamp).toLocaleDateString() : '',
-					validated: !!lastValidatedScan & 1,
+					validated: Number(Boolean(lastValidatedScan)),
 					validatedDate: lastValidatedScan ? new Date(lastValidatedScan?.location.timestamp).toLocaleDateString() : '',
 					...(box.content || {}),
 				}
