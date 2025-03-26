@@ -10,7 +10,7 @@ import Advanced from '../pages/Advanced';
 import PublicInsights from '../pages/PublicInsights';
 
 import { IoHome, IoClose, IoCheckmark, IoPrint } from 'react-icons/io5';
-import { FaBoxOpen, FaChevronUp, FaChevronDown, FaMapPin, FaEye, FaClock, FaQrcode, FaPlus, FaCopy, FaChevronRight, FaChevronLeft, FaSearch } from 'react-icons/fa';
+import { FaBoxOpen, FaChevronUp, FaChevronDown, FaMapPin, FaEye, FaClock, FaQrcode, FaPlus, FaCopy, FaChevronRight, FaChevronLeft, FaSearch, FaLink } from 'react-icons/fa';
 import { IoMdExit, IoMdRefresh, IoMdSettings } from 'react-icons/io';
 import { BiImport, BiExport } from 'react-icons/bi';
 import { MdDelete, MdEdit } from 'react-icons/md';
@@ -253,6 +253,7 @@ export const icons = {
 	mailbox: BsMailbox,
 	search: FaSearch,
 	edit: MdEdit,
+	link: FaLink,
 }
 
 export const getRoutes = () => [

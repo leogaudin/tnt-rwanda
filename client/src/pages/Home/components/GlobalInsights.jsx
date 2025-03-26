@@ -126,7 +126,7 @@ export default function GlobalInsights({ rawInsights, id }) {
 
     return (
         <ProjectInsights
-            menu={(
+            menu={
                 <Flex>
                     <IconButton
                         variant='outline'
@@ -134,7 +134,7 @@ export default function GlobalInsights({ rawInsights, id }) {
                         onClick={() => setEdit((prev) => !prev)}
                     />
                 </Flex>
-            )}
+            }
             insights={accumulated}
             project={`${t('globalInsights')} (${selected.join(', ')})`}
         />
