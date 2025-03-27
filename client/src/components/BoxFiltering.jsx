@@ -80,7 +80,12 @@ export default function BoxFiltering({
 		const response = await callAPI(
 			'POST',
 			`boxes/count`,
-			{ filters: filters.reduce((acc, { field, value }) => ({ ...acc, [field]: value }), {}) }
+			{
+				filters: filters.reduce(
+					(acc, { field, value }) => ({ ...acc, [field]: value }),
+					{ adminId: user.id }
+				)
+			}
 		);
 
 		if (!response.ok)
