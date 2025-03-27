@@ -19,6 +19,7 @@ import { BsMailbox } from 'react-icons/bs';
 
 import { palette } from '../theme';
 import { API_URL } from './specific';
+import { json2csv } from 'json-2-csv';
 
 export const user = JSON.parse(localStorage.getItem('user'));
 
@@ -101,6 +102,63 @@ export async function fetchBoxes(filters = {}) {
 }
 
 /**
+ * Fetches report from the API
+ *
+ * @param {object}		filters		Filters to be applied to the request
+ *
+ * @returns {Promise<string>}		Lines of the report
+ */
+export async function fetchReport(filters = {}) {
+	try {
+		const BUFFER_LENGTH = 5_000;
+		const boxes = [];
+
+		const response = await callAPI(
+			'POST',
+			`boxes/count`,
+			{ filters: { ...filters, adminId: user.id } }
+		);
+
+		const json = await response.json();
+		const count = json.count || 0;
+
+		while (boxes.length < count) {
+			const skip = boxes.length;
+
+			const request = await callAPI(
+				'POST',
+				`insights/report?skip=${skip}&limit=${BUFFER_LENGTH}`,
+				{ filters: { ...filters, adminId: user.id } }
+			);
+
+			if (request.status !== 200 || !request.ok)
+				break;
+
+			const response = await request.json();
+
+			if (response.boxes)
+				boxes.push(...response.boxes);
+		}
+
+		const delimiter = ',';
+		const newline = '\n';
+		const keys = Object.keys(boxes[0])
+		const headers = keys.map(header => i18n.t(header)).join(delimiter);
+		const report = json2csv(
+			boxes,
+			{
+				delimiter: { field: delimiter, eol: newline },
+				prependHeader: false
+			}
+		);
+		return `${headers}${newline}${report}`;
+	} catch (err) {
+		console.error(err);
+		return null;
+	}
+}
+
+/**
  * Deletes boxes from the API
  *
  * @param {object}		filters		Filters to be applied to the request
@@ -116,51 +174,6 @@ export async function deleteBoxes(filters = {}) {
 	const json = await response.json();
 
 	return { deletedCount: json.deletedCount };
-}
-
-/**
- * Fetches scans from the API
- *
- * @param {object}		filters			Filters to be applied to the request
- *
- * @returns {Promise<Array>}			Array of scans
- */
-export async function fetchScans(filters = {}) {
-	try {
-		const BUFFER_LENGTH = 10_000;
-		const scans = [];
-
-		const response = await callAPI(
-			'POST',
-			`scan/count`,
-			{ filters }
-		);
-		const json = await response.json();
-		const count = json.count || 0;
-
-		while (scans.length < count) {
-			const skip = scans.length;
-
-			const request = await callAPI(
-				'POST',
-				`scan/query?skip=${skip}&limit=${BUFFER_LENGTH}`,
-				{ filters }
-			);
-
-			if (request.status !== 200 || !request.ok)
-				break;
-
-			const response = await request.json();
-
-			if (response.scans)
-				scans.push(...response.scans);
-		}
-
-		return scans;
-	} catch (err) {
-		console.error(err);
-		return null;
-	}
 }
 
 /**
