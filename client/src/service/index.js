@@ -66,14 +66,6 @@ export async function fetchBoxes(filters = []) {
 		const BUFFER_LENGTH = 10_000;
 		const boxes = [];
 
-		const query = filters
-						.map(({ field, value }) => {
-							if (value?.length)
-								return `${field}=${value}`
-						})
-						.filter((x) => x)
-						.join('&');
-
 		const response = await callAPI(
 			'POST',
 			`boxes/count`,

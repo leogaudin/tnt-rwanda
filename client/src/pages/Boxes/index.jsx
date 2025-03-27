@@ -6,23 +6,7 @@ import { callAPI } from '../../service';
 
 export default function Boxes() {
 	const [filters, setFilters] = useState([]);
-	const [query, setQuery] = useState('');
 	const [count, setCount] = useState(0);
-
-	useEffect(() => {
-		const newQuery = filters
-							.map(({ field, value }) => {
-								if (value?.length)
-									return `${field}=${value}`;
-							})
-							.filter((x) => x)
-							.join('&');
-
-		if (newQuery !== query){
-			setQuery(newQuery);
-			setCount(0);
-		}
-	}, [filters]);
 
 	const fetchBoxes = async (skip, limit) => {
 		const response = await callAPI(
