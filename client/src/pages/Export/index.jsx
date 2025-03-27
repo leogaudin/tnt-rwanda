@@ -5,7 +5,7 @@ import PDFExport from './components/PDFExport';
 import Report from './components/Report';
 
 export default function Export() {
-	const [filters, setFilters] = useState([]);
+	const [filters, setFilters] = useState({});
 	const [count, setCount] = useState(0);
 
 	return (

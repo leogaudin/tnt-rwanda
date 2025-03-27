@@ -5,14 +5,14 @@ import BoxFiltering from '../../components/BoxFiltering';
 import { callAPI } from '../../service';
 
 export default function Boxes() {
-	const [filters, setFilters] = useState([]);
+	const [filters, setFilters] = useState({});
 	const [count, setCount] = useState(0);
 
 	const fetchBoxes = async (skip, limit) => {
 		const response = await callAPI(
 			'POST',
 			`boxes/query?skip=${skip}&limit=${limit}`,
-			{ filters: filters.reduce((acc, { field, value }) => ({ ...acc, [field]: value }), {}) }
+			{ filters }
 		);
 		const json = await response.json();
 		return json.boxes || [];

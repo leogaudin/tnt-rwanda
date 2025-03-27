@@ -57,11 +57,11 @@ export const callAPI = async (method, endpoint, data = null, headers = {}, signa
 /**
  * Fetches boxes from the API
  *
- * @param {Array<{field: String, value: String}>}		filters		Filters to be applied to the request
+ * @param {object}		filters		Filters to be applied to the request
  *
  * @returns {Promise<Array>}			Array of boxes
  */
-export async function fetchBoxes(filters = []) {
+export async function fetchBoxes(filters = {}) {
 	try {
 		const BUFFER_LENGTH = 10_000;
 		const boxes = [];
@@ -69,7 +69,7 @@ export async function fetchBoxes(filters = []) {
 		const response = await callAPI(
 			'POST',
 			`boxes/count`,
-			{ filters: filters.reduce((acc, { field, value }) => ({ ...acc, [field]: value }), {}) }
+			{ filters: { ...filters, adminId: user.id } }
 		);
 		const json = await response.json();
 		const count = json.count || 0;
@@ -80,7 +80,7 @@ export async function fetchBoxes(filters = []) {
 			const request = await callAPI(
 				'POST',
 				`boxes/query?skip=${skip}&limit=${BUFFER_LENGTH}`,
-				{ filters: filters.reduce((acc, { field, value }) => ({ ...acc, [field]: value }), {}) }
+				{ filters }
 			);
 
 			if (request.status !== 200 || !request.ok)
@@ -103,15 +103,15 @@ export async function fetchBoxes(filters = []) {
 /**
  * Deletes boxes from the API
  *
- * @param {Array<{field: String, value: String}>}		filters		Filters to be applied to the request
+ * @param {object}		filters		Filters to be applied to the request
  *
  * @returns {Promise<{deletedCount: Number}>}			Number of deleted boxes
  */
-export async function deleteBoxes(filters) {
+export async function deleteBoxes(filters = {}) {
 	const response = await callAPI(
 		'DELETE',
 		'boxes',
-		{ filters: filters.reduce((acc, { field, value }) => ({ ...acc, [field]: value }), {}) }
+		{ filters }
 	);
 	const json = await response.json();
 
@@ -121,7 +121,7 @@ export async function deleteBoxes(filters) {
 /**
  * Fetches scans from the API
  *
- * @param {Object}		filters			Filters to be applied to the request
+ * @param {object}		filters			Filters to be applied to the request
  *
  * @returns {Promise<Array>}			Array of scans
  */
