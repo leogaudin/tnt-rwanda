@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { saveAs } from 'file-saver';
-// import { Button, Tooltip } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import {
 	Document,
@@ -14,14 +13,15 @@ import {
 } from '@react-pdf/renderer';
 import QRCode from 'qrcode';
 import JSZip from 'jszip';
-import { icons } from '../../../service';
+import { fetchBoxes, icons } from '../../../service';
 import { boxFields } from '../../../service/specific';
-import { Button, Tooltip, Text, Stack, HStack, Icon } from '@chakra-ui/react';
+import { Button, Text, Stack, HStack, Icon } from '@chakra-ui/react';
 
-const PDFExport = ({ objects, folderName = 'Documents' }) => {
+const PDFExport = ({ filters, folderName = 'Documents' }) => {
 	const { t } = useTranslation();
 	const [loading, setLoading] = useState(false);
 	const [pagesComplete, setPagesComplete] = useState(0);
+	const [loadingText, setLoadingText] = useState('');
 
 	Font.register({
 		family: 'Inter',
@@ -52,9 +52,10 @@ const PDFExport = ({ objects, folderName = 'Documents' }) => {
 			fontWeight: 900,
 		},
 		infoRow: {
-			fontSize: '4mm',
+			fontSize: '3mm',
 			flexDirection: 'row',
 			width: '100%',
+			textAlign: 'center',
 			alignItems: 'center',
 			justifyContent: 'center',
 			marginBottom: '2mm',
@@ -68,7 +69,7 @@ const PDFExport = ({ objects, folderName = 'Documents' }) => {
 			justifyContent: 'center',
 		},
 		qrCodeValue: {
-			fontSize: '4mm',
+			fontSize: '3mm',
 			textAlign: 'center',
 			marginTop: '2mm',
 		},
@@ -117,6 +118,22 @@ const PDFExport = ({ objects, folderName = 'Documents' }) => {
 		});
 	};
 
+	const ContentText = ({ content }) => {
+		if (!Object.keys(content).length) return null;
+		return (
+			<View style={styles.infoRow}>
+				<PDFText>
+					{t('content')}:{' '}
+					{Object.entries(content).map(([element, quantity], i) => {
+						if (quantity)
+							return `${i > 0 ? ', ' : ''}${quantity} ${t(element)}`
+					})}
+				</PDFText>
+			</View>
+		)
+	};
+
+
 	const renderPages = async (chunk, i, totalLength) => {
 		return await Promise.all(chunk.map(async (object, index) => {
 			const { id } = object;
@@ -127,6 +144,7 @@ const PDFExport = ({ objects, folderName = 'Documents' }) => {
 				<Page orientation='portrait' key={id} size={['100mm', '150mm']} style={styles.page}>
 					<View style={styles.documentContainer}>
 						<InfoRows object={object} />
+						<ContentText content={object.content || {}} />
 						{qrComponent}
 						<PDFText style={styles.serial}>{i + index + 1}/{totalLength}</PDFText>
 					</View>
@@ -136,27 +154,44 @@ const PDFExport = ({ objects, folderName = 'Documents' }) => {
 	};
 
 	const downloadDocuments = async () => {
-		setLoading(true);
-		const sortedObjects = objects.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-		const zip = new JSZip();
-		let chunkIndex = 0;
-		const CHUNK_SIZE = 500;
-		const totalLength = sortedObjects.length;
+		try {
+			setLoading(true);
+			setLoadingText(t('boxesLoading'));
+			const boxes = await fetchBoxes(filters);
+			if (!boxes || !boxes.length) {
+				throw new Error('No boxes available');
+			}
+			setLoadingText(t('generatingPdf'));
+			const zip = new JSZip();
+			let chunkIndex = 0;
+			const CHUNK_SIZE = 1000;
+			const totalLength = boxes.length;
 
-		for (let i = 0; i < totalLength; i += CHUNK_SIZE) {
-			const chunk = sortedObjects.slice(i, i + CHUNK_SIZE);
-			const pages = await renderPages(chunk, i, totalLength);
-			const blob = await pdf(<Document>{pages}</Document>).toBlob();
-			zip.file(`${folderName}_${chunkIndex}.pdf`, blob, { binary: true });
-			setPagesComplete(a => a + chunk.length);
-			chunkIndex++;
-		}
+			for (let i = 0; i < totalLength; i += CHUNK_SIZE) {
+				const chunk = boxes.slice(i, i + CHUNK_SIZE);
+				const pages = await renderPages(chunk, i, totalLength);
+				const blob = await pdf(<Document>{pages}</Document>).toBlob();
+				zip.file(`${folderName}_${chunkIndex}.pdf`, blob, { binary: true });
+				setPagesComplete(a => {
+					const newLength = a + chunk.length;
+					setLoadingText(`${newLength}/${totalLength} ${t('generated')}`);
+					return newLength;
+				});
+				chunkIndex++;
+			}
 
-		zip.generateAsync({ type: 'blob' }).then(function (content) {
-			saveAs(content, `${folderName}.zip`);
+			zip.generateAsync({ type: 'blob' }).then((content) => {
+				saveAs(content, `${folderName}.zip`);
+				setLoading(false);
+				setPagesComplete(0);
+				setLoadingText('');
+			});
+		} catch (err) {
+			console.error(err);
 			setLoading(false);
 			setPagesComplete(0);
-		});
+			setLoadingText('');
+		}
 	};
 
 	return (
@@ -165,10 +200,10 @@ const PDFExport = ({ objects, folderName = 'Documents' }) => {
 			size='lg'
 			onClick={downloadDocuments}
 			isLoading={loading}
-			loadingText={pagesComplete + ' generated'}
+			loadingText={loadingText}
 			paddingY='1rem'
 			height='fit-content'
-	>
+		>
 			<HStack
 				width='100%'
 				gap={5}

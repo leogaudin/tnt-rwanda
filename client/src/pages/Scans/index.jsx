@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import PagedTable from '../../components/PagedTable';
 import { useTranslation } from 'react-i18next';
 import { useDisclosure } from '@chakra-ui/react';
-import BoxModal from '../Boxes/components/BoxModal';
+import BoxModal from '../../components/BoxModal';
 import { timeAgo } from '../../service/utils';
 import { callAPI } from '../../service';
 
@@ -20,10 +20,9 @@ export default function Scans() {
 	}
 
 	const fetchCount = async () => {
-		const response = await callAPI('GET', 'scans/count');
+		const response = await callAPI('POST', 'scan/count');
 		const json = await response.json();
-
-		return json.data?.count || 0;
+		return json.count || 0;
 	};
 
 	useEffect(() => {
@@ -35,19 +34,19 @@ export default function Scans() {
 
 	const fetchScans = async (skip, limit) => {
 		const response = await callAPI(
-			'GET',
-			`scans?skip=${skip}&limit=${limit}`
+			'POST',
+			`scan/query?skip=${skip}&limit=${limit}`
 		);
 		const json = await response.json();
 
-		return json.data?.scans || [];
+		return json.scans || [];
 	};
 
 	const fetchBox = async (id) => {
-		const response = await callAPI('GET', `box/${id}`);
+		const response = await callAPI('GET', `boxes/one/${id}`);
 		const json = await response.json();
 
-		return json.data?.box || null;
+		return json.box || null;
 	};
 
 	return (
@@ -63,18 +62,16 @@ export default function Scans() {
 				count={count}
 				fetchElements={fetchScans}
 				headers={[
-					t('recipient'),
 					t('box'),
 					t('time'),
-					t('comment'),
+					// t('comment'),
 					t('received'),
 					t('reachedGps')
 				]}
 				fields={[
-					'recipient',
 					'boxId',
 					'time',
-					'comment',
+					// 'comment',
 					'markedAsReceived',
 					'finalDestination',
 				]}

@@ -8,7 +8,6 @@ import fs from 'fs';
 
 import boxesController from './controllers/boxes.ctrl.js';
 import scansController from './controllers/scans.ctrl.js';
-import adminsController from './controllers/admins.ctrl.js';
 import authController from './controllers/auth.ctrl.js';
 import insightsController from './controllers/insights.ctrl.js';
 
@@ -55,11 +54,10 @@ app.get('/', (req, res) => {
 	res.send('Hello World!');
 });
 
-app.use('/api', boxesController);
-app.use('/api', scansController);
-app.use('/api', adminsController);
-app.use('/api', authController);
-app.use('/api', insightsController);
+app.use('/api/boxes', boxesController);
+app.use('/api/scan', scansController);
+app.use('/api/auth', authController);
+app.use('/api/insights', insightsController);
 
 https.createServer({
 	cert: fs.readFileSync('/etc/letsencrypt/live/booktracking.reb.rw/fullchain.pem'),

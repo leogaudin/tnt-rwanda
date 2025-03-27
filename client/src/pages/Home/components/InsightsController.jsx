@@ -42,7 +42,7 @@ export default function InsightsController() {
 				variant='outline'
 				colorScheme={user.publicInsights ? 'green' : 'red'}
 				onClick={() => {
-					callAPI('POST', 'toggle_insights')
+					callAPI('POST', 'insights/toggle')
 						.then((res) => res.json())
 						.then((res) => {
 							user.publicInsights = res.publicInsights;

@@ -1,21 +1,12 @@
-import { useContext, useState } from 'react'
+import { useState } from 'react'
 import BoxFiltering from '../../../components/BoxFiltering'
-import AppContext from '../../../context'
-import { Button, Heading, Stack, useDisclosure } from '@chakra-ui/react';
+import { Button, Heading, Stack } from '@chakra-ui/react';
 import { useTranslation } from 'react-i18next';
-import { callAPI } from '../../../service';
-
-async function deleteBoxes(filters) {
-	const deleteConditions = filters.reduce((acc, { field, value }) => ({ ...acc, [field]: value }), {});
-	const response = await callAPI('DELETE', 'boxes', { deleteConditions });
-	const json = await response.json();
-
-	return { deletedCount: json.data.deletedCount };
-}
+import { deleteBoxes } from '../../../service';
 
 export default function Delete() {
-	const { boxes } = useContext(AppContext);
-	const [filters, setFilters] = useState([]);
+	const [filters, setFilters] = useState({});
+	const [count, setCount] = useState(0);
 	const { t } = useTranslation();
 
 	const handleDelete = () => {
@@ -36,11 +27,11 @@ export default function Delete() {
 		>
 			<Heading>{t('delete')}</Heading>
 			<BoxFiltering
-				boxes={boxes}
-				setFilteredBoxes={() => { }}
-				setFiltersOutside={setFilters}
-				includeProgress={false}
-				includeSearch={false}
+				filters={filters}
+				setFilters={setFilters}
+				count={count}
+				setCount={setCount}
+				// enableSearch={false}
 			/>
 			<Button
 				colorScheme='red'

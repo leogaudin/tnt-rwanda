@@ -1,220 +1,207 @@
-import { useEffect, useState } from 'react';
-import { icons, progresses } from '../service';
 import {
+	HStack,
 	Select,
 	IconButton,
 	Stack,
-	Flex,
-	HStack,
 	Text,
+	Flex,
 	Input,
 } from '@chakra-ui/react';
-import { useTranslation } from 'react-i18next';
+import { useEffect, useState } from 'react';
 import { palette } from '../theme';
-// import { getProgress } from '../service/stats';
-import { excludedKeys } from '../service/specific';
+import { boxFields } from '../service/specific';
+import { useTranslation } from 'react-i18next';
+import { callAPI, icons, progresses, user } from '../service';
 
 export default function BoxFiltering({
-	boxes,
-	setFilteredBoxes,
-	setFiltersOutside = () => { }, // If you want to use the filters outside of this component
-	// includeProgress = true,
-	includeSearch = true,
+	filters = {},
+	setFilters,
+	count,
+	setCount,
 }) {
-	const [filters, setLocalFilters] = useState([]);
-	// const [progressFilter, setProgressFilter] = useState('any');
+	const [loading, setLoading] = useState(false);
+	const [possibleValues, setPossibleValues] = useState({});
 	const [query, setQuery] = useState('');
+
 	const { t } = useTranslation();
-	const excludedFields = [
-		...excludedKeys,
-		'createdAt',
-	];
-
-	const fitsQuery = (box) => {
-		return Object.values(box).some((value) => {
-			if (typeof value === 'string')
-				return value.toLowerCase().includes(query.toLowerCase());
-		})
-	}
-
-	const getFilteredBoxes = () => {
-		return boxes?.filter((box) => {
-			return (
-				(filters.length === 0 || filters.every((filter) => box[filter.field] === filter.value))
-				// &&
-				// (!includeProgress || ((box.progress || getProgress(box)) === progressFilter || progressFilter === 'any'))
-				&&
-				(!includeSearch || !query || fitsQuery(box))
-			)
-		})
-	}
-
-	const setFilters = (filters) => {
-		setLocalFilters(filters);
-		setFiltersOutside(filters);
-	}
 
 	useEffect(() => {
-		const updateFilteredBoxes = () => {
-			setFilteredBoxes(getFilteredBoxes());
+		updateCount();
+		if (Object.keys(filters).length) {
+			updatePossibleValues();
 		}
+	}, [filters]);
 
-		updateFilteredBoxes();
-	}, [boxes, filters, setFilteredBoxes, query]); // Removed progressFilter
+	const updatePossibleValues = async () => {
+		setLoading(true);
+		const results = await Promise.all(
+			Object.keys(filters).map(async (boxField) => {
+				if (boxField === 'progress')
+					return {
+						progress: Object.keys(progresses).filter((key) => key !== 'total'),
+					};
 
-	const availableOptions = boxes?.length
-		? Object.keys(boxes[0]).filter((field) => field === 'progress' || !excludedFields.includes(field))
-		: null;
+				if (!boxFields[boxField]) return;
 
-	// const handleProgressChange = (event) => {
-	// 	setProgressFilter(event.target.value);
-	// }
+				const response = await callAPI(
+					'POST',
+					`boxes/distinct/${boxField}`,
+					{
+						filters: Object.entries(filters).reduce((acc, [field, value]) => {
+							if (value?.length && field !== boxField)
+								return { ...acc, [field]: value };
+							return acc;
+						}, { adminId: user.id }),
+					}
+				);
+
+				if (!response.ok) return;
+
+				const json = await response.json();
+
+				return {
+					[boxField]: json.distinct,
+				};
+			})
+		);
+
+		const flattened = results.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+		const progress = Object.keys(progresses).filter((key) => key !== 'total');
+		setPossibleValues({ ...flattened, progress });
+
+		setLoading(false);
+	};
+
+	const updateCount = async () => {
+		const response = await callAPI(
+			'POST',
+			`boxes/count`,
+			{
+				filters: { ...filters, adminId: user.id },
+			}
+		);
+
+		if (!response.ok) return;
+
+		const json = await response.json();
+		setCount(json.count);
+	};
 
 	const addFilter = () => {
-		if (filters.every((filter) => filter.field && filter.value))
-			setFilters([...filters, { field: '', value: '' }]);
-	}
+		setFilters((prev) => ({ ...prev, '': '' }));
+	};
 
-	const removeFilter = (index) => {
-		setFilters(filters.filter((_, i) => i !== index));
-	}
+	const removeFilter = (field) => {
+		setFilters((prev) => {
+			const newFilters = { ...prev };
+			delete newFilters[field];
+			return newFilters;
+		});
+	};
 
-	const handleFieldChange = (index, event) => {
-		const newFilters = [...filters];
-		newFilters[index].field = event.target.value;
-		setFilters(newFilters);
-	}
+	const handleFieldChange = (oldField, newField) => {
+		setFilters((prev) => {
+			const newFilters = { ...prev };
+			delete newFilters[oldField];
+			newFilters[newField] = '';
+			return newFilters;
+		});
+	};
 
-	const isPossible = (filters, field, value) => {
-		const newFilters = [...filters];
-		const existingFilter = newFilters.findIndex((filter) => filter.field === field); // Check if the field is already selected
-		const index = existingFilter === -1 ? newFilters.length : existingFilter; // If it is, replace it, otherwise add a new filter
-		newFilters[index] = { field, value };
-		return boxes.some((box) => newFilters.every((filter) => box[filter.field] === filter.value));
-	}
+	const handleValueChange = (field, value) => {
+		setFilters((prev) => ({ ...prev, [field]: value }));
+	};
 
-	const handleValueChange = (index, event) => {
-		const newFilters = [...filters];
-		newFilters[index].value = event.target.value;
-		setFilters(newFilters);
-	}
+	const handleCustomSearch = (event) => {
+		event.preventDefault();
+		setFilters((prev) => ({ ...prev, custom: query }));
+	};
 
-	const FilterSelect = ({ filter, index }) => {
-		if (availableOptions === null)
-			return null;
-
+	const FilterSelect = ({ field, value }) => {
 		return (
-			<HStack
-				bg={palette.gray.light}
-				borderRadius={15}
-				padding={2.5}
-			>
+			<HStack bg={palette.gray.light} borderRadius={15} padding={2.5}>
 				<Select
-					defaultValue={filter.field}
-					placeholder={filter.field || t('select', { option: t('field') })}
-					onChange={(event) => handleFieldChange(index, event)}
+					value={field}
+					placeholder={t(field) || t('select', { option: t('field') })}
+					onChange={(event) => handleFieldChange(field, event.target.value)}
 					focusBorderColor={palette.primary.dark}
 				>
-					{availableOptions.map((field) => {
-						if (filters.some((filter) => filter.field === field)) return null;
+					{Object.keys(boxFields).map((boxField) => {
+						if (filters[boxField]) return null;
 						return (
-							<option key={field} value={field} selected={filter.field === field}>
-								{t(field)}
+							<option key={boxField} value={boxField}>
+								{t(boxField)}
 							</option>
-						)
+						);
 					})}
+					<option value="progress">{t('progress')}</option>
 				</Select>
 				<Select
-					defaultValue={filter.value}
-					placeholder={filter.value || t('select', { option: t('value') })}
-					onChange={(event) => handleValueChange(index, event)}
+					value={value}
+					placeholder={value || t('select', { option: t('value') })}
+					onChange={(event) => handleValueChange(field, event.target.value)}
 					focusBorderColor={palette.primary.dark}
 				>
-					{Array.from(new Set(boxes.map((box) => box[filter.field]))).map((option) => {
-						if (isPossible(filters, filter.field, option))
-							return (
-								<option key={option} value={option}>
-									{t(option)}
-								</option>
-							)
-					})}
+					{possibleValues[field]?.map((option) => (
+						<option key={option} value={option}>
+							{t(option)}
+						</option>
+					))}
 				</Select>
 				<IconButton
-					variant='outline'
+					variant="outline"
 					icon={<icons.delete />}
-					onClick={() => removeFilter(index)}
+					onClick={() => removeFilter(field)}
 					color={palette.error.main}
 					borderColor={palette.error.main}
-					bg='transparent'
+					bg="transparent"
 				/>
 			</HStack>
-		)
-	}
+		);
+	};
 
 	return (
 		<Stack
-			justify='center'
-			align='center'
-			textAlign='center'
+			justify="center"
+			align="center"
+			textAlign="center"
 			padding={5}
 			gap={2.5}
 			bg={palette.gray.lightest}
 			borderRadius={15}
+			pointerEvents={loading ? 'none' : 'auto'}
+			opacity={loading ? 0.5 : 1}
+			transition="opacity 0.2s"
 		>
-			<Text fontWeight='bold'>{t('filters')}</Text>
-			<Flex
-				justify='center'
-				align='center'
-				gap={2.5}
-				wrap='wrap'
-			>
-				{filters.map((filter, index) => (
-					<FilterSelect key={index} filter={filter} index={index} />
-				))}
+			<Text fontWeight="bold">{t('filters')}</Text>
+			<Flex justify="center" align="center" gap={2.5} wrap="wrap">
+				{Object.entries(filters).map(([field, value]) => {
+					if (field === 'custom') return null;
+					return <FilterSelect key={field} field={field} value={value} />;
+				})}
 				<IconButton
-					variant='outline'
+					variant="outline"
 					icon={<icons.plus />}
 					onClick={addFilter}
 				/>
 			</Flex>
-			{/* {includeProgress &&
-				(<>
-					<Text fontWeight='bold'>{t('progress')}</Text>
-					<Select
-						width='fit-content'
-						defaultValue='any'
-						onChange={handleProgressChange}
-						focusBorderColor='gray'
-					>
-						<option value='any'>{t('any')}</option>
-						{progresses.map((progress) => {
-							if (progress.key === 'total')
-								return null;
-							return (
-								<option key={progress.key} value={progress.key}>
-									{t(progress.key)}
-								</option>
-							)
-						})}
-					</Select>
-				</>)
-			} */}
 			<Text
-				fontSize='small'
-				fontWeight='bold'
-				textTransform='uppercase'
+				fontSize="small"
+				fontWeight="bold"
+				textTransform="uppercase"
 				marginY={5}
 			>
-				{t('itemsSelected', { count: getFilteredBoxes().length })}
+				{t('itemsSelected', { count: count })}
 			</Text>
-			{includeSearch &&
+			<Flex as="form" onSubmit={handleCustomSearch} width="100%" gap=".5rem">
 				<Input
 					placeholder={`${t('customSearch')}...`}
 					value={query}
 					onChange={(e) => setQuery(e.target.value)}
 					focusBorderColor={palette.text}
 				/>
-			}
+				<IconButton variant="outline" icon={<icons.search />} type="submit" />
+			</Flex>
 		</Stack>
-	)
+	);
 }

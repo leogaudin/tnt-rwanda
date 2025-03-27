@@ -1,38 +1,34 @@
 import React, { createContext, useEffect, useState } from 'react';
-import { callAPI, fetchAllBoxes, user } from '../service';
-import { computeInsights } from '../service/stats';
+import { callAPI, fetchInsights, user } from '../service';
 
 const AppContext = createContext({
-	boxes: [],
-	insights: [],
+	rawInsights: [],
 	language: 'en',
 	setLanguage: () => { },
-	loading: true,
 });
 
 export const AppProvider = ({ children }) => {
-	const [boxes, setBoxes] = useState(null);
 	const [language, setLanguage] = useState('en');
-	const [loading, setLoading] = useState(true);
-	const [insights, setInsights] = useState(null);
+	const [rawInsights, setRawInsights] = useState(null);
 
-	const initTnT = async (setters) => {
-		const { setBoxes, setInsights } = setters;
-		const res = await callAPI('GET', 'me').then(res => res.json())
-		const me = res.data;
+	const initTnT = async () => {
+		const res = await callAPI('GET', 'auth/me')
+							.then(res => res.json())
+		const me = res.user;
 		localStorage.setItem('user', JSON.stringify(me));
 		Object.assign(user, me);
 
-		const boxes = await fetchAllBoxes(user.id, setBoxes);
-
-		computeInsights(boxes, setInsights)
+		const rawInsights = await fetchInsights({ adminId: user.id });
+		return { rawInsights };
 	}
 
 	useEffect(() => {
 		if (!user?.id) return;
 
-		initTnT({ setBoxes, setInsights })
-			.then(() => setLoading(false))
+		initTnT()
+			.then((data) => {
+				setRawInsights(data.rawInsights);
+			})
 			.catch((e) => {
 				console.error(e);
 			});
@@ -41,11 +37,9 @@ export const AppProvider = ({ children }) => {
 	return (
 		<AppContext.Provider
 			value={{
-				boxes,
-				insights,
+				rawInsights,
 				language,
 				setLanguage,
-				loading,
 			}}
 		>
 			{children}

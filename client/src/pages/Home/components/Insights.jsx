@@ -1,108 +1,59 @@
-import Timeline from './Timeline';
-import { Card, Heading, HStack, Progress, Stack } from '@chakra-ui/react';
-import { progresses } from '../../../service';
-import { useTranslation } from 'react-i18next';
-import { palette } from '../../../theme';
 import Loading from '../../../components/Loading';
+import ProjectInsights from './ProjectInsights';
+import GlobalInsights from './GlobalInsights';
+import { Divider, Flex, IconButton, Tooltip, useToast } from '@chakra-ui/react';
+import { computeInsights } from '../../../service/stats';
+import { icons, user } from '../../../service';
+import { useTranslation } from 'react-i18next';
 
-export default function Insights({ insights }) {
+export default function Insights({ rawInsights, id }) {
+	if (!rawInsights)
+		return <Loading />;
+
+	const toast = useToast();
 	const { t } = useTranslation();
 
-	if (!insights)
-		return <Loading />;
+	const grouped = computeInsights(rawInsights, { grouped: true });
+
+	const handleCopy = (project) => {
+		const link = `${window.location.href}insights/${user.id}?project=${encodeURIComponent(project)}`;
+		toast({
+			title: t('copied'),
+			status: 'success',
+			duration: 1000,
+			isClosable: true,
+			position: 'top',
+		})
+		navigator.clipboard.writeText(link);
+	}
 
 	return (
 		<>
-			{Object.keys(insights).map((project, i) => {
-				if (!insights[project])
+			<GlobalInsights
+				rawInsights={rawInsights}
+				id={id}
+			/>
+			<Divider marginY={5} />
+			{Object.keys(grouped).map((project, i) => {
+				if (!grouped[project])
 					return <Loading />;
 
-				const { timeline, repartition } = insights[project];
-				const progress = (repartition.validated / repartition.total) * 100;
-
 				return (
-					<Card
+					<ProjectInsights
 						key={project + i}
-						width='100%'
-						direction='column'
-						borderRadius={15}
-						overflow='hidden'
-						shadow='md'
-					>
-						<Stack
-							marginTop={5}
-							marginBottom={10}
-						>
-							<Heading
-								size='md'
-								paddingX={4}
-								fontWeight='normal'
-							>
-								{project}
-							</Heading>
-							<Heading
-								size='lg'
-								paddingX={4}
-								fontWeight='light'
-							>
-								<span style={{ fontWeight: 'bold' }}>{progress.toFixed(2)}%</span>
-								{' '}{t('validated').toLowerCase()}
-							</Heading>
-							<Progress
-								hasStripe
-								isAnimated
-								colorScheme='green'
-								// bgColor={palette.success.main}
-								size='sm'
-								value={progress}
-							/>
-						</Stack>
-						<Timeline
-							key={i}
-							data={timeline}
-						/>
-						<Stack
-							// width='100%'
-							align='center'
-							textAlign='center'
-							padding={5}
-						>
-							<Heading
-								color={palette.gray.main}
-								fontWeight='light'
-							>
-								{t('currently')}
-							</Heading>
-							<Stack
-								direction={{ base: 'column', md: 'row' }}
-								gap={5}
-							>
-								{Object.keys(repartition).map((key, i) => {
-									const p = progresses.find(p => p.key === key);
-
-									if (!p) return null;
-									return (
-										<Stack
-											color={p?.color || palette.text}
-											align='center'
-											key={key}
-										>
-											<Heading>
-												{repartition[key]}
-											</Heading>
-											<Heading
-												size='sm'
-												fontWeight='light'
-											>
-												{t(p.key)}
-											</Heading>
-										</Stack>
-									);
-								})}
-							</Stack>
-						</Stack>
-					</Card>
-				);
+						menu={user &&
+							<Flex>
+								<IconButton
+									variant='outline'
+									icon={<icons.link />}
+									onClick={() => handleCopy(project)}
+								/>
+							</Flex>
+						}
+						insights={grouped[project]}
+						project={project}
+					/>
+				)
 			})}
 		</>
 	)

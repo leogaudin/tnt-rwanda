@@ -1,7 +1,7 @@
 import i18n from '../language';
 
-import Home from '../pages/Home';
 import Login from '../pages/Login'
+import Home from '../pages/Home';
 import Boxes from '../pages/Boxes';
 import Scans from '../pages/Scans';
 import Import from '../pages/Import';
@@ -10,13 +10,16 @@ import Advanced from '../pages/Advanced';
 import PublicInsights from '../pages/PublicInsights';
 
 import { IoHome, IoClose, IoCheckmark, IoPrint } from 'react-icons/io5';
-import { FaBoxOpen, FaChevronUp, FaChevronDown, FaMapPin, FaEye, FaClock, FaQrcode, FaPlus, FaCopy } from 'react-icons/fa';
+import { FaBoxOpen, FaChevronUp, FaChevronDown, FaMapPin, FaEye, FaClock, FaQrcode, FaPlus, FaCopy, FaChevronRight, FaChevronLeft, FaSearch, FaLink } from 'react-icons/fa';
 import { IoMdExit, IoMdRefresh, IoMdSettings } from 'react-icons/io';
 import { BiImport, BiExport } from 'react-icons/bi';
-import { MdDelete } from 'react-icons/md';
-import { TbProgressCheck } from "react-icons/tb";
+import { MdDelete, MdEdit } from 'react-icons/md';
+import { TbProgressCheck } from 'react-icons/tb';
+import { BsMailbox } from 'react-icons/bs';
+
 import { palette } from '../theme';
 import { API_URL } from './specific';
+import { json2csv } from 'json-2-csv';
 
 export const user = JSON.parse(localStorage.getItem('user'));
 
@@ -27,9 +30,9 @@ export const navbarWidth = '250px';
  *
  * @param {String} 			method		HTTP method to be used
  * @param {String} 			endpoint	Endpoint to be called
- * @param {Object}			data?		Data to be sent in the request
- * @param {Object}			headers?	Headers to be sent in the request
- * @param {AbortSignal}		signal?		AbortSignal to be used in the request
+ * @param {Object}			data		Data to be sent in the request
+ * @param {Object}			headers		Headers to be sent in the request
+ * @param {AbortSignal}		signal		AbortSignal to be used in the request
  *
  * @returns {Promise<Response>}			Response of the request
  */
@@ -52,15 +55,14 @@ export const callAPI = async (method, endpoint, data = null, headers = {}, signa
 	return response;
 }
 
-
 /**
  * Fetches boxes from the API
  *
- * @param {Array<{field: String, value: String}>}		filters		Filters to be applied to the request
+ * @param {object}		filters		Filters to be applied to the request
  *
  * @returns {Promise<Array>}			Array of boxes
  */
-export async function fetchBoxes(filters = []) {
+export async function fetchBoxes(filters = {}) {
 	try {
 		const BUFFER_LENGTH = 10_000;
 		const boxes = [];
@@ -68,7 +70,7 @@ export async function fetchBoxes(filters = []) {
 		const response = await callAPI(
 			'POST',
 			`boxes/count`,
-			{ filters: filters.reduce((acc, { field, value }) => ({ ...acc, [field]: value }), {}) }
+			{ filters: { ...filters, adminId: user.id } }
 		);
 		const json = await response.json();
 		const count = json.count || 0;
@@ -79,7 +81,7 @@ export async function fetchBoxes(filters = []) {
 			const request = await callAPI(
 				'POST',
 				`boxes/query?skip=${skip}&limit=${BUFFER_LENGTH}`,
-				{ filters: filters.reduce((acc, { field, value }) => ({ ...acc, [field]: value }), {}) }
+				{ filters }
 			);
 
 			if (request.status !== 200 || !request.ok)
@@ -100,31 +102,107 @@ export async function fetchBoxes(filters = []) {
 }
 
 /**
- * Fetches scans from the API
+ * Fetches report from the API
  *
- * @param {Object}		filters			Filters to be applied to the request
+ * @param {object}		filters		Filters to be applied to the request
  *
- * @returns {Promise<Array>}			Array of scans
+ * @returns {Promise<string>}		Lines of the report
  */
-export async function fetchScans(filters = {}) {
+export async function fetchReport(filters = {}) {
 	try {
-		const BUFFER_LENGTH = 10_000;
-		const scans = [];
+		const BUFFER_LENGTH = 5_000;
+		const boxes = [];
 
 		const response = await callAPI(
 			'POST',
-			`scan/count`,
+			`boxes/count`,
+			{ filters: { ...filters, adminId: user.id } }
+		);
+
+		const json = await response.json();
+		const count = json.count || 0;
+
+		while (boxes.length < count) {
+			const skip = boxes.length;
+
+			const request = await callAPI(
+				'POST',
+				`insights/report?skip=${skip}&limit=${BUFFER_LENGTH}`,
+				{ filters: { ...filters, adminId: user.id } }
+			);
+
+			if (request.status !== 200 || !request.ok)
+				break;
+
+			const response = await request.json();
+
+			if (response.boxes)
+				boxes.push(...response.boxes);
+		}
+
+		const delimiter = ',';
+		const newline = '\n';
+		const keys = Object.keys(boxes[0])
+		const headers = keys.map(header => i18n.t(header)).join(delimiter);
+		const report = json2csv(
+			boxes,
+			{
+				delimiter: { field: delimiter, eol: newline },
+				prependHeader: false
+			}
+		);
+		return `${headers}${newline}${report}`;
+	} catch (err) {
+		console.error(err);
+		return null;
+	}
+}
+
+/**
+ * Deletes boxes from the API
+ *
+ * @param {object}		filters		Filters to be applied to the request
+ *
+ * @returns {Promise<{deletedCount: Number}>}			Number of deleted boxes
+ */
+export async function deleteBoxes(filters = {}) {
+	const response = await callAPI(
+		'DELETE',
+		'boxes',
+		{ filters }
+	);
+	const json = await response.json();
+
+	return { deletedCount: json.deletedCount };
+}
+
+/**
+ * Fetches insights from the API
+ *
+ * @param {object}		filters		Filters to be applied to the request
+ * @param {boolean}		grouped		Whether the insights should be grouped or not
+ *
+ * @returns {Promise<object>}		Insights
+ */
+export async function fetchInsights(filters = {}) {
+	try {
+		const BUFFER_LENGTH = 25_000;
+		const boxes = [];
+
+		const response = await callAPI(
+			'POST',
+			`boxes/count`,
 			{ filters }
 		);
 		const json = await response.json();
 		const count = json.count || 0;
 
-		while (scans.length < count) {
-			const skip = scans.length;
+		while (boxes.length < count) {
+			const skip = boxes.length;
 
 			const request = await callAPI(
 				'POST',
-				`scan/query?skip=${skip}&limit=${BUFFER_LENGTH}`,
+				`insights?skip=${skip}&limit=${BUFFER_LENGTH}`,
 				{ filters }
 			);
 
@@ -133,74 +211,12 @@ export async function fetchScans(filters = {}) {
 
 			const response = await request.json();
 
-			if (response.scans)
-				scans.push(...response.scans);
-		}
-
-		return scans;
-	} catch (err) {
-		console.error(err);
-		return null;
-	}
-}
-
-/**
- * Fetches all boxes from the API
- *
- * @param {String}			id			ID of the user
- * @param {Function}		setBoxes	Function to set the boxes
- *
- * @returns {Array}			Array of boxes
- */
-export async function fetchAllBoxes(id, setBoxes) {
-	try {
-		setBoxes(null);
-		const BUFFER_LENGTH = 7000;
-		const boxes = [];
-
-		while (true) {
-			const skip = boxes.length;
-
-			const request = await callAPI('GET', `boxes/${id}?skip=${skip}&limit=${BUFFER_LENGTH}`);
-
-			if (request.status !== 200 || !request.ok)
-				break;
-
-			const response = await request.json();
-
-			if (response?.data?.boxes)
-				boxes.push(...response?.data?.boxes);
+			if (response.boxes)
+				boxes.push(...response.boxes);
 		}
 
 		boxes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-		setBoxes(boxes);
 		return boxes;
-	} catch (err) {
-		console.error(err);
-		setBoxes(null);
-	}
-}
-
-export async function fetchAllScans() {
-	try {
-		const BUFFER_LENGTH = 10000;
-		const scans = [];
-
-		while (true) {
-			const skip = scans.length;
-
-			const request = await callAPI('GET', `scans?skip=${skip}&limit=${BUFFER_LENGTH}`);
-
-			if (request.status !== 200 || !request.ok)
-				break;
-
-			const response = await request.json();
-
-			if (response?.data?.scans)
-				scans.push(...response?.data?.scans);
-		}
-
-		return scans;
 	} catch (err) {
 		console.error(err);
 		return null;
@@ -210,12 +226,10 @@ export async function fetchAllScans() {
 export async function fetchBoxScans(boxId) {
 	const response = await callAPI(
 		'GET',
-		`box/${boxId}/scans`
+		`scan/box/${boxId}`
 	);
-
 	const json = await response.json();
-
-	return json.data.scans;
+	return json.scans;
 }
 
 export const icons = {
@@ -226,6 +240,8 @@ export const icons = {
 	close: IoClose,
 	up: FaChevronUp,
 	down: FaChevronDown,
+	left: FaChevronLeft,
+	right: FaChevronRight,
 	pin: FaMapPin,
 	eye: FaEye,
 	clock: FaClock,
@@ -239,6 +255,10 @@ export const icons = {
 	settings: IoMdSettings,
 	copy: FaCopy,
 	almost: TbProgressCheck,
+	mailbox: BsMailbox,
+	search: FaSearch,
+	edit: MdEdit,
+	link: FaLink,
 }
 
 export const getRoutes = () => [
@@ -300,52 +320,45 @@ export const getRoutes = () => [
 	},
 ];
 
-export const progresses = [
-	{
-		key: 'total',
+export const progresses = {
+	total: {
 		color: palette.text,
 		userAvailable: false,
 	},
-	{
-		key: 'noScans',
+	noScans: {
 		color: palette.error.main,
 		userAvailable: true,
 		icon: icons.close,
 		inTimeline: true,
 	},
-	{
-		key: 'inProgress',
+	inProgress: {
 		color: palette.warning.main,
 		userAvailable: true,
 		icon: icons.clock,
 		inTimeline: true,
 	},
-	{
-		key: 'received',
+	received: {
 		color: palette.blue.main,
 		userAvailable: true,
 		icon: icons.eye,
 		inTimeline: true,
 	},
-	{
-		key: 'reachedGps',
+	reachedGps: {
 		color: palette.cyan.main,
 		userAvailable: true,
 		icon: icons.pin,
 		inTimeline: true,
 	},
-	{
-		key: 'reachedAndReceived',
+	reachedAndReceived: {
 		color: palette.teal.main,
 		userAvailable: true,
 		icon: icons.almost,
 		inTimeline: true,
 	},
-	{
-		key: 'validated',
+	validated: {
 		color: palette.success.main,
 		userAvailable: true,
 		icon: icons.check,
 		inTimeline: true,
 	},
-]
+};

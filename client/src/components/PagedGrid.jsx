@@ -1,22 +1,41 @@
 import {
-	Button,
 	SimpleGrid,
 	Stack,
-	Text,
 	Flex,
-	Select,
 } from '@chakra-ui/react'
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { palette } from '../theme';
+import { useEffect, useState } from 'react';
 import Pagination from './Pagination';
+import Loading from './Loading';
+
 
 export default function PagedGrid({
-	elements,
+	count,
+	extraParams, // only used to trigger useEffect
+	fetchElements, // (skip: number, limit: number) => Promise<object[]>
 	renderElement,
 }) {
 	const [currentPage, setCurrentPage] = useState(1);
-	const [pageSize, setPageSize] = useState(20);
+	const [pageSize, setPageSize] = useState(10);
+
+	const [elements, setElements] = useState([]);
+	const [loading, setLoading] = useState(false);
+
+	useEffect(() => {
+		setLoading(true);
+		fetchElements((currentPage - 1) * pageSize, pageSize)
+			.then((data) => {
+				setElements(data)
+				setLoading(false);
+			});
+	}, [currentPage, pageSize, extraParams]);
+
+	useEffect(() => {
+		if (currentPage > Math.ceil(count / pageSize))
+			setCurrentPage(1);
+	}, [count, pageSize]);
+
+	if (loading)
+		return <Loading />;
 
 	return (
 		<Stack>
@@ -25,6 +44,13 @@ export default function PagedGrid({
 				align='center'
 				padding={2}
 			>
+				<Pagination
+					length={count}
+					currentPage={currentPage}
+					setCurrentPage={setCurrentPage}
+					pageSize={pageSize}
+					setPageSize={setPageSize}
+				/>
 				<SimpleGrid
 					columns={{ base: 1, lg: 2 }}
 					spacing={5}
@@ -32,18 +58,8 @@ export default function PagedGrid({
 					marginY={5}
 					alignItems='center'
 				>
-					{elements.slice(
-						(currentPage - 1) * pageSize,
-						currentPage * pageSize
-					).map(renderElement)}
+					{elements.map(renderElement)}
 				</SimpleGrid>
-				<Pagination
-					length={elements.length}
-					currentPage={currentPage}
-					setCurrentPage={setCurrentPage}
-					pageSize={pageSize}
-					setPageSize={setPageSize}
-				/>
 			</Flex>
 		</Stack>
 	)

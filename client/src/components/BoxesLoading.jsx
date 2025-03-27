@@ -2,7 +2,7 @@ import { Flex, Heading, Spinner } from '@chakra-ui/react';
 import { palette } from '../theme';
 import { useTranslation } from 'react-i18next';
 
-export default function BoxesLoading() {
+export default function BigLoading({ message }) {
 	const { t } = useTranslation();
 
 	return (
@@ -17,7 +17,7 @@ export default function BoxesLoading() {
 			<Heading
 				fontWeight='normal'
 			>
-				{t('boxesLoading')}
+				{message || t('loading')}
 			</Heading>
 			<Spinner
 				marginX={10}

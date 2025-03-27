@@ -15,20 +15,22 @@ export async function uploadDistributionList(file, setOutput) {
 
 	Papa.parse(data, {
 		skipEmptyLines: true,
+		header: true,
 		step: (element) => {
 			try {
 				const newBox = {};
 				const fields = [...Object.keys(boxFields), 'schoolLatitude', 'schoolLongitude'];
+				const values = Object.values(element.data);
 
 				fields.forEach((field, index) => {
-					if (!element.data[index]
+					if (!values[index]
 						&& (
 							boxFields[field]?.required
 							|| (field === 'schoolLatitude' || field === 'schoolLongitude')
 						)
 					)
 						throw new Error(`Field ${field} is missing.`);
-					newBox[field] = element.data[index];
+					newBox[field] = values[index];
 				});
 				newBox.schoolLatitude = parseFloat(newBox.schoolLatitude.replace(',', '.'));
 				newBox.schoolLongitude = parseFloat(newBox.schoolLongitude.replace(',', '.'));
@@ -37,12 +39,18 @@ export async function uploadDistributionList(file, setOutput) {
 				if (isNaN(newBox.schoolLatitude) || isNaN(newBox.schoolLongitude))
 					throw new Error(`Latitude ${newBox.schoolLatitude} or Longitude ${newBox.schoolLongitude} is invalid.`);
 
+				const contentFields = element.meta.fields.slice(fields.length);
+				if (contentFields.length) newBox.content = {};
+				contentFields.forEach((field, index) => {
+					newBox.content[field] = parseInt(values[index + fields.length]);
+				});
+
 				boxes.push(newBox);
 			} catch (err) {
 				setOutput(prev => {
 					return [...prev,
 						`Error parsing following item:`,
-						JSON.stringify(element.data),
+						JSON.stringify(Object.values(element.data)),
 						err.message,
 						`-------`,
 					];
@@ -57,7 +65,7 @@ export async function uploadDistributionList(file, setOutput) {
 				];
 			});
 
-			const BUFFER_LENGTH = 15000;
+			const BUFFER_LENGTH = 10_000;
 			const numBoxes = boxes.length;
 			let uploaded = 0;
 			let uploadedBytes = 0;
@@ -69,7 +77,6 @@ export async function uploadDistributionList(file, setOutput) {
 				};
 				uploadedBytes += payload.data.length;
 				callAPI('POST', 'boxes', payload)
-				// addBoxes(payload)
 					.then((res) => {
 						if (res.status >= 400)
 							throw new Error(res.statusText);
@@ -190,7 +197,8 @@ export async function updateGPSCoordinates(file, setOutput) {
 			const responses = [];
 
 			const processBuffer = (buffer) => {
-				callAPI('POST', 'boxes/coords', { boxes: buffer })
+				const payload = { coords: buffer };
+				callAPI('POST', 'boxes/coords', payload)
 					.then((res) => {
 						if (res.status >= 400)
 							throw new Error(res.statusText);
@@ -201,8 +209,8 @@ export async function updateGPSCoordinates(file, setOutput) {
 						responses.push(res);
 						uploaded += buffer.length;
 						uploadedBytes += JSON.stringify({boxes: buffer}).length;
-						updated += res.updated;
-						recalculated = res.recalculated;
+						updated += res.updatedCount;
+						recalculated = res.recalculatedCount;
 						setOutput(prev => {
 							return [...prev,
 								`${res.updated} objects updated.`,
@@ -219,7 +227,6 @@ export async function updateGPSCoordinates(file, setOutput) {
 									`-------`,
 									`Uploaded ${uploaded} coordinates (${Math.round(uploadedBytes / 1000)} KB).`,
 									`Updated coordinates of ${updated} objects.`,
-									`Recalculated scans in ${recalculated} objects.`,
 									`-------`,
 									`Reload the page to see the changes.`,
 									`-------`,

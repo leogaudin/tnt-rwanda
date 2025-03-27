@@ -1,3 +1,8 @@
+
+/**
+ * @typedef {'noScans' | 'inProgress' | 'reachedGps' | 'received' | 'reachedAndReceived' | 'validated'} Progress
+ */
+
 /**
  *	@typedef {Object} Scan
  *	@property {Date} time
@@ -24,56 +29,22 @@
  * @typedef {Object} Box
  * @property {Array<Scan>} scans
  * @property {StatusChanges} statusChanges
+ * @property {string} project
+ * @property {Progress} progress
+ * @property {Object} content
  */
 
 /**
- * @typedef {'noScans' | 'inProgress' | 'reachedGps' | 'received' | 'reachedAndReceived' | 'validated'} Progress
- */
-
-/**
- * Returns the last scan with finalDestination set to true.
- * Returns null if none found.
- *
- * @param {Box} box
- * @returns {Scan | null}
- */
-export function getLastFinalScan(box) {
-	let last = null;
-	for (const scan of box.scans) {
-		if (scan.finalDestination && scan.time > (last?.time || 0)) {
-			last = scan;
-		}
-	}
-	return last;
-}
-
-/**
- * Returns the last scan with markedAsReceived set to true.
- * Returns null if none found.
- *
- * @param {Box} box
- * @returns {Scan | null}
- */
-export function getLastMarkedAsReceivedScan(box) {
-	let last = null;
-	for (const scan of box.scans) {
-		if (scan.markedAsReceived && scan.time > (last?.time || 0)) {
-			last = scan;
-		}
-	}
-	return last;
-}
-
-/**
- * Returns the last scan with finalDestination set to true and markedAsReceived set to true.
+ * Returns the last scan that meets the conditions.
  * Returns null if none found.
  * @param {Box} box
+ * @param {Array<string>} conditions
  * @returns {Scan | null}
  */
-export function getLastValidatedScan(box) {
+export function getLastScanWithConditions(scans, conditions = []) {
 	let last = null;
-	for (const scan of box.scans) {
-		if (scan.finalDestination && scan.markedAsReceived && scan.time > (last?.time || 0)) {
+	for (const scan of (scans || [])) {
+		if (scan.time > (last?.time || 0) && conditions.every(condition => scan[condition])) {
 			last = scan;
 		}
 	}
@@ -114,9 +85,7 @@ export function getProgress(box, notAfterTimestamp = Date.now()) {
 
 /**
  *
- * Adds to each box an object of statuses.
- * For each status, determine when it was reached for the first time.
- * Mutates the input array.
+ * Reindexes the status changes and progress of the boxes.
  *
  * @param {Array<Box>} sample	Boxes to index
  */

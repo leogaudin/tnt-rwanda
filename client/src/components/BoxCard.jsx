@@ -8,45 +8,56 @@ import {
 	Stack,
 	useDisclosure,
 } from '@chakra-ui/react';
-import { palette } from '../../../theme';
+import { palette } from '../theme';
 import { useTranslation } from 'react-i18next';
-import { haversineDistance } from '../../../service/utils';
-import Pill from '../../../components/Pill';
-import { getProgress } from '../../../service/stats';
-import { callAPI, fetchBoxScans, progresses } from '../../../service';
+import { haversineDistance } from '../service/utils';
+import Pill from './Pill';
+import { getProgress } from '../service/stats';
+import { callAPI, progresses } from '../service';
 import BoxModal from './BoxModal';
-import { useEffect, useMemo, useState } from 'react';
-import Loading from '../../../components/Loading';
+import { useEffect, useState } from 'react';
+import Loading from '../components/Loading';
 
 export default function BoxCard({
 	box,
 }) {
 	const { t } = useTranslation();
 	const { onOpen, onClose, isOpen } = useDisclosure();
-	const [scans, setScans] = useState(null);
+	const [lastScan, setLastScan] = useState(null);
+	const [loading, setLoading] = useState(false);
+
+	const fetchLastScan = async () => {
+		if (!box.lastScan) {
+			return null;
+		}
+
+		const response = await callAPI(
+			'POST',
+			`scan/query`,
+			{ filters: { id: box.lastScan.scan } }
+		);
+
+		const json = await response.json();
+
+		return json.scans[0];
+	}
 
 	useEffect(() => {
-		fetchBoxScans(box.id)
-		.then(setScans);
+		setLoading(true);
+		fetchLastScan()
+			.then((scan) => {
+				setLastScan(scan);
+				setLoading(false);
+			});
 	}, []);
 
-	const lastScan = useMemo(() => {
-		let last = null;
-		for (const scan of (scans || [])) {
-			if (!last || scan.time > last.time) {
-				last = scan;
-			}
-		}
-		return last;
-	}, [scans]);
-
-	if (!scans) {
+	if (loading) {
 		return <Loading	/>;
 	}
 
-	const progress = box.progress || getProgress(box);
+	const progressKey = box.progress || getProgress(box);
 
-	const progressMeta = progresses.find((p) => p.key === progress);
+	const progress = progresses[progressKey];
 
 	const lastSeen = lastScan
 						? Math.round(haversineDistance(
@@ -125,14 +136,14 @@ export default function BoxCard({
 							>
 								<Pill
 									variant='solid'
-									text={t(progress)}
-									color={progressMeta.color}
-									icon={<progressMeta.icon />}
+									text={t(progressKey)}
+									color={progress.color}
+									icon={<progress.icon />}
 								/>
 								{lastScan &&
 									(
 										<Text
-											color={progressMeta.color}
+											color={progress.color}
 											opacity={.8}
 											textAlign='center'
 										>
