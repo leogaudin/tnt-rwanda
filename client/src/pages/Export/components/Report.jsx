@@ -18,23 +18,12 @@ import { haversineDistance } from '../../../service/utils';
 import { reportFields } from '../../../service/specific';
 import { useState } from 'react';
 
-function downloadJson(data, filename) {
-	const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-	saveAs(blob, filename + '.json');
-}
-
-function downloadCSV(data, filename) {
-	const csv = json2csv(data, {});
-	const blob = new Blob([csv], { type: 'text/csv' });
-	saveAs(blob, filename + '.csv');
-}
-
 export default function Report({ filters }) {
 	const { t } = useTranslation();
 	const [loading, setLoading] = useState(false);
 	const [loadingText, setLoadingText] = useState('');
 
-	const handleDownload = async (format) => {
+	const handleDownload = async () => {
 		try {
 			setLoading(true);
 			setLoadingText(t('boxesLoading'));
@@ -135,11 +124,9 @@ export default function Report({ filters }) {
 
 			const title = `${t('currentDeliveryReport')} - ${new Date().toISOString().slice(0, 10)}`;
 
-			if (format === 'csv') {
-				downloadCSV(toExport, title);
-			} else {
-				downloadJson(toExport, title);
-			}
+			const csv = json2csv(toExport, {});
+			const blob = new Blob([csv], { type: 'text/csv' });
+			saveAs(blob, `${title}.csv`);
 		} catch (error) {
 			console.error(error);
 			setLoading(false);
@@ -148,46 +135,32 @@ export default function Report({ filters }) {
 	}
 
 	return (
-		<Menu>
-			<MenuButton
-				as={Button}
-				variant='outline'
-				size='lg'
-				paddingY='1rem'
-				height='fit-content'
-				isLoading={loading}
-				loadingText={loadingText}
+		<Button
+			variant='outline'
+			size='lg'
+			paddingY='1rem'
+			height='fit-content'
+			isLoading={loading}
+			loadingText={loadingText}
+			onClick={handleDownload}
+		>
+			<HStack
+				width='100%'
+				gap={5}
 			>
-				<HStack
-					width='100%'
-					gap={5}
+				<Icon
+					as={icons.clock}
+					boxSize={5}
+				/>
+				<Stack
+					flexDirection='column'
+					alignItems='start'
+					textAlign='start'
 				>
-					<Icon
-						as={icons.clock}
-						boxSize={5}
-					/>
-					<Stack
-						flexDirection='column'
-						alignItems='start'
-						textAlign='start'
-					>
-						<Text>{t('currentDeliveryReport')}</Text>
-						<Text fontWeight='light' whiteSpace='normal'>{t('currentDeliveryReportDetail')}</Text>
-					</Stack>
-				</HStack>
-			</MenuButton>
-			<MenuList>
-				<MenuItem
-					onClick={() => handleDownload('csv')}
-				>
-					CSV
-				</MenuItem>
-				<MenuItem
-					onClick={() => handleDownload('json')}
-				>
-					JSON
-				</MenuItem>
-			</MenuList>
-		</Menu>
+					<Text>{t('currentDeliveryReport')}</Text>
+					<Text fontWeight='light' whiteSpace='normal'>{t('currentDeliveryReportDetail')}</Text>
+				</Stack>
+			</HStack>
+		</Button>
 	)
 }
