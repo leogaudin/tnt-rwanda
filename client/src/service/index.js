@@ -95,7 +95,6 @@ export async function fetchBoxes(filters = {}, sort = {}) {
 				boxes.push(...response.boxes);
 		}
 
-		boxes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 		return boxes;
 	} catch (err) {
 		console.error(err);
