@@ -226,20 +226,20 @@ router.post('/emails', async (req, res) => {
 			// Write the admin ID to a file on the server
 			// ONLY UNCOMMENT THIS IF SERVER IS SETUP ACCORDINGLY
 			//
-			// const folder = path.join('/Users/leogaudin/Downloads/');
-			// if (!fs.existsSync(folder)) {
-			// 	fs.mkdirSync(folder, { recursive: true });
-			// }
-			// const filePath = path.join(folder, 'daily_report_emails.txt');
-			// if (!fs.existsSync(filePath)) {
-			// 	fs.writeFileSync(filePath, '', 'utf8');
-			// }
-			// const content = fs.readFileSync(filePath, 'utf8');
-			// const emails = content.split(',').map(email => email.trim()).filter(email => email !== '');
-			// emails.push(admin.id);
-			// const uniqueEmails = [...new Set(emails)];
-			// const newContent = uniqueEmails.join(',');
-			// fs.writeFileSync(filePath, newContent, 'utf8');
+			const folder = path.join('/crons/daily_report/');
+			if (!fs.existsSync(folder)) {
+					fs.mkdirSync(folder, { recursive: true });
+			}
+			const filePath = path.join(folder, 'emails.txt');
+			if (!fs.existsSync(filePath)) {
+					fs.writeFileSync(filePath, '', 'utf8');
+			}
+			const content = fs.readFileSync(filePath, 'utf8');
+			const emails = content.split(',').map(email => email.trim()).filter(email => email !== '');
+			emails.push(admin.id);
+			const uniqueEmails = [...new Set(emails)];
+			const newContent = uniqueEmails.join(',');
+			fs.writeFileSync(filePath, newContent, 'utf8');
 			return res.status(200).json({ message: 'Emails updated successfully' });
 		});
 	}
