@@ -75,8 +75,12 @@ router.post('/', async (req, res) => {
 router.post('/report', async (req, res) => {
 	try {
 		const reportFields = [
-			'school',
 			'district',
+			'sector',
+			'cell',
+			'village',
+			'school',
+			'schoolCode',
 		];
 
 		const { skip, limit, filters } = getQuery(req);
