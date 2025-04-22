@@ -9,6 +9,7 @@ export const boxFields = {
 	cell: { type: String, required: true },
 	village: { type: String, required: true },
 	school: { type: String, required: true },
+	schoolCode: { type: String, required: true },
 	htName: { type: String, required: false },
 	htPhone: { type: String, required: false },
 };
