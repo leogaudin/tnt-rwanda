@@ -1,0 +1,7 @@
+api_base_url: "https://booktracking.reb.rw:8000/api"
+# api_base_url: "http://localhost:3000/api"
+smtp_server: "mail.reb.rw"
+smtp_port: 587
+sender_email: "trackandtrace@reb.rw"
+sender_password: "Mypassword@123"
+admin_ids_file: "/tnt-rwanda/crons/daily_report/emails.txt"
