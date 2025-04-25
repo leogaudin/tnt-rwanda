@@ -3,11 +3,14 @@
 
 # Config
 DAILY_REPORTS_DIR="/tnt-rwanda/crons/daily_report"
-# DAILY_REPORTS_DIR="/Users/leogaudin/Downloads/daily_report"
 VENV_PATH="$DAILY_REPORTS_DIR/.venv"
 PYTHON_SCRIPT="$DAILY_REPORTS_DIR/script.py"
 STDOUT_LOG="$DAILY_REPORTS_DIR/stdout.log"
 STDERR_LOG="$DAILY_REPORTS_DIR/stderr.log"
+
+# Output date to STDOUT_LOG and STDERR_LOG
+echo "$(date) - Starting daily report script" >> "$STDOUT_LOG"
+echo "$(date) - Starting daily report script" >> "$STDERR_LOG"
 
 # Exit immediately if a command exits with a non-zero status
 set -e
