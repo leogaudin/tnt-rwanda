@@ -4,7 +4,6 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import compression from 'compression';
 import https from 'https';
-import http from 'http';
 import fs from 'fs';
 
 import boxesController from './controllers/boxes.ctrl.js';
@@ -64,12 +63,5 @@ https.createServer({
 	cert: fs.readFileSync('/etc/letsencrypt/live/booktracking.reb.rw/fullchain.pem'),
 	key: fs.readFileSync('/etc/letsencrypt/live/booktracking.reb.rw/privkey.pem'),
 }, app).listen(apiPort, () => console.info(`Server running on port ${apiPort}`));
-
-http.createServer((req, res) => {
-        const host = req.headers['host'] || '';
-        const redirectUrl = `https://${host}${req.url}`;
-        res.writeHead(301, { "Location": redirectUrl });
-        res.end();
-}).listen(80, () => console.info(`HTTP redirect server running on port 80`));
 
 export default app;
