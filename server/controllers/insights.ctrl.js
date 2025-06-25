@@ -75,6 +75,7 @@ router.post('/', async (req, res) => {
 router.post('/report', async (req, res) => {
 	try {
 		const reportFields = [
+			'project',
 			'school',
 			'district',
 		];
