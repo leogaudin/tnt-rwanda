@@ -187,7 +187,7 @@ router.post('/coords', async (req, res) => {
 			const coordsUpdate = coords.map((box) => {
 				return {
 					updateMany: {
-						filter: { school: box.school, district: box.district, adminId: admin.id },
+						filter: { schoolCode: box.schoolCode },
 						update: { $set: { schoolLatitude: box.schoolLatitude, schoolLongitude: box.schoolLongitude } },
 						multi: true,
 					},
@@ -205,7 +205,7 @@ router.post('/coords', async (req, res) => {
 				.find(
 					{
 						adminId: admin.id,
-						$or: coords.map((box) => ({ school: box.school, district: box.district }))
+						$or: coords.map((box) => ({ schoolCode: box.schoolCode }))
 					},
 					{ schoolLatitude: 1, schoolLongitude: 1, id: 1, _id: 0 }
 				);
