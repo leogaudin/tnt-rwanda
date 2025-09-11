@@ -176,8 +176,10 @@ router.post('/report', async (req, res) => {
 					received: Number(Boolean(lastMarkedAsReceivedScan)),
 					receivedDistanceInMeters,
 					receivedDate: lastMarkedAsReceivedScan ? new Date(lastMarkedAsReceivedScan?.location.timestamp).toLocaleDateString() : '',
+					receivedComment: lastMarkedAsReceivedScan?.comment || '',
 					validated: Number(Boolean(lastValidatedScan)),
 					validatedDate: lastValidatedScan ? new Date(lastValidatedScan?.location.timestamp).toLocaleDateString() : '',
+					validatedComment: lastValidatedScan?.comment || '',
 					...(box.content || {}),
 				}
 
