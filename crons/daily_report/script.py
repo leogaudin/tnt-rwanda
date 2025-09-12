@@ -168,8 +168,16 @@ def main():
         email_data = get_emails(admin_id)
 
         for project, recipients in email_data.items():
-            report_file = get_report(admin_id, project)
-            log(f"Report fetched for {project} at {report_file}")
+            if not recipients:
+                log(f"No recipients for project {project}, skipping.")
+                continue
+            if not project.strip():
+                log("Project name is empty, skipping.")
+                continue
+            report_file = get_report(admin_id.strip(), project.strip())
+            if not report_file:
+                log(f"No report file for project {project}, skipping email.")
+                continue
             send_email(project, recipients, report_file)
 
     log("-------")
