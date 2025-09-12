@@ -206,10 +206,11 @@ router.get('/emails', async (req, res) => {
 		if (!admin)
 			return res.status(404).json({ error: `Admin not found` });
 
-		if (admin.publicInsights || req.headers['x-authorization'] === admin.apiKey) {
-			const emails = admin.projectEmails || {};
-			return res.status(200).json({ emails });
+		if (!admin.publicInsights && req.headers['x-authorization'] !== admin.apiKey) {
+			return res.status(401).json({ error: `Unauthorized` });
 		}
+		const emails = admin.projectEmails || {};
+		return res.status(200).json({ emails });
 	}
 	catch (error) {
 		console.error(error);
