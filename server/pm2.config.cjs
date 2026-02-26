@@ -1,7 +1,8 @@
 module.exports = {
 	apps: [{
 		name: 'tnt-server',
-		script: './index.js',
+		script: './index.ts',
+		interpreter: './node_modules/.bin/tsx',
 		watch: true,
 		env_production: {
 			NODE_ENV: 'production'
