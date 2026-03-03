@@ -139,7 +139,7 @@ export default function GlobalInsights({ rawInsights, id }: { rawInsights: Insig
                 </Flex>
             }
             insights={accumulated}
-            project={`${t('globalInsights')} (${selected!.join(', ')})`}
+            project={`${t('globalInsights')} (${selected?.join(', ') ?? ''})`}
         />
     )
 }
