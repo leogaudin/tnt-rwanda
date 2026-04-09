@@ -33,7 +33,7 @@ export const boxFields: Record<string, FieldDef> = {
 
 export const gpsUpdateFields = ['schoolCode'] as const;
 
-export const enableProjectEmails = false;
+export const enableProjectEmails = true;
 
 export const excludedKeys = [
 	'_id',
