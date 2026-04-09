@@ -104,6 +104,11 @@ export async function uploadDistributionList(file: File, setOutput: SetOutput) {
 			boxes.push(newBox);
 		},
 		complete: () => {
+			if (!boxes.length) {
+				setOutput((prev) => [...prev, `No valid items found.`]);
+				return;
+			}
+
 			setOutput((prev) => [
 				...prev,
 				`Retrieved ${boxes.length} items.`,
@@ -125,11 +130,13 @@ export async function uploadDistributionList(file: File, setOutput: SetOutput) {
 				};
 				uploadedBytes += payload.data.length;
 				callAPI('POST', 'boxes', payload)
-					.then((res) => {
-						if (res.status >= 400) throw new Error(res.statusText);
-						return res;
+					.then(async (res) => {
+						if (!res.ok) {
+							const text = await res.text();
+							throw new Error(text || res.statusText);
+						}
+						return res.json();
 					})
-					.then((res) => res.json())
 					.then((res) => {
 						responses.push(res);
 						uploaded += buffer.length;
@@ -209,11 +216,13 @@ export async function updateGPSCoordinates(file: File, setOutput: SetOutput) {
 			const processBuffer = (buffer: Record<string, any>[]) => {
 				const payload = { coords: buffer };
 				callAPI('POST', 'boxes/coords', payload)
-					.then((res) => {
-						if (res.status >= 400) throw new Error(res.statusText);
-						return res;
+					.then(async (res) => {
+						if (!res.ok) {
+							const text = await res.text();
+							throw new Error(text || res.statusText);
+						}
+						return res.json();
 					})
-					.then((res) => res.json())
 					.then((res) => {
 						responses.push(res);
 						uploaded += buffer.length;

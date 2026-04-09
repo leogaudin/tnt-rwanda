@@ -24,8 +24,17 @@ import type { Box, InsightBox, Scan, User, ProgressInfo, Route } from '../types'
 
 // ── User ──
 
-const stored = localStorage.getItem('user');
-export const user: User | null = stored ? JSON.parse(stored) : null;
+function parseUser(): User | null {
+	try {
+		const stored = localStorage.getItem('user');
+		return stored ? JSON.parse(stored) : null;
+	} catch {
+		localStorage.removeItem('user');
+		return null;
+	}
+}
+
+export const user: User | null = parseUser();
 
 export const navbarWidth = '250px';
 
