@@ -18,9 +18,14 @@ export default function BoxFiltering({
 	setFilters,
 	count,
 	setCount,
+}: {
+	filters?: Record<string, string>;
+	setFilters: (fn: (prev: Record<string, string>) => Record<string, string>) => void;
+	count: number;
+	setCount: (n: number) => void;
 }) {
 	const [loading, setLoading] = useState(false);
-	const [possibleValues, setPossibleValues] = useState({});
+	const [possibleValues, setPossibleValues] = useState<Record<string, string[]>>({});
 	const [query, setQuery] = useState('');
 
 	const { t } = useTranslation();
@@ -51,7 +56,7 @@ export default function BoxFiltering({
 							if (value?.length && field !== boxField)
 								return { ...acc, [field]: value };
 							return acc;
-						}, { adminId: user.id }),
+						}, { adminId: user!.id }),
 					}
 				);
 
@@ -77,7 +82,7 @@ export default function BoxFiltering({
 			'POST',
 			`boxes/count`,
 			{
-				filters: { ...filters, adminId: user.id },
+				filters: { ...filters, adminId: user!.id },
 			}
 		);
 
@@ -149,6 +154,7 @@ export default function BoxFiltering({
 					))}
 				</Select>
 				<IconButton
+					aria-label="Remove filter"
 					variant="outline"
 					icon={<icons.delete />}
 					onClick={() => removeFilter(field)}
@@ -180,6 +186,7 @@ export default function BoxFiltering({
 					return <FilterSelect key={field} field={field} value={value} />;
 				})}
 				<IconButton
+					aria-label="Add filter"
 					variant="outline"
 					icon={<icons.plus />}
 					onClick={addFilter}
@@ -200,7 +207,7 @@ export default function BoxFiltering({
 					onChange={(e) => setQuery(e.target.value)}
 					focusBorderColor={palette.text}
 				/>
-				<IconButton variant="outline" icon={<icons.search />} type="submit" />
+				<IconButton aria-label="Search" variant="outline" icon={<icons.search />} type="submit" />
 			</Flex>
 		</Stack>
 	);

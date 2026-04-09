@@ -15,8 +15,8 @@ export default function Insights({ rawInsights, id }) {
 
 	const grouped = computeInsights(rawInsights, { grouped: true });
 
-	const handleCopy = (project) => {
-		const link = `${window.location.href}insights/${user.id}?project=${encodeURIComponent(project)}`;
+	const handleCopy = (project: string) => {
+		const link = `${window.location.href}insights/${user!.id}?project=${encodeURIComponent(project)}`;
 		toast({
 			title: t('copied'),
 			status: 'success',
@@ -44,6 +44,7 @@ export default function Insights({ rawInsights, id }) {
 						menu={user &&
 							<Flex>
 								<IconButton
+									aria-label="Copy link"
 									variant='outline'
 									icon={<icons.link />}
 									onClick={() => handleCopy(project)}

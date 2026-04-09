@@ -1,16 +1,17 @@
 {
+	"$schema": "https://openapi.vercel.sh/vercel.json",
 	"version": 2,
 	"regions": ["bom1"],
 	"builds": [
 		{
-			"src": "./index.ts",
+			"src": "index.ts",
 			"use": "@vercel/node"
 		}
 	],
 	"routes": [
 		{
 			"src": "/(.*)",
-			"dest": "/",
+			"dest": "index.ts",
 			"methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
 			"headers": {
 			  "Access-Control-Allow-Origin": "*"

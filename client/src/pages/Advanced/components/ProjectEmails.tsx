@@ -6,7 +6,7 @@ import { callAPI, icons, user } from '../../../service';
 
 export default function ProjectEmails() {
     const { t } = useTranslation();
-    const [projectEmails, setProjectEmails] = useState([]);
+    const [projectEmails, setProjectEmails] = useState<{ project: string; emails: string }[]>([]);
 
     useEffect(() => {
         fetchEmails()
@@ -14,7 +14,7 @@ export default function ProjectEmails() {
                 if (data && data.emails) {
                     setProjectEmails(Object.entries(data.emails).map(([project, emails]) => ({
                         project,
-                        emails
+                        emails: String(emails),
                     })));
                 }
             })
@@ -28,7 +28,7 @@ export default function ProjectEmails() {
      */
     const fetchEmails = async () => {
         try {
-            const response = await callAPI('GET', `insights/emails?adminId=${user.id}`);
+            const response = await callAPI('GET', `insights/emails?adminId=${user!.id}`);
             if (response.status === 404)
                 return { emails: {} };
             if (!response.ok)
@@ -47,7 +47,7 @@ export default function ProjectEmails() {
         const response = await callAPI(
             'POST',
             'boxes/distinct/project',
-            { filters: { adminId: user.id } }
+            { filters: { adminId: user!.id } }
         )
         const json = await response.json();
         return json.distinct;
@@ -68,7 +68,7 @@ export default function ProjectEmails() {
     const handleSubmit = () => {
         callAPI(
             'POST',
-            `insights/emails?adminId=${user.id}`,
+            `insights/emails?adminId=${user!.id}`,
             {
                 emails: projectEmails.reduce((acc, { project, emails }) => {
                     acc[project] = emails;
@@ -97,7 +97,7 @@ export default function ProjectEmails() {
     const handleReset = () => {
         getProjects()
             .then((projects) => {
-                const emails = []
+                const emails: { project: string; emails: string }[] = []
                 projects.forEach((project) => {
                     emails.push({ project, emails: '' });
                 });
@@ -141,6 +141,7 @@ export default function ProjectEmails() {
                             }}
                         />
                         <IconButton
+                            aria-label="Remove email"
                             variant="outline"
                             icon={<icons.delete />}
                             onClick={() => {
@@ -153,6 +154,7 @@ export default function ProjectEmails() {
                     </HStack>
                 ))}
                 <IconButton
+                    aria-label="Add email"
                     variant="outline"
                     icon={<icons.plus />}
                     onClick={handleAddEmail}

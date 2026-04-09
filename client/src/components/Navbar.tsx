@@ -199,6 +199,7 @@ export default function Navbar() {
 					</Stack>
 					<Stack
 						align='center'
+						textAlign='center'
 						fontSize={'small'}
 					>
 						<Select
@@ -221,8 +222,10 @@ export default function Navbar() {
 						<Text>{t('loggedInAs')}</Text>
 						<Heading
 							fontSize='inherit'
+							textAlign='center'
+							wordBreak='break-all'
 						>
-							{user.email}
+							{user!.email}
 						</Heading>
 						<LogoutButton />
 					</Stack>

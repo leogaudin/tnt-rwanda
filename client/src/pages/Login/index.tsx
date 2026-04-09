@@ -91,7 +91,7 @@ export default function Login() {
 
 	useEffect(() => {
 		if (showFullForm)
-			document.getElementById('password').focus();
+			document.getElementById('password')?.focus();
 	}, [showFullForm]);
 
 	return (
@@ -105,6 +105,7 @@ export default function Login() {
 				mx='auto'
 				direction='column'
 				justify='center'
+				order={{ base: 2, md: 1 }}
 			>
 				<FormControl my={2} id='username' isRequired>
 					<FormLabel>{t('username')}</FormLabel>
