@@ -28,7 +28,9 @@ export default function BoxContent({
 				{t('content')}
 			</Heading>
 			<Stack
-				direction={{ base: 'column', md: 'row' }}
+				direction='row'
+				flexWrap='wrap'
+				justify='center'
 				gap={5}
 			>
 				{Object.entries(content).map(([element, quantity]) => {
