@@ -17,19 +17,19 @@ import { fetchBoxes, icons } from '../../../service';
 import { boxFields } from '../../../service/specific';
 import { Button, Text, Stack, HStack, Icon } from '@chakra-ui/react';
 
+Font.register({
+	family: 'Inter',
+	fonts: [
+		{ src: '/inter-regular.ttf' },
+		{ src: '/inter-black.ttf', fontWeight: 900 },
+	],
+});
+
 const PDFExport = ({ filters, folderName = 'Documents' }) => {
 	const { t } = useTranslation();
 	const [loading, setLoading] = useState(false);
 	const [pagesComplete, setPagesComplete] = useState(0);
 	const [loadingText, setLoadingText] = useState('');
-
-	Font.register({
-		family: 'Inter',
-		fonts: [
-			{ src: 'https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjQ.ttf' },
-			{ src: 'https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuDyYAZ9hjQ.ttf', fontWeight: 900 },
-		],
-	});
 
 	const styles = StyleSheet.create({
 		page: {
@@ -41,8 +41,8 @@ const PDFExport = ({ filters, folderName = 'Documents' }) => {
 		},
 		documentContainer: {
 			flexDirection: 'column',
-			height: '145mm',
-			width: '95mm',
+			height: '140mm',
+			width: '90mm',
 		},
 		infoHeading: {
 			fontSize: '5mm',
@@ -64,6 +64,7 @@ const PDFExport = ({ filters, folderName = 'Documents' }) => {
 			fontWeight: 900,
 		},
 		qrCodeContainer: {
+			flex: 1,
 			flexDirection: 'column',
 			alignItems: 'center',
 			justifyContent: 'center',
@@ -75,8 +76,9 @@ const PDFExport = ({ filters, folderName = 'Documents' }) => {
 		},
 		qrCode: {
 			margin: '2mm',
-			width: '70mm',
-			height: '70mm',
+			maxWidth: '70mm',
+			maxHeight: '70mm',
+			objectFit: 'contain',
 		},
 		serial: {
 			position: 'absolute',
