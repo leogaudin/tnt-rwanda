@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import {
 	haversineDistance,
 	groupByProperty,
-	getLatLngCenter,
+	getLngLatCenter,
 	getZoomLevel,
 } from '@client/service/utils.js';
 
@@ -63,20 +63,32 @@ describe('groupByProperty', () => {
 	});
 });
 
-describe('getLatLngCenter', () => {
+describe('getLngLatCenter', () => {
 	it('returns the single point when only one coordinate', () => {
-		const center = getLatLngCenter([[48.8566, 2.3522]]);
-		expect(center[0]).toBeCloseTo(48.8566, 2);
-		expect(center[1]).toBeCloseTo(2.3522, 2);
+		// Paris as [lng, lat]
+		const center = getLngLatCenter([[2.3522, 48.8566]]);
+		expect(center[0]).toBeCloseTo(2.3522, 2);
+		expect(center[1]).toBeCloseTo(48.8566, 2);
 	});
 
 	it('returns midpoint for two symmetric points', () => {
-		const center = getLatLngCenter([[10, 0], [-10, 0]]);
+		const center = getLngLatCenter([[10, 0], [-10, 0]]);
 		expect(center[0]).toBeCloseTo(0, 1);
 	});
 
 	it('returns an array with two elements', () => {
-		expect(getLatLngCenter([[48.8566, 2.3522], [51.5074, -0.1278]])).toHaveLength(2);
+		// Paris and London as [lng, lat]
+		expect(getLngLatCenter([[2.3522, 48.8566], [-0.1278, 51.5074]])).toHaveLength(2);
+	});
+
+	it('returns latitude in [-90, 90] for far-east longitudes (Philippines regression)', () => {
+		// Manila scan: lng=121.02, lat=14.55. A buggy [lat, lng] implementation
+		// would yield a "latitude" outside [-90, 90] which maplibre-gl rejects.
+		const center = getLngLatCenter([[121.0211041, 14.5548397]]);
+		expect(center[0]).toBeCloseTo(121.0211041, 4); // longitude
+		expect(center[1]).toBeCloseTo(14.5548397, 4);  // latitude
+		expect(center[1]).toBeGreaterThanOrEqual(-90);
+		expect(center[1]).toBeLessThanOrEqual(90);
 	});
 });
 

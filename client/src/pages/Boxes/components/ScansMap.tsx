@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { palette } from '../../../theme';
 import { Map, Marker } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { getLatLngCenter, getZoomLevel } from '../../../service/utils';
+import { getLngLatCenter, getZoomLevel } from '../../../service/utils';
 
 function ScansMap({
 	box,
@@ -33,7 +33,7 @@ function ScansMap({
 		]);
 
 	const initMap = () => {
-		const center = getLatLngCenter(coords);
+		const center = getLngLatCenter(coords);
 		const zoom = getZoomLevel(coords);
 
 		const map = new Map({

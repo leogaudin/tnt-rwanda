@@ -91,12 +91,22 @@ export function groupByProperty<T extends Record<string, any>>(
 	}, {});
 }
 
-export function getLatLngCenter(latLngInDegr: [number, number][]): [number, number] {
+/**
+ * Compute the geographic centroid of a set of points.
+ *
+ * Uses the [longitude, latitude] convention (matches maplibre-gl /
+ * GeoJSON), so the result can be fed directly into `Map({ center })`
+ * or `Marker.setLngLat(...)`.
+ *
+ * @param lngLatInDegr array of [longitude, latitude] pairs in degrees.
+ * @return [longitude, latitude] pair (in degrees) of the centroid.
+ */
+export function getLngLatCenter(lngLatInDegr: [number, number][]): [number, number] {
 	const toRad = (deg: number) => (deg * Math.PI) / 180;
 	const toDeg = (rad: number) => (rad * 180) / Math.PI;
 
-	const { sumX, sumY, sumZ } = latLngInDegr.reduce(
-		(acc, [lat, lng]) => {
+	const { sumX, sumY, sumZ } = lngLatInDegr.reduce(
+		(acc, [lng, lat]) => {
 			const latR = toRad(lat);
 			const lngR = toRad(lng);
 			return {
@@ -108,7 +118,7 @@ export function getLatLngCenter(latLngInDegr: [number, number][]): [number, numb
 		{ sumX: 0, sumY: 0, sumZ: 0 },
 	);
 
-	const n = latLngInDegr.length;
+	const n = lngLatInDegr.length;
 	const avgX = sumX / n;
 	const avgY = sumY / n;
 	const avgZ = sumZ / n;
@@ -117,7 +127,7 @@ export function getLatLngCenter(latLngInDegr: [number, number][]): [number, numb
 	const hyp = Math.sqrt(avgX ** 2 + avgY ** 2);
 	const lat = Math.atan2(avgZ, hyp);
 
-	return [toDeg(lat), toDeg(lng)];
+	return [toDeg(lng), toDeg(lat)];
 }
 
 export function getZoomLevel(markerCoords: [number, number][]): number {
