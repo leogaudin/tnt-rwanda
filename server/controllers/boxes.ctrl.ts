@@ -72,7 +72,11 @@ router.post('/query', async (req: Request, res: Response) => {
 				)
 				.sort(sort)
 				.skip(skip)
-				.limit(limit);
+				.limit(limit)
+				// Defense-in-depth: even if the sort can't be served by an index
+				// (missing index, ad-hoc sort field), let it spill to disk instead
+				// of throwing the 32MB in-memory sort error mid-pagination.
+				.allowDiskUse(true);
 
 			if (!boxes.length)
 				return res.status(404).json({ error: `No boxes available` });
