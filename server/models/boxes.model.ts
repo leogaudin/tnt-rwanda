@@ -50,4 +50,11 @@ const BoxSchema = new mongoose.Schema({
 	packingListId: { type: Number, required: false },
 });
 
+// Serves the boxes/query access pattern: filter by adminId (equality) and
+// sort by packingListId. Without this index MongoDB performs a blocking
+// in-memory sort, which is capped at 32MB and throws once the top-(skip+limit)
+// set exceeds it (e.g. paginating past ~30k fat box documents) — silently
+// truncating exports. The index lets the sort be served directly by the index.
+BoxSchema.index({ adminId: 1, packingListId: 1 });
+
 export default mongoose.model<IBox>('boxes', BoxSchema);

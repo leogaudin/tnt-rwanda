@@ -90,8 +90,26 @@ export async function fetchBoxes(
 				{ filters, sort },
 			);
 
-			if (request.status !== 200 || !request.ok)
+			// 404 is the server's benign "no boxes on this page" — a normal end
+			// of data, so stop the loop.
+			if (request.status === 404)
 				break;
+
+			// Any other non-2xx (e.g. a 500 from the sort exceeding MongoDB's
+			// memory limit) must NOT be swallowed: silently breaking here would
+			// return a partial set that looks complete and produce a truncated
+			// export. Throw so the failure surfaces instead.
+			if (!request.ok) {
+				let detail = '';
+				try {
+					const errJson = await request.json();
+					if (errJson?.error)
+						detail = `: ${typeof errJson.error === 'string' ? errJson.error : JSON.stringify(errJson.error)}`;
+				} catch {
+					// response body was not JSON; ignore
+				}
+				throw new Error(`Failed to fetch boxes at skip=${skip} (status ${request.status})${detail}`);
+			}
 
 			const response = await request.json();
 
