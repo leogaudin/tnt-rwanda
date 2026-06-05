@@ -25,4 +25,13 @@ const ScanSchema = new mongoose.Schema({
 	comment: { type: String, required: false },
 });
 
+// Serves the scan/query access pattern: filter by adminId (equality) and sort
+// by time desc. Without it MongoDB does a blocking in-memory sort (100MB cap),
+// the same failure class as the boxes export — the index provides the order.
+ScanSchema.index({ adminId: 1, time: -1 });
+// Serves per-box scan lookups (scan/box/:id, BoxCard) and the { boxId: { $in } }
+// bulk reads in coords/reindex/recalculate, which otherwise scan the whole
+// (fast-growing) scans collection.
+ScanSchema.index({ boxId: 1 });
+
 export default mongoose.model<IScan>('scans', ScanSchema);

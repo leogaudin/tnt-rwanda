@@ -56,5 +56,11 @@ const BoxSchema = new mongoose.Schema({
 // set exceeds it (e.g. paginating past ~30k fat box documents) — silently
 // truncating exports. The index lets the sort be served directly by the index.
 BoxSchema.index({ adminId: 1, packingListId: 1 });
+// Box.findOne({ id }) runs on every scan submission (and box lookups). The
+// app-level `id` is otherwise unindexed, forcing a full collection scan per
+// scan write — costly during bulk offline-sync replay. Left non-unique to
+// avoid a build failure if any duplicate ids already exist; can be tightened
+// to { unique: true } once the data is verified clean.
+BoxSchema.index({ id: 1 });
 
 export default mongoose.model<IBox>('boxes', BoxSchema);
