@@ -16,7 +16,10 @@ router.post('/query', async (req: Request, res: Response) => {
 				.find({ ...filters, adminId: admin.id })
 				.skip(skip)
 				.limit(limit)
-				.sort({ time: -1 });
+				// `time` alone is not unique (scans share timestamps), and a
+				// non-unique sort key lets MongoDB order ties differently per query,
+				// which breaks skip/limit pagination. `_id` makes the order total.
+				.sort({ time: -1, _id: 1 });
 
 			return res.status(200).json({ scans });
 		});

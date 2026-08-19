@@ -70,12 +70,20 @@ router.post('/query', async (req: Request, res: Response) => {
 					{ ...filters, adminId: admin.id },
 					{ scans: 0 },
 				)
-				.sort(sort)
+				// `_id` is appended as a tiebreaker so the ordering is a TOTAL order.
+				// skip/limit pagination is only correct over a stable sort: with no
+				// sort (sort === {}) or a non-unique one (packingListId), MongoDB is
+				// free to order equal/unsorted documents differently per query, so
+				// pages overlap and other documents are never returned at all —
+				// silently dropping rows from exports. `_id` is unique, so ties are
+				// impossible and every page is disjoint.
+				.sort({ ...sort, _id: 1 })
 				.skip(skip)
 				.limit(limit)
 				// Defense-in-depth: even if the sort can't be served by an index
 				// (missing index, ad-hoc sort field), let it spill to disk instead
-				// of throwing the 32MB in-memory sort error mid-pagination.
+				// of throwing the blocking-sort memory error (100MB on MongoDB 4.4+)
+				// mid-pagination.
 				.allowDiskUse(true);
 
 			if (!boxes.length)

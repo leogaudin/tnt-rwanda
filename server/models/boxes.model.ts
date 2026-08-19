@@ -52,10 +52,15 @@ const BoxSchema = new mongoose.Schema({
 
 // Serves the boxes/query access pattern: filter by adminId (equality) and
 // sort by packingListId. Without this index MongoDB performs a blocking
-// in-memory sort, which is capped at 32MB and throws once the top-(skip+limit)
+// in-memory sort, which is capped at 100MB (MongoDB 4.4+) and throws once the
+// top-(skip+limit)
 // set exceeds it (e.g. paginating past ~30k fat box documents) — silently
 // truncating exports. The index lets the sort be served directly by the index.
-BoxSchema.index({ adminId: 1, packingListId: 1 });
+BoxSchema.index({ adminId: 1, packingListId: 1, _id: 1 });
+// Serves the paginated paths that sort by `_id` alone (boxes/query with no
+// explicit sort, insights, insights/report): adminId equality + _id ordering
+// straight from the index, so no blocking sort regardless of result size.
+BoxSchema.index({ adminId: 1, _id: 1 });
 // Box.findOne({ id }) runs on every scan submission (and box lookups). The
 // app-level `id` is otherwise unindexed, forcing a full collection scan per
 // scan write — costly during bulk offline-sync replay. Left non-unique to
