@@ -65,6 +65,16 @@ router.post('/query', async (req: Request, res: Response) => {
 
 			const { skip, limit, filters, sort } = getQuery(req);
 
+			// The `_id` tiebreaker must point the SAME WAY as the caller's last sort
+			// key. A mixed-direction sort like { packingListId: 1, _id: -1 } cannot be
+			// served by traversing any single index — MongoDB falls back to a blocking
+			// sort, which throws at 32MB on these Atlas tiers. A uniform-direction sort
+			// is served by an index built in EITHER direction (forward or backward
+			// traversal), so this also makes the fix independent of how the backing
+			// index happened to be created.
+			const sortKeys = Object.keys(sort);
+			const tiebreak = sortKeys.length && Number(sort[sortKeys[sortKeys.length - 1]]) < 0 ? -1 : 1;
+
 			const boxes = await Box
 				.find(
 					{ ...filters, adminId: admin.id },
@@ -77,7 +87,7 @@ router.post('/query', async (req: Request, res: Response) => {
 				// pages overlap and other documents are never returned at all —
 				// silently dropping rows from exports. `_id` is unique, so ties are
 				// impossible and every page is disjoint.
-				.sort({ ...sort, _id: 1 })
+				.sort({ ...sort, _id: tiebreak })
 				.skip(skip)
 				.limit(limit)
 				// Defense-in-depth: even if the sort can't be served by an index

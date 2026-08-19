@@ -29,7 +29,11 @@ const ScanSchema = new mongoose.Schema({
 // by time desc. Without it MongoDB does a blocking in-memory sort (32MB cap on
 // these Atlas tiers),
 // the same failure class as the boxes export — the index provides the order.
-ScanSchema.index({ adminId: 1, time: -1, _id: 1 });
+// Ascending on purpose: a uniform-direction sort is served by traversing this
+// index forwards ({ time: 1, _id: 1 }) or backwards ({ time: -1, _id: -1 }), so
+// one index covers both and the declaration matches indexes already built by
+// hand on the clusters. BUILD IT BEFORE DEPLOYING (see boxes.model.ts).
+ScanSchema.index({ adminId: 1, time: 1, _id: 1 });
 // Serves per-box scan lookups (scan/box/:id, BoxCard) and the { boxId: { $in } }
 // bulk reads in coords/reindex/recalculate, which otherwise scan the whole
 // (fast-growing) scans collection.
