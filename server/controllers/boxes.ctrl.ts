@@ -65,17 +65,38 @@ router.post('/query', async (req: Request, res: Response) => {
 
 			const { skip, limit, filters, sort } = getQuery(req);
 
+			// The `_id` tiebreaker must point the SAME WAY as the caller's last sort
+			// key. A mixed-direction sort like { packingListId: 1, _id: -1 } cannot be
+			// served by traversing any single index — MongoDB falls back to a blocking
+			// sort, which throws at 32MB on these Atlas tiers. A uniform-direction sort
+			// is served by an index built in EITHER direction (forward or backward
+			// traversal), so this also makes the fix independent of how the backing
+			// index happened to be created.
+			const sortKeys = Object.keys(sort);
+			const tiebreak = sortKeys.length && Number(sort[sortKeys[sortKeys.length - 1]]) < 0 ? -1 : 1;
+
 			const boxes = await Box
 				.find(
 					{ ...filters, adminId: admin.id },
 					{ scans: 0 },
 				)
-				.sort(sort)
+				// `_id` is appended as a tiebreaker so the ordering is a TOTAL order.
+				// skip/limit pagination is only correct over a stable sort: with no
+				// sort (sort === {}) or a non-unique one (packingListId), MongoDB is
+				// free to order equal/unsorted documents differently per query, so
+				// pages overlap and other documents are never returned at all —
+				// silently dropping rows from exports. `_id` is unique, so ties are
+				// impossible and every page is disjoint.
+				.sort({ ...sort, _id: tiebreak })
 				.skip(skip)
 				.limit(limit)
 				// Defense-in-depth: even if the sort can't be served by an index
 				// (missing index, ad-hoc sort field), let it spill to disk instead
-				// of throwing the 32MB in-memory sort error mid-pagination.
+				// of throwing the blocking-sort memory error mid-pagination. NB: the
+				// limit is 32MB on the Atlas tiers these deployments run on (verified
+				// via explain: memLimit 33554432), not the 100MB MongoDB default, and
+				// allowDiskUse is ignored on Atlas M0/Flex — so the backing index, not
+				// this call, is what actually keeps the sort off the heap.
 				.allowDiskUse(true);
 
 			if (!boxes.length)

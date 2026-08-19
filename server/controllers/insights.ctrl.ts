@@ -47,8 +47,13 @@ router.post('/', async (req: Request, res: Response) => {
 					{ ...filters },
 					{ project: 1, statusChanges: 1, content: 1, _id: 0 }
 				)
+				// Stable total order — required for skip/limit to be correct. See
+				// the note in boxes.ctrl.ts. (Sorting on _id is unaffected by _id
+				// being excluded from the projection.)
+				.sort({ _id: 1 })
 				.skip(skip)
-				.limit(limit);
+				.limit(limit)
+				.allowDiskUse(true);
 
 			if (!boxes.length)
 				return res.status(404).json({ error: `No boxes available` });
@@ -89,8 +94,14 @@ router.post('/report', async (req: Request, res: Response) => {
 					{ ...filters },
 					`id schoolLatitude schoolLongitude statusChanges lastScan content createdAt ${reportFields.join(' ')}`
 				)
+				// Stable total order — without it this paginated report silently
+				// omits ~20-25% of rows and duplicates as many others, because the
+				// unsorted natural order is not consistent across the separate
+				// per-page queries. See the note in boxes.ctrl.ts.
+				.sort({ _id: 1 })
 				.skip(skip)
 				.limit(limit)
+				.allowDiskUse(true)
 				.lean<IBox[]>();
 
 			if (!boxes.length)
