@@ -52,10 +52,16 @@ const BoxSchema = new mongoose.Schema({
 
 // Serves the boxes/query access pattern: filter by adminId (equality) and
 // sort by packingListId. Without this index MongoDB performs a blocking
-// in-memory sort, which is capped at 100MB (MongoDB 4.4+) and throws once the
-// top-(skip+limit)
+// in-memory sort, which is capped at 32MB on these Atlas tiers (verified via
+// explain: memLimit 33554432) and throws once the top-(skip+limit)
 // set exceeds it (e.g. paginating past ~30k fat box documents) — silently
 // truncating exports. The index lets the sort be served directly by the index.
+// DEPLOY ORDER MATTERS: the previous index was { adminId, packingListId }, which
+// could serve sort({ packingListId: 1 }) but CANNOT serve sort({ packingListId: 1,
+// _id: 1 }) — verified by explain, it falls back to a blocking SORT. Build this
+// widened index on the cluster BEFORE (or together with) deploying the code, or
+// the label export runs a blocking sort against a 32MB cap in the meantime.
+// The old 2-field index is now redundant; Mongoose does not drop it.
 BoxSchema.index({ adminId: 1, packingListId: 1, _id: 1 });
 // Serves the paginated paths that sort by `_id` alone (boxes/query with no
 // explicit sort, insights, insights/report): adminId equality + _id ordering

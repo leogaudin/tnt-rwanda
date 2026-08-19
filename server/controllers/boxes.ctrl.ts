@@ -82,8 +82,11 @@ router.post('/query', async (req: Request, res: Response) => {
 				.limit(limit)
 				// Defense-in-depth: even if the sort can't be served by an index
 				// (missing index, ad-hoc sort field), let it spill to disk instead
-				// of throwing the blocking-sort memory error (100MB on MongoDB 4.4+)
-				// mid-pagination.
+				// of throwing the blocking-sort memory error mid-pagination. NB: the
+				// limit is 32MB on the Atlas tiers these deployments run on (verified
+				// via explain: memLimit 33554432), not the 100MB MongoDB default, and
+				// allowDiskUse is ignored on Atlas M0/Flex — so the backing index, not
+				// this call, is what actually keeps the sort off the heap.
 				.allowDiskUse(true);
 
 			if (!boxes.length)
