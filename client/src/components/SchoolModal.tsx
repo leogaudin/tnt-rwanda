@@ -31,10 +31,11 @@ export default function SchoolModal({
 	onClose: () => void;
 	school: School | null;
 }) {
+	const { t } = useTranslation();
+
 	if (!school || !school.boxes || !Array.isArray(school.boxes)) {
 		return null;
 	}
-	const { t } = useTranslation();
 
 	const projects: string[] = [...new Set(school.boxes.map((box: Box) => box.project))];
 

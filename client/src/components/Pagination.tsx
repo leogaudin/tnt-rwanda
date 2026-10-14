@@ -16,20 +16,21 @@ export default function Pagination({
 	pageSize,
 	setPageSize,
 }) {
+	const { t } = useTranslation();
+
+	useEffect(() => {
+		if (!length) return;
+		if (currentPage > Math.ceil(length / pageSize))
+			setCurrentPage(1);
+	}, [length, pageSize]);
+
 	if (!length || pageSize >= length)
 		return null;
 	const totalPages = Math.ceil(length / pageSize);
 	if (totalPages <= 1) return null;
 	const pages = Array.from(Array(totalPages).keys()).map(page => page + 1);
 
-	const { t } = useTranslation();
-
 	const pageSizes = [10, 20, 50, 100, 500];
-
-	useEffect(() => {
-		if (currentPage > Math.ceil(length / pageSize))
-			setCurrentPage(1);
-	}, [length, pageSize]);
 
 	const ThreeDots = () => {
 		return (

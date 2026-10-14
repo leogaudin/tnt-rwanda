@@ -15,12 +15,13 @@ export default function ProjectInsights({
     project,
     menu,
 }) {
+    const { t } = useTranslation();
+
     if (!insights || !insights.timeline || !insights.repartition)
         return <NothingToSee />;
 
     const { timeline, repartition } = insights;
     const progress = (repartition.validated / repartition.total) * 100;
-    const { t } = useTranslation();
 
     return (
         <Card

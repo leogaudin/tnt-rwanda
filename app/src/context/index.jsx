@@ -1,7 +1,7 @@
-import React, { createContext, useEffect, useState } from 'react';
+import React, { createContext, useEffect, useRef, useState } from 'react';
 import NetInfo from '@react-native-community/netinfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getString, removeValue, storeOfflineData } from '../service/storage';
+import { dedupeOfflineData, getString, removeValue, storeOfflineData } from '../service/storage';
 import { requestAllPermissions } from '../service/permissions';
 import { loginKey, offlineKey } from '../constants';
 
@@ -29,7 +29,11 @@ export const AppProvider = ({ children }) => {
 	const [offlineData, setOfflineData] = useState([]);
 	const [loading, setLoading] = useState(true);
 
+	const hydrated = useRef(false);
+
 	useEffect(() => {
+		if (!hydrated.current)
+			return;
 		storeOfflineData(offlineData);
 	}, [offlineData]);
 
@@ -52,10 +56,12 @@ export const AppProvider = ({ children }) => {
 		const retrieveOfflineData = async () => {
 			try {
 				const storedData = await AsyncStorage.getItem(offlineKey);
-				if (storedData && JSON.stringify(offlineData) !== storedData)
-					setOfflineData(JSON.parse(storedData));
+				if (storedData)
+					setOfflineData(dedupeOfflineData(JSON.parse(storedData)));
 			} catch (error) {
 				console.error('Error retrieving offline data:', error);
+			} finally {
+				hydrated.current = true;
 			}
 		};
 

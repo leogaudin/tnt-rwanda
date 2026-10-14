@@ -13,13 +13,14 @@ export default function UploadModal({
 	file,
 	handleFile,
 }) {
-	if (!file) return null;
 	const [output, setOutput] = useState([]);
 	const { t } = useTranslation();
 
 	useEffect(() => {
-		handleFile(file, setOutput);
+		if (file) handleFile(file, setOutput);
 	}, [file]);
+
+	if (!file) return null;
 
 	return (
 		<Modal

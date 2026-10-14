@@ -113,7 +113,7 @@ router.post('/query', async (req: Request, res: Response) => {
 router.post('/distinct/:field', async (req: Request, res: Response) => {
 	try {
 		const { filters } = getQuery(req);
-		if (!filters.adminId)
+		if (typeof filters.adminId !== 'string' || !filters.adminId)
 			return res.status(400).json({ error: 'Admin ID required' });
 
 		const admin = await Admin.findOne({ id: filters.adminId });
@@ -139,7 +139,7 @@ router.post('/distinct/:field', async (req: Request, res: Response) => {
 router.post('/count', async (req: Request, res: Response) => {
 	try {
 		const { filters } = getQuery(req);
-		if (!filters.adminId)
+		if (typeof filters.adminId !== 'string' || !filters.adminId)
 			return res.status(400).json({ error: 'Admin ID required' });
 
 		const admin = await Admin.findOne({ id: filters.adminId });

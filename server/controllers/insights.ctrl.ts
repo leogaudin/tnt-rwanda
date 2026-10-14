@@ -32,7 +32,7 @@ router.post('/toggle', async (req: Request, res: Response) => {
 router.post('/', async (req: Request, res: Response) => {
 	try {
 		const { skip, limit, filters } = getQuery(req);
-		if (!filters.adminId)
+		if (typeof filters.adminId !== 'string' || !filters.adminId)
 			return res.status(400).json({ error: 'Admin ID required' });
 
 		const admin = await Admin.findOne({ id: filters.adminId });
@@ -71,7 +71,7 @@ router.post('/report', async (req: Request, res: Response) => {
 		const reportFields = ['project', 'school', 'district'];
 
 		const { skip, limit, filters } = getQuery(req);
-		if (!filters.adminId)
+		if (typeof filters.adminId !== 'string' || !filters.adminId)
 			return res.status(400).json({ error: 'Admin ID required' });
 
 		const admin = await Admin.findOne({ id: filters.adminId });
@@ -191,7 +191,7 @@ router.post('/report', async (req: Request, res: Response) => {
 router.get('/emails', async (req: Request, res: Response) => {
 	try {
 		const adminId = req.query.adminId;
-		if (!adminId)
+		if (typeof adminId !== 'string' || !adminId)
 			return res.status(400).json({ error: 'Admin ID required' });
 
 		const admin = await Admin.findOne({ id: adminId });

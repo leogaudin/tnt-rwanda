@@ -59,10 +59,13 @@ function sampleToRepartition(sample: InsightBox[], notAfterTimestamp = Date.now(
 
 function getMinMax(arr: number[]): { min: number; max: number } {
 	if (!arr?.length) throw new Error('Invalid array');
-	return {
-		min: Math.min(...arr),
-		max: Math.max(...arr),
-	};
+	let min = arr[0];
+	let max = arr[0];
+	for (let i = 1; i < arr.length; i++) {
+		if (arr[i] < min) min = arr[i];
+		if (arr[i] > max) max = arr[i];
+	}
+	return { min, max };
 }
 
 function sampleToTimeline(sample: InsightBox[]) {

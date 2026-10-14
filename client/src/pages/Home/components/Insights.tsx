@@ -7,11 +7,11 @@ import { icons, user } from '../../../service';
 import { useTranslation } from 'react-i18next';
 
 export default function Insights({ rawInsights, id }) {
-	if (!rawInsights)
-		return <Loading />;
-
 	const toast = useToast();
 	const { t } = useTranslation();
+
+	if (!rawInsights)
+		return <Loading />;
 
 	const grouped = computeInsights(rawInsights, { grouped: true });
 
