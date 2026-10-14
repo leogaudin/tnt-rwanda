@@ -47,6 +47,19 @@ export function isFinalDestination(schoolCoords: Coordinates, boxCoords: BoxCoor
 
 import { Request } from 'express';
 
+/**
+ * Direction (1 or -1) for the `_id` tiebreaker, matching the last key of a
+ * sort. Accepts every direction spelling Mongoose accepts: 1, -1, '1', '-1',
+ * 'asc', 'desc', 'ascending', 'descending'.
+ */
+export function tiebreakDirection(sort: Record<string, any>): 1 | -1 {
+	const keys = Object.keys(sort ?? {});
+	if (!keys.length) return 1;
+	const direction = sort[keys[keys.length - 1]];
+	if (typeof direction === 'string' && /^desc(ending)?$/i.test(direction)) return -1;
+	return Number(direction) < 0 ? -1 : 1;
+}
+
 export function getQuery(req: Request) {
 	const skip = parseInt(req.query.skip as string);
 	const limit = parseInt(req.query.limit as string);

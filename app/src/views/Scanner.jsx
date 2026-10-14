@@ -1,5 +1,6 @@
 import { useContext, useState } from 'react';
-import { View } from 'react-native';
+import { Linking, View } from 'react-native';
+import { Text } from 'react-native-paper';
 import styles from '../theme/styles';
 import Toast from 'react-native-toast-message';
 import AppContext from '../context';
@@ -9,6 +10,38 @@ import IconButton from '../components/IconButton';
 import Flashlight from '../components/svg/Flashlight';
 import Offline from '../components/svg/Offline';
 import { Camera, useCameraDevice, useCodeScanner } from 'react-native-vision-camera';
+
+// Attribution notice required by the additional terms in LICENSE
+// (AGPL-3.0 section 7(b)). Do not remove or hide.
+function PoweredBy() {
+	return (
+		<Text
+			onPress={() => Linking.openURL('https://github.com/leogaudin/tnt')}
+			style={{
+				position: 'absolute',
+				bottom: 20,
+				alignSelf: 'center',
+				color: 'white',
+				fontSize: 12,
+				textShadowColor: 'black',
+				textShadowRadius: 4,
+			}}
+		>
+			Powered by TnT (Track-and-Trace)
+		</Text>
+	);
+}
+
+function NoCameraDeviceError() {
+	return (
+		<View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+			<Text style={{ textAlign: 'center' }}>
+				No camera was found on this device, so boxes cannot be scanned.
+			</Text>
+			<PoweredBy />
+		</View>
+	);
+}
 
 export default function Scanner() {
 	const device = useCameraDevice('back');
@@ -76,6 +109,7 @@ export default function Scanner() {
 				<IconButton onPress={() => setOfflineScansVisible(true)} icon={<Offline />} />
 				<IconButton onPress={() => setFlash(!flash)} icon={<Flashlight />} />
 			</View>
+			<PoweredBy />
 			<Toast />
 		</View>
 	);

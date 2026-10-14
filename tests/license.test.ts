@@ -1,0 +1,40 @@
+import { describe, it, expect } from 'vitest';
+import fs from 'fs';
+import path from 'path';
+
+const root = path.resolve(__dirname, '..');
+const read = (p: string) => fs.readFileSync(path.join(root, p), 'utf8');
+
+const NOTICE = 'Powered by TnT (Track-and-Trace)';
+const URL = 'https://github.com/leogaudin/tnt';
+
+describe('attribution notice required by LICENSE (AGPL section 7(b))', () => {
+	it('LICENSE still requires exactly this notice and URL', () => {
+		const license = read('LICENSE');
+		expect(license).toContain(NOTICE);
+		expect(license).toContain(URL);
+	});
+
+	it.each([
+		['web footer', 'client/src/components/RouteWrapper.tsx'],
+		['mobile scanner', 'app/src/views/Scanner.jsx'],
+	])('%s shows the notice and links to the upstream repository', (_name, file) => {
+		const src = read(file);
+		expect(src).toContain(NOTICE);
+		expect(src).toContain(URL);
+	});
+});
+
+describe('declared package licenses match LICENSE', () => {
+	it.each(['server', 'client', 'app'])('%s/package.json', (pkg) => {
+		expect(JSON.parse(read(`${pkg}/package.json`)).license).toBe('AGPL-3.0-only');
+	});
+
+	it('server/package-lock.json root entry', () => {
+		expect(JSON.parse(read('server/package-lock.json')).packages[''].license).toBe('AGPL-3.0-only');
+	});
+
+	it('LICENSE is the AGPL v3', () => {
+		expect(read('LICENSE')).toContain('GNU AFFERO GENERAL PUBLIC LICENSE');
+	});
+});

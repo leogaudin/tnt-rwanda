@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import Admin from '../models/admins.model';
 import Box from '../models/boxes.model';
 import { requireApiKey } from '../service/apiKey';
-import { generateId, getQuery, isFinalDestination } from '../service/index';
+import { generateId, getQuery, isFinalDestination, tiebreakDirection } from '../service/index';
 import lzstring from 'lz-string';
 import Scan from '../models/scans.model';
 import { indexStatusChanges } from '../service/stats';
@@ -72,8 +72,7 @@ router.post('/query', async (req: Request, res: Response) => {
 			// is served by an index built in EITHER direction (forward or backward
 			// traversal), so this also makes the fix independent of how the backing
 			// index happened to be created.
-			const sortKeys = Object.keys(sort);
-			const tiebreak = sortKeys.length && Number(sort[sortKeys[sortKeys.length - 1]]) < 0 ? -1 : 1;
+			const tiebreak = tiebreakDirection(sort);
 
 			const boxes = await Box
 				.find(

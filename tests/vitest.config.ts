@@ -10,6 +10,8 @@ export default defineConfig({
 			express: path.resolve(__dirname, '../server/node_modules/express'),
 			'@chakra-ui/react': path.resolve(__dirname, '../client/node_modules/@chakra-ui/react'),
 			'@react-native-async-storage/async-storage': path.resolve(__dirname, '../app/node_modules/@react-native-async-storage/async-storage'),
+			'react-router-dom': path.resolve(__dirname, '../client/node_modules/react-router-dom'),
+			'react-helmet-async': path.resolve(__dirname, '../client/node_modules/react-helmet-async'),
 			react: path.resolve(__dirname, '../client/node_modules/react'),
 			'react-dom': path.resolve(__dirname, '../client/node_modules/react-dom'),
 		},
