@@ -99,6 +99,9 @@ export function sampleToContent(sample: InsightBox[]): Record<string, ContentIte
 
 	for (const box of sample) {
 		for (const [item, count] of Object.entries(box.content ?? {})) {
+			// Items with a blank name or a non-numeric quantity come from malformed
+			// CSV imports and would show up as an empty "0/0" entry.
+			if (!item.trim() || typeof count !== 'number' || !Number.isFinite(count)) continue;
 			content[item] ??= { validated: 0, total: 0 };
 			content[item].total += count;
 			if (box.progress === 'validated' || box.statusChanges?.validated) {

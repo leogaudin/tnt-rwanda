@@ -82,3 +82,21 @@ export function getQuery(req: Request) {
 
 	return { skip, limit, filters, sort };
 }
+
+/**
+ * Cleans a box's `content` (item name -> quantity): drops items with a blank
+ * name and quantities that are not finite, non-negative numbers (a stray CSV
+ * column or an empty cell otherwise ends up as an item named "" or as null).
+ */
+export function sanitizeContent(content: unknown): Record<string, number> {
+	const clean: Record<string, number> = {};
+	if (!content || typeof content !== 'object' || Array.isArray(content)) return clean;
+
+	for (const [name, quantity] of Object.entries(content)) {
+		if (!name.trim()) continue;
+		if (typeof quantity !== 'number' || !Number.isFinite(quantity) || quantity < 0) continue;
+		clean[name] = quantity;
+	}
+
+	return clean;
+}

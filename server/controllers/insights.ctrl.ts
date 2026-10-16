@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import Admin from '../models/admins.model';
 import Box, { type IBox } from '../models/boxes.model';
 import Scan from '../models/scans.model';
-import { getQuery, haversineDistance } from '../service/index';
+import { getQuery, haversineDistance, sanitizeContent } from '../service/index';
 import { getLastScanWithConditions } from '../service/stats';
 import { requireApiKey } from '../service/apiKey';
 
@@ -172,7 +172,7 @@ router.post('/report', async (req: Request, res: Response) => {
 					validated: Number(Boolean(lastValidatedScan)),
 					validatedDate: lastValidatedScan ? new Date(lastValidatedScan?.location.timestamp).toLocaleDateString() : '',
 					validatedComment: lastValidatedScan?.comment || '',
-					...(box.content || {}),
+					...sanitizeContent(box.content),
 				};
 
 				toExport.push(row);
