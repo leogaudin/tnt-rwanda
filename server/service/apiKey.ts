@@ -22,5 +22,11 @@ export const requireApiKey = async (
 		return res.status(401).json({ error: 'Invalid API key' });
 	}
 
-	return next(admin);
+	try {
+		return await next(admin);
+	} catch (error) {
+		console.error(error);
+		if (!res.headersSent)
+			return res.status(500).json({ error: 'Internal server error' });
+	}
 };

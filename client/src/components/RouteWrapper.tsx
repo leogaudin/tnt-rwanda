@@ -1,4 +1,4 @@
-import { Flex } from '@chakra-ui/react';
+import { Flex, Link, Text } from '@chakra-ui/react';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { navbarWidth, user } from '../service';
@@ -36,6 +36,22 @@ export default function RouteWrapper({ route }) {
 					padding={5}
 				>
 					<route.component />
+					{/* Attribution notice required by the additional terms in LICENSE
+					    (AGPL-3.0 section 7(b)). Do not remove or hide. */}
+					<Text
+						as='footer'
+						fontSize='xs'
+						color='gray.500'
+						textAlign='center'
+						paddingTop={5}
+					>
+						<Link
+							href='https://github.com/leogaudin/tnt'
+							isExternal
+						>
+							Powered by TnT (Track-and-Trace)
+						</Link>
+					</Text>
 				</Flex>
 			</Flex>
 		</>

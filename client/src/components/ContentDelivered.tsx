@@ -36,7 +36,7 @@ export default function ContentDelivered({ content }) {
 							{t(item)}
 						</Heading>
 						<CircularProgress
-							value={100 * validated / total}
+							value={total ? 100 * validated / total : 0}
 							color={palette.text}
 							size='42px'
 						/>

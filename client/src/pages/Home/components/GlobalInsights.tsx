@@ -58,10 +58,10 @@ export default function GlobalInsights({ rawInsights, id }: { rawInsights: Insig
      * Edit mode
      */
     const Edit = () => {
+        const [loading, setLoading] = useState(false);
+
         if (!projects)
             return <Loading />;
-
-        const [loading, setLoading] = useState(false);
 
         /**
          * Handles the "apply" action and fetches updated insights

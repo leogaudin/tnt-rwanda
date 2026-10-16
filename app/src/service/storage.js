@@ -53,58 +53,59 @@ export const removeValue = async (key) => {
 };
 
 /**
- * Stores a scan object in the offline storage.
+ * Saves the offline queue in the offline storage (overwrites it).
  *
- * @param {Scan}	dataToSend	The scan object to store
+ * @param {Array<Scan>}	dataToStore	The full offline queue
  */
-export const storeOfflineData = (dataToSend) => {
-	AsyncStorage.getItem(offlineKey)
-		.then((data) => {
-			const existingData = [...(JSON.parse(data) || []), ...dataToSend];
-
-			AsyncStorage.setItem(offlineKey, JSON.stringify(existingData))
-				.catch((error) => {
-					console.error('Error storing offline data:', error);
-				});
-		})
+export const storeOfflineData = (dataToStore) => {
+	AsyncStorage.setItem(offlineKey, JSON.stringify(dataToStore))
 		.catch((error) => {
-			console.error('Error retrieving offline data:', error);
+			console.error('Error storing offline data:', error);
 		});
 };
 
 /**
- * Sends offline scans to the server.
+ * Removes duplicated scans (same box and same time) from a queue.
+ *
+ * @param {Array<Scan>}	queue	The offline queue
+ * @returns {Array<Scan>}		The queue without duplicates
+ */
+export const dedupeOfflineData = (queue) => {
+	const seen = new Set();
+	return queue.filter((scan) => {
+		const key = `${scan.boxId}|${scan.time}`;
+		if (seen.has(key))
+			return false;
+		seen.add(key);
+		return true;
+	});
+};
+
+/**
+ * Sends offline scans to the server, one at a time.
+ * Sent scans are removed from the queue; failed ones are kept.
  *
  * @param {Array<Scan>}	offlineData		The offline data to send
  * @param {Function}	setOfflineData	The function to set the offline data
- * @param {Array<Scan>}	failedData		The failed data to send
  */
-export const sendOfflineData = (offlineData, setOfflineData, failedData = []) => {
-	if (offlineData.length > 0) {
-		const scanToSend = offlineData[0];
-		sendScan(scanToSend)
-			.catch((error) => {
-				failedData.push(scanToSend);
-				console.error('Error sending offline data:', error)
-				console.error('Failed data:', failedData);
-				showToast(
-					'error',
-					'Error sending offline data',
-					'Offline data will be sent when connection is restored',
-				);
-			})
-			.finally(() => {
-				offlineData.shift();
-				AsyncStorage.setItem(offlineKey, JSON.stringify(offlineData))
-					.then(() => {
-						sendOfflineData(offlineData, setOfflineData, failedData);
-					})
-					.catch((error) => {
-						console.error('Error updating offline data:', error);
-					});
-			})
+export const sendOfflineData = async (offlineData, setOfflineData) => {
+	let failed = 0;
+
+	for (const scan of [...offlineData]) {
+		try {
+			await sendScan(scan);
+			setOfflineData((prev) => prev.filter((s) => s !== scan));
+		} catch (error) {
+			failed++;
+			console.error('Error sending offline data:', error);
+		}
 	}
-	else if (failedData.length > 0) {
-		setOfflineData((prev) => [...prev, ...failedData]);
+
+	if (failed > 0) {
+		showToast(
+			'error',
+			'Error sending offline data',
+			'Offline data will be sent when connection is restored',
+		);
 	}
 };

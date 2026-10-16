@@ -49,7 +49,7 @@ export default function OfflineScansModal({ visible, onClose }) {
 								<Button
 									mode='contained'
 									onPress={() => {
-										sendOfflineData(offlineData, setOfflineData, []);
+										sendOfflineData(offlineData, setOfflineData);
 										onClose();
 									}}
 									disabled={!hasInternetConnection}

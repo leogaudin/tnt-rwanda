@@ -59,10 +59,13 @@ function sampleToRepartition(sample: InsightBox[], notAfterTimestamp = Date.now(
 
 function getMinMax(arr: number[]): { min: number; max: number } {
 	if (!arr?.length) throw new Error('Invalid array');
-	return {
-		min: Math.min(...arr),
-		max: Math.max(...arr),
-	};
+	let min = arr[0];
+	let max = arr[0];
+	for (let i = 1; i < arr.length; i++) {
+		if (arr[i] < min) min = arr[i];
+		if (arr[i] > max) max = arr[i];
+	}
+	return { min, max };
 }
 
 function sampleToTimeline(sample: InsightBox[]) {
@@ -96,6 +99,9 @@ export function sampleToContent(sample: InsightBox[]): Record<string, ContentIte
 
 	for (const box of sample) {
 		for (const [item, count] of Object.entries(box.content ?? {})) {
+			// Items with a blank name or a non-numeric quantity come from malformed
+			// CSV imports and would show up as an empty "0/0" entry.
+			if (!item.trim() || typeof count !== 'number' || !Number.isFinite(count)) continue;
 			content[item] ??= { validated: 0, total: 0 };
 			content[item].total += count;
 			if (box.progress === 'validated' || box.statusChanges?.validated) {

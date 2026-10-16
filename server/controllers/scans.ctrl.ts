@@ -2,7 +2,7 @@ import Box from '../models/boxes.model';
 import Scan from '../models/scans.model';
 import express, { Request, Response } from 'express';
 import { generateId, getQuery, isFinalDestination } from '../service/index';
-import { getProgress } from '../service/stats';
+import { refreshBoxState } from '../service/recompute';
 import { requireApiKey } from '../service/apiKey';
 
 const router = express.Router();
@@ -96,47 +96,19 @@ router.post('/', async (req: Request, res: Response) => {
 			comment,
 			operatorId,
 			location,
+			// Intentionally the server's clock, not the `time` sent by the app.
 			time: Date.now(),
 			markedAsReceived,
 			finalDestination: isFinalDestination(schoolCoords, scanCoords),
 		};
 
-		const statusChanges = box.statusChanges || {
-			inProgress: null,
-			received: null,
-			reachedGps: null,
-			reachedAndReceived: null,
-			validated: null,
-		};
-
-		if (scan.finalDestination && scan.markedAsReceived && !statusChanges.validated) {
-			statusChanges.validated = { scan: scan.id, time: scan.time };
-		} else if (scan.finalDestination) {
-			if (statusChanges.received && !statusChanges.reachedAndReceived) {
-				statusChanges.reachedAndReceived = { scan: scan.id, time: scan.time };
-			} else if (!statusChanges.reachedGps) {
-				statusChanges.reachedGps = { scan: scan.id, time: scan.time };
-			}
-		} else if (scan.markedAsReceived) {
-			if (statusChanges.reachedGps && !statusChanges.reachedAndReceived) {
-				statusChanges.reachedAndReceived = { scan: scan.id, time: scan.time };
-			} else if (!statusChanges.received) {
-				statusChanges.received = { scan: scan.id, time: scan.time };
-			}
-		} else if (Object.values(statusChanges).every((status) => !status)) {
-			statusChanges.inProgress = { scan: scan.id, time: scan.time };
-		}
-
 		const newScan = new Scan(scan);
 		await newScan.save();
 
-		await Box.updateOne({ id: boxId }, {
-			$set: {
-				statusChanges,
-				progress: getProgress({ statusChanges }),
-				lastScan: { scan: newScan.id, time: newScan.time },
-			},
-		});
+		// The box's stored status is rebuilt from all of its scans rather than
+		// patched with this one, so scans arriving at the same time cannot
+		// overwrite each other.
+		await refreshBoxState(boxId);
 
 		return res.status(200).json({ message: 'Scan added successfully', scan: newScan });
 	} catch (error) {
