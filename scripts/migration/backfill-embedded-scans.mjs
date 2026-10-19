@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Copies scans that only exist inside a box (legacy `box.scans`) into the scans collection, because optimized only reads
+// Copies scans that only exist inside a box (legacy `box.scans`) into the scans collection, because the current server only reads
 // the collection. Idempotent: scans whose `id` is already in the collection are skipped. Never touches the boxes.
 //   STRING_URI=... node scripts/migration/backfill-embedded-scans.mjs --db <staging name> [--confirm]
 // Without --confirm it only reports. Writes need --db <staging name> or --production.
