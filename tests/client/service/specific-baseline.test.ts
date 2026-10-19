@@ -10,11 +10,13 @@ import {
 	excludedKeys,
 } from '@client/service/specific.js';
 import { boxFields as serverBoxFields } from '@server/models/boxes.model.js';
+import { selectedCountry } from '../../countries-select';
 
 const requiredOnly = (fields: Record<string, { required: boolean }>) =>
 	Object.fromEntries(Object.entries(fields).map(([k, v]) => [k, { required: v.required }]));
 
-describe('_default config keeps the pre-refactor values', () => {
+// Only meaningful for the test-only _default country (other countries are checked by countries/consistency.test.ts)
+describe.runIf(selectedCountry('client') === '_default' && selectedCountry('server') === '_default')('_default config keeps the pre-refactor values', () => {
 	it('name and colors', () => {
 		expect(name).toBe(baseline.name);
 		expect(colors).toEqual(baseline.colors);

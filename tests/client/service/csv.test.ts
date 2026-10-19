@@ -184,48 +184,74 @@ describe('parseGPSUpdateRow', () => {
 	});
 });
 
-// ── E2E-like: inline CSV → Papa Parse → parse functions ──
+// ── E2E-like: CSV text built from the selected country's fields → Papa Parse → parse functions ──
+
+const requiredFields = Object.keys(boxFields).filter((f) => boxFields[f].required);
+const optionalFields = Object.keys(boxFields).filter((f) => !boxFields[f].required);
+const firstGps = gpsUpdateFields[0];
+
+const toCsv = (rows: string[][], delimiter = ',') => rows.map((r) => r.join(delimiter)).join('\n');
+const distributionCsv = (rows: string[][], extraHeader: string[] = [], delimiter = ',') =>
+	toCsv([[...distributionFields, ...extraHeader], ...rows], delimiter);
+const gpsCsv = (rows: string[][], delimiter = ',') => toCsv(rows, delimiter);
+
+function parseDistributionCsv(csv: string, delimiter?: string) {
+	const boxes: Record<string, unknown>[] = [];
+	const errors: string[] = [];
+	Papa.parse<Record<string, string>>(csv, {
+		skipEmptyLines: true,
+		header: true,
+		...(delimiter ? { delimiter } : {}),
+		step: (element) => {
+			const values: string[] = Object.values(element.data);
+			const result = parseDistributionRow(values, 'admin1');
+			if ('error' in result) errors.push(result.error);
+			else boxes.push(result.box);
+		},
+	});
+	return { boxes, errors };
+}
+
+function parseGpsCsv(csv: string, delimiter?: string) {
+	const boxes: Record<string, unknown>[] = [];
+	const errors: string[] = [];
+	let rowIdx = 0;
+	Papa.parse<string[]>(csv, {
+		skipEmptyLines: true,
+		...(delimiter ? { delimiter } : {}),
+		step: (element) => {
+			const result = parseGPSUpdateRow(element.data, rowIdx === 0);
+			if ('error' in result) errors.push(result.error);
+			else boxes.push(result.box);
+			rowIdx++;
+		},
+	});
+	return { boxes, errors };
+}
 
 describe('E2E: distribution list CSV', () => {
-	const CSV_VALID = [
-		'project,division,district,zone,school,htName,htPhone,schoolCode,schoolLatitude,schoolLongitude',
-		'Alpha,North,D1,Z1,Springfield Elementary,Seymour Skinner,+1555123,SPR001,48.8566,2.3522',
-		'Alpha,South,D2,Z2,Shelbyville School,Mr Burns,+1555999,SHE002,40.7128,-74.0060',
-	].join('\n');
-
 	it('parses all rows successfully', () => {
-		const boxes: Record<string, unknown>[] = [];
-		const errors: string[] = [];
-
-		Papa.parse<Record<string, string>>(CSV_VALID, {
-			skipEmptyLines: true,
-			header: true,
-			step: (element) => {
-				const values: string[] = Object.values(element.data);
-				const result = parseDistributionRow(values, 'admin1');
-				if ('error' in result) errors.push(result.error);
-				else boxes.push(result.box);
-			},
-		});
+		const csv = distributionCsv([
+			makeDistributionRow({ project: 'Alpha' }),
+			makeDistributionRow({ project: 'Beta', schoolLatitude: '40.7128', schoolLongitude: '-74.0060' }),
+		]);
+		const { boxes, errors } = parseDistributionCsv(csv);
 
 		expect(errors).toHaveLength(0);
 		expect(boxes).toHaveLength(2);
 		expect(boxes[0].project).toBe('Alpha');
-		expect(boxes[0].school).toBe('Springfield Elementary');
+		for (const field of Object.keys(boxFields)) {
+			if (field !== 'project') expect(boxes[0][field]).toBe(`val_${field}`);
+		}
 		expect(boxes[0].schoolLatitude).toBe(48.8566);
 		expect(boxes[0].adminId).toBe('admin1');
 		expect(boxes[1].schoolLongitude).toBe(-74.006);
 	});
 
 	it('handles extra content columns', () => {
-		const csv = [
-			'project,division,district,zone,school,htName,htPhone,schoolCode,schoolLatitude,schoolLongitude,books,pens',
-			'Alpha,North,D1,Z1,School A,Teacher,+1555000,SC001,48.8566,2.3522,100,50',
-		].join('\n');
+		const csv = distributionCsv([[...makeDistributionRow(), '100', '50']], ['books', 'pens']);
 
 		const boxes: Record<string, unknown>[] = [];
-		const fields = [...Object.keys(boxFields), 'schoolLatitude', 'schoolLongitude'];
-
 		Papa.parse<Record<string, string>>(csv, {
 			skipEmptyLines: true,
 			header: true,
@@ -233,11 +259,11 @@ describe('E2E: distribution list CSV', () => {
 				const values: string[] = Object.values(element.data);
 				const result = parseDistributionRow(values, 'admin1');
 				if ('box' in result) {
-					const contentFields = element.meta.fields!.slice(fields.length);
+					const contentFields = element.meta.fields!.slice(distributionFields.length);
 					if (contentFields.length) {
 						result.box.content = {} as Record<string, number>;
 						contentFields.forEach((field: string, index: number) => {
-							result.box.content[field] = parseInt(values[index + fields.length]);
+							result.box.content[field] = parseInt(values[index + distributionFields.length]);
 						});
 					}
 					boxes.push(result.box);
@@ -246,179 +272,73 @@ describe('E2E: distribution list CSV', () => {
 		});
 
 		expect(boxes).toHaveLength(1);
-		expect(boxes[0].content).toBeDefined();
 		expect((boxes[0].content as Record<string, number>).books).toBe(100);
 		expect((boxes[0].content as Record<string, number>).pens).toBe(50);
 	});
 
-	it('reports errors for rows with missing required fields', () => {
-		const csv = [
-			'project,division,district,zone,school,htName,htPhone,schoolCode,schoolLatitude,schoolLongitude',
-			',North,D1,Z1,School A,Teacher,+1555000,SC001,48.8566,2.3522',
-		].join('\n');
-
-		const errors: string[] = [];
-		Papa.parse<Record<string, string>>(csv, {
-			skipEmptyLines: true,
-			header: true,
-			step: (element) => {
-				const values: string[] = Object.values(element.data);
-				const result = parseDistributionRow(values, 'admin1');
-				if ('error' in result) errors.push(result.error);
-			},
-		});
-
+	it.each(requiredFields)('reports an error when the required field "%s" is empty', (field) => {
+		const { boxes, errors } = parseDistributionCsv(distributionCsv([makeDistributionRow({ [field]: '' })]));
+		expect(boxes).toHaveLength(0);
 		expect(errors).toHaveLength(1);
-		expect(errors[0]).toContain('project');
+		expect(errors[0]).toContain(field);
 	});
 
 	it('reports errors for invalid coordinates', () => {
-		const csv = [
-			'project,division,district,zone,school,htName,htPhone,schoolCode,schoolLatitude,schoolLongitude',
-			'Alpha,North,D1,Z1,School A,Teacher,+1555000,SC001,not_a_number,2.3522',
-		].join('\n');
-
-		const errors: string[] = [];
-		Papa.parse<Record<string, string>>(csv, {
-			skipEmptyLines: true,
-			header: true,
-			step: (element) => {
-				const values: string[] = Object.values(element.data);
-				const result = parseDistributionRow(values, 'admin1');
-				if ('error' in result) errors.push(result.error);
-			},
-		});
-
+		const { errors } = parseDistributionCsv(distributionCsv([makeDistributionRow({ schoolLatitude: 'not_a_number' })]));
 		expect(errors).toHaveLength(1);
 		expect(errors[0]).toContain('Latitude');
 	});
 
 	it('handles comma-separated decimals in CSV', () => {
-		const csv = [
-			'project;division;district;zone;school;htName;htPhone;schoolCode;schoolLatitude;schoolLongitude',
-			'Alpha;North;D1;Z1;School A;Teacher;+1555000;SC001;48,8566;2,3522',
-		].join('\n');
-
-		const boxes: Record<string, unknown>[] = [];
-		Papa.parse<Record<string, string>>(csv, {
-			skipEmptyLines: true,
-			header: true,
-			delimiter: ';',
-			step: (element) => {
-				const values: string[] = Object.values(element.data);
-				const result = parseDistributionRow(values, 'admin1');
-				if ('box' in result) boxes.push(result.box);
-			},
-		});
+		const csv = distributionCsv([makeDistributionRow({ schoolLatitude: '48,8566', schoolLongitude: '2,3522' })], [], ';');
+		const { boxes } = parseDistributionCsv(csv, ';');
 
 		expect(boxes).toHaveLength(1);
 		expect(boxes[0].schoolLatitude).toBeCloseTo(48.8566, 3);
 		expect(boxes[0].schoolLongitude).toBeCloseTo(2.3522, 3);
 	});
 
-	it('allows optional fields to be empty in CSV', () => {
-		const csv = [
-			'project,division,district,zone,school,htName,htPhone,schoolCode,schoolLatitude,schoolLongitude',
-			'Alpha,,D1,,School A,,,SC001,48.8566,2.3522',
-		].join('\n');
+	it.runIf(optionalFields.length > 0)('allows optional fields to be empty in CSV', () => {
+		const empty = Object.fromEntries(optionalFields.map((f) => [f, '']));
+		const { boxes, errors } = parseDistributionCsv(distributionCsv([makeDistributionRow(empty)]));
 
-		const boxes: Record<string, unknown>[] = [];
-		Papa.parse<Record<string, string>>(csv, {
-			skipEmptyLines: true,
-			header: true,
-			step: (element) => {
-				const values: string[] = Object.values(element.data);
-				const result = parseDistributionRow(values, 'admin1');
-				if ('box' in result) boxes.push(result.box);
-			},
-		});
-
+		expect(errors).toHaveLength(0);
 		expect(boxes).toHaveLength(1);
-		expect(boxes[0].project).toBe('Alpha');
-		expect(boxes[0].division).toBe('');
+		for (const field of optionalFields) expect(boxes[0][field]).toBe('');
 	});
 });
 
 describe('E2E: GPS coordinates CSV', () => {
+	const gpsRow = (key: string, lat = '48.8566', lng = '2.3522') =>
+		[...gpsUpdateFields.map((f) => `${key}_${f}`), lat, lng];
+
 	it('parses a valid GPS CSV', () => {
-		const csv = [
-			'SC001,48.8566,2.3522',
-			'SC002,40.7128,-74.0060',
-		].join('\n');
-
-		const boxes: Record<string, unknown>[] = [];
-		const errors: string[] = [];
-		let rowIdx = 0;
-
-		Papa.parse<string[]>(csv, {
-			skipEmptyLines: true,
-			step: (element) => {
-				const result = parseGPSUpdateRow(element.data, rowIdx === 0);
-				if ('error' in result) errors.push(result.error);
-				else boxes.push(result.box);
-				rowIdx++;
-			},
-		});
+		const { boxes, errors } = parseGpsCsv(gpsCsv([gpsRow('SC001'), gpsRow('SC002', '40.7128', '-74.0060')]));
 
 		expect(errors).toHaveLength(0);
 		expect(boxes).toHaveLength(2);
-		expect(boxes[0].schoolCode).toBe('SC001');
+		for (const f of gpsUpdateFields) expect(boxes[0][f]).toBe(`SC001_${f}`);
 		expect(boxes[0].schoolLatitude).toBe(48.8566);
 		expect(boxes[1].schoolLongitude).toBe(-74.006);
 	});
 
 	it('skips header row gracefully', () => {
-		const csv = [
-			'schoolCode,schoolLatitude,schoolLongitude',
-			'SC001,48.8566,2.3522',
-		].join('\n');
-
-		const boxes: Record<string, unknown>[] = [];
-		let rowIdx = 0;
-
-		Papa.parse<string[]>(csv, {
-			skipEmptyLines: true,
-			step: (element) => {
-				const result = parseGPSUpdateRow(element.data, rowIdx === 0);
-				if ('box' in result) boxes.push(result.box);
-				rowIdx++;
-			},
-		});
-
+		const { boxes } = parseGpsCsv(gpsCsv([[...gpsFields], gpsRow('SC001')]));
 		expect(boxes).toHaveLength(1);
-		expect(boxes[0].schoolCode).toBe('SC001');
+		expect(boxes[0][firstGps]).toBe(`SC001_${firstGps}`);
 	});
 
 	it('reports errors for missing fields', () => {
-		const csv = [
-			',48.8566,2.3522',
-		].join('\n');
-
-		const errors: string[] = [];
-		Papa.parse<string[]>(csv, {
-			skipEmptyLines: true,
-			step: (element) => {
-				const result = parseGPSUpdateRow(element.data, false);
-				if ('error' in result) errors.push(result.error);
-			},
-		});
+		const row = gpsRow('SC001');
+		row[0] = '';
+		const { errors } = parseGpsCsv(gpsCsv([row]));
 
 		expect(errors).toHaveLength(1);
-		expect(errors[0]).toContain('schoolCode');
+		expect(errors[0]).toContain(firstGps);
 	});
 
 	it('handles semicolon-delimited GPS CSV with comma decimals', () => {
-		const csv = 'SC001;48,8566;2,3522';
-		const boxes: Record<string, unknown>[] = [];
-
-		Papa.parse<string[]>(csv, {
-			skipEmptyLines: true,
-			delimiter: ';',
-			step: (element) => {
-				const result = parseGPSUpdateRow(element.data, false);
-				if ('box' in result) boxes.push(result.box);
-			},
-		});
+		const { boxes } = parseGpsCsv(gpsCsv([gpsRow('SC001', '48,8566', '2,3522')], ';'), ';');
 
 		expect(boxes).toHaveLength(1);
 		expect(boxes[0].schoolLatitude).toBeCloseTo(48.8566, 3);
@@ -426,28 +346,14 @@ describe('E2E: GPS coordinates CSV', () => {
 	});
 
 	it('processes multi-row CSV with mixed valid/invalid rows', () => {
-		const csv = [
-			'SC001,48.8566,2.3522',
-			'SC002,invalid,2.3522',
-			'SC003,40.7128,-74.0060',
-		].join('\n');
-
-		const boxes: Record<string, unknown>[] = [];
-		const errors: string[] = [];
-
-		Papa.parse<string[]>(csv, {
-			skipEmptyLines: true,
-			step: (element) => {
-				const result = parseGPSUpdateRow(element.data, false);
-				if ('error' in result) errors.push(result.error);
-				else boxes.push(result.box);
-			},
-		});
+		const { boxes, errors } = parseGpsCsv(
+			gpsCsv([gpsRow('SC001'), gpsRow('SC002', 'invalid'), gpsRow('SC003', '40.7128', '-74.0060')]),
+		);
 
 		expect(boxes).toHaveLength(2);
 		expect(errors).toHaveLength(1);
 		expect(errors[0]).toContain('Latitude');
-		expect(boxes[0].schoolCode).toBe('SC001');
-		expect(boxes[1].schoolCode).toBe('SC003');
+		expect(boxes[0][firstGps]).toBe(`SC001_${firstGps}`);
+		expect(boxes[1][firstGps]).toBe(`SC003_${firstGps}`);
 	});
 });

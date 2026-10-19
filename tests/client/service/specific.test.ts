@@ -8,28 +8,9 @@ import {
 	gpsUpdateFields,
 	excludedKeys,
 } from '@client/service/specific.js';
-import { boxFields as serverBoxFieldsRaw } from '@server/models/boxes.model.js';
-
-const serverBoxFields: Record<string, { type: StringConstructor; required: boolean }> = serverBoxFieldsRaw;
 import { colors as appColors, API_URL as appApiUrl } from '@app/service/specific.js';
 
-// ── boxFields synchronization ──
-
-describe('boxFields synchronization (client ↔ server)', () => {
-	it('client and server boxFields have the same keys', () => {
-		const clientKeys = Object.keys(boxFields).sort();
-		const serverKeys = Object.keys(serverBoxFields).sort();
-		expect(clientKeys).toEqual(serverKeys);
-	});
-
-	it('each field has matching required property', () => {
-		for (const key of Object.keys(boxFields)) {
-			expect(boxFields[key].required).toBe(
-				serverBoxFields[key].required,
-			);
-		}
-	});
-});
+// boxFields client ↔ server synchronization is checked for every country by countries/consistency.test.ts
 
 // ── specific.js contract (client) ──
 
