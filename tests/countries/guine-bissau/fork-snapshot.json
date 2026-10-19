@@ -3,10 +3,9 @@
 	"group": "A",
 	"source": "tnt-guine-bissau origin/main 05b87e1",
 	"client": {
-		"name": "TnT Guiné-Bissau 🇬🇼",
-		"title": "TnT Guiné-Bissau",
+		"name": "TnT Guin\u00e9-Bissau \ud83c\uddec\ud83c\uddfc",
+		"title": "TnT Guin\u00e9-Bissau",
 		"shortName": "TnT GB",
-		"faviconSize": "96x96",
 		"apiUrl": "https://tnt-guine-bissau-api.vercel.app/api",
 		"colors": {
 			"lightest": "#E6F5EC",
@@ -57,9 +56,9 @@
 				"htPhone": "Director Phone"
 			},
 			"fr": {
-				"region": "Région",
+				"region": "R\u00e9gion",
 				"sector": "Secteur",
-				"school": "Nom de l'établissement"
+				"school": "Nom de l'\u00e9tablissement"
 			}
 		},
 		"extraLocaleKeys": {
@@ -125,7 +124,7 @@
 	"knownIssues": [],
 	"app": {
 		"applicationId": "com.tntguinebissau.scanner",
-		"appName": "TnT Guiné-Bissau",
+		"appName": "TnT Guin\u00e9-Bissau",
 		"apiUrl": "https://tnt-guine-bissau-api.vercel.app/api",
 		"colors": {
 			"lightest": "#E6F5EC",

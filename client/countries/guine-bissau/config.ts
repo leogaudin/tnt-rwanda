@@ -4,7 +4,6 @@ export default {
 	name: 'TnT Guiné-Bissau 🇬🇼',
 	title: 'TnT Guiné-Bissau',
 	shortName: 'TnT GB',
-	faviconSize: '96x96',
 	apiUrl: 'https://tnt-guine-bissau-api.vercel.app/api',
 	colors: {
 		lightest: '#E6F5EC',

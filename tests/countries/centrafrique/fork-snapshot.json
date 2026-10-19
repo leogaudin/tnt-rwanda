@@ -3,10 +3,9 @@
 	"group": "A",
 	"source": "tnt-centrafrique origin/main 98c0484",
 	"client": {
-		"name": "TnT Centrafrique 🇨🇫",
+		"name": "TnT Centrafrique \ud83c\udde8\ud83c\uddeb",
 		"title": "TnT Centrafrique",
 		"shortName": "TnT Centrafrique",
-		"faviconSize": "96x96",
 		"apiUrl": "https://tnt-centrafrique-api.vercel.app/api",
 		"colors": {
 			"lightest": "#E8F0FE",
@@ -59,11 +58,11 @@
 				"schoolCode": "School Number"
 			},
 			"fr": {
-				"academicInspection": "Inspection Académique",
+				"academicInspection": "Inspection Acad\u00e9mique",
 				"circonscription": "Circonscription",
 				"sector": "Secteur",
-				"school": "Nom de l'école",
-				"schoolCode": "Numéro de l'école"
+				"school": "Nom de l'\u00e9cole",
+				"schoolCode": "Num\u00e9ro de l'\u00e9cole"
 			}
 		},
 		"extraLocaleKeys": {}

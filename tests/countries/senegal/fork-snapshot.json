@@ -3,10 +3,9 @@
 	"group": "B",
 	"source": "tnt-senegal origin/main f490cd3",
 	"client": {
-		"name": "TnT Senegal 🇸🇳",
+		"name": "TnT Senegal \ud83c\uddf8\ud83c\uddf3",
 		"title": "Track-and-Trace",
 		"shortName": "TnT",
-		"faviconSize": "48x48",
 		"apiUrl": "https://tnt-senegal-api.vercel.app/api",
 		"colors": {
 			"lightest": "#B1C4B7",
@@ -65,7 +64,7 @@
 				"commune": "Commune",
 				"administrativeCode": "Code Admin",
 				"directorName": "Directeur",
-				"directorPhone": "Téléphone du directeur"
+				"directorPhone": "T\u00e9l\u00e9phone du directeur"
 			}
 		},
 		"extraLocaleKeys": {}

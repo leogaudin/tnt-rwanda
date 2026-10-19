@@ -3,10 +3,9 @@
 	"group": "B",
 	"source": "tnt-malawi origin/main 6f3d443",
 	"client": {
-		"name": "TnT Malawi 🇲🇼",
+		"name": "TnT Malawi \ud83c\uddf2\ud83c\uddfc",
 		"title": "Track-and-Trace",
 		"shortName": "TnT",
-		"faviconSize": "48x48",
 		"apiUrl": "https://tnt-malawi-api.vercel.app/api",
 		"colors": {
 			"lightest": "#FFE7E6",

@@ -3,10 +3,9 @@
 	"group": "A",
 	"source": "tnt-liberia origin/main f9ea024",
 	"client": {
-		"name": "TnT Liberia 🇱🇷",
+		"name": "TnT Liberia \ud83c\uddf1\ud83c\uddf7",
 		"title": "TnT Liberia",
 		"shortName": "TnT",
-		"faviconSize": "48x48",
 		"apiUrl": "https://tnt-liberia-api.vercel.app/api",
 		"colors": {
 			"lightest": "#E7EBF2",
@@ -61,9 +60,9 @@
 				"schoolSession": "School Session"
 			},
 			"fr": {
-				"county": "Comté",
-				"school": "Nom de l'école",
-				"schoolType": "Type d'école",
+				"county": "Comt\u00e9",
+				"school": "Nom de l'\u00e9cole",
+				"schoolType": "Type d'\u00e9cole",
 				"schoolSession": "Session scolaire"
 			}
 		},

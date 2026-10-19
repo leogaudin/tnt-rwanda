@@ -8,10 +8,11 @@ export default {
 		council: { required: false },
 		chiefdom: { required: false },
 		school: { required: true },
+		schoolCode: { required: true },
 		htName: { required: false },
 		htPhone: { required: false },
 	},
 	reportFields: ['school', 'province'],
-	gpsMatchFields: ['school', 'district'],
+	gpsMatchFields: ['schoolCode'],
 	features: { dailyReport: false },
 } satisfies ServerCountryConfig;

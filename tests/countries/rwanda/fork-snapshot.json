@@ -3,10 +3,9 @@
 	"group": "C",
 	"source": "tnt-rwanda origin/main 2649b0b",
 	"client": {
-		"name": "Rwanda Textbooks Distribution Tracking System 🇷🇼",
+		"name": "Rwanda Textbooks Distribution Tracking System \ud83c\uddf7\ud83c\uddfc",
 		"title": "Track-and-Trace",
 		"shortName": "TnT",
-		"faviconSize": "48x48",
 		"apiUrl": "https://booktracking.reb.rw:8000/api",
 		"colors": {
 			"lightest": "#E6FCFF",

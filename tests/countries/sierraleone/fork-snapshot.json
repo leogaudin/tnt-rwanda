@@ -3,10 +3,9 @@
 	"group": "B",
 	"source": "tnt-sierraleone origin/main 4d06a36",
 	"client": {
-		"name": "TnT Sierra Leone 🇸🇱",
+		"name": "TnT Sierra Leone \ud83c\uddf8\ud83c\uddf1",
 		"title": "Track-and-Trace",
 		"shortName": "TnT",
-		"faviconSize": "48x48",
 		"apiUrl": "https://tnt-sierraleone-api.vercel.app/api",
 		"colors": {
 			"lightest": "#e5f0f9",
@@ -87,6 +86,9 @@
 			"school": {
 				"required": true
 			},
+			"schoolCode": {
+				"required": true
+			},
 			"htName": {
 				"required": false
 			},
@@ -125,20 +127,10 @@
 			"province"
 		],
 		"gpsMatchFields": [
-			"school",
-			"district"
+			"schoolCode"
 		]
 	},
-	"knownIssues": [
-		{
-			"rule": "client-server-boxFields",
-			"detail": "production client boxFields project,province,district,council,chiefdom,school,schoolCode,htName,htPhone vs server model project,province,district,council,chiefdom,school,htName,htPhone"
-		},
-		{
-			"rule": "gps-fields",
-			"detail": "production client gpsUpdateFields [schoolCode] does not contain the server's gpsMatchFields [school,district]"
-		}
-	],
+	"knownIssues": [],
 	"app": {
 		"applicationId": "com.tntsierraleone.scanner",
 		"appName": "Track-and-Trace",
@@ -152,5 +144,11 @@
 		},
 		"versionCode": 1,
 		"versionName": "1.0"
-	}
+	},
+	"fixes": [
+		{
+			"what": "server boxFields and /coords match key",
+			"detail": "Production server lacked schoolCode and matched GPS rows on school+district, while the client (commit 5305380, 2025-02-10 'add schoolCode field') requires schoolCode and sends only it for GPS updates. The server side was forgotten in that commit, so central's config uses schoolCode on both (as in every other country)."
+		}
+	]
 }

@@ -3,10 +3,9 @@
 	"group": "B",
 	"source": "tnt-mauritanie origin/main c93f17b",
 	"client": {
-		"name": "TnT Mauritanie 🇲🇷",
+		"name": "TnT Mauritanie \ud83c\uddf2\ud83c\uddf7",
 		"title": "Track-and-Trace",
 		"shortName": "TnT",
-		"faviconSize": "48x48",
 		"apiUrl": "https://tnt-mauritanie-api.vercel.app/api",
 		"colors": {
 			"lightest": "#FFF0ED",

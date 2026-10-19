@@ -25,21 +25,14 @@ export function resolveCountry(env = process.env) {
 
 const escapeHtml = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/'/g, '&#39;')
 
-export const DEFAULT_FAVICON_SIZE = '48x48'
-
 // Applies the country to index.html: <title> (config.title), apple-mobile-web-app-title
-// (config.shortName) and the PNG favicon size (config.faviconSize).
+// (config.shortName).
 export function applyCountryHtml(html, config) {
-  const size = config.faviconSize || DEFAULT_FAVICON_SIZE
   return html
     .replace(/<title>.*?<\/title>/, `<title>${escapeHtml(config.title)}</title>`)
     .replace(
       /(<meta name='apple-mobile-web-app-title' content=')[^']*(')/,
       `$1${escapeHtml(config.shortName)}$2`,
-    )
-    .replace(
-      /href='\/favicon-\d+x\d+\.png' sizes='\d+x\d+'/,
-      `href='/favicon-${size}.png' sizes='${size}'`,
     )
 }
 
@@ -59,8 +52,7 @@ export function readHtmlFields(dir) {
     if (!m) throw new Error(`${dir}/config.ts: could not read "${key}"`)
     return m[2].replace(/\\(.)/g, '$1')
   }
-  const size = src.match(/^\s*faviconSize:\s*'(\d+x\d+)'/m)
-  return { title: pick('title'), shortName: pick('shortName'), faviconSize: size ? size[1] : undefined }
+  return { title: pick('title'), shortName: pick('shortName') }
 }
 
 // https://vitejs.dev/config/

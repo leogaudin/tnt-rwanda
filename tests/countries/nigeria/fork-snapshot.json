@@ -3,10 +3,9 @@
 	"group": "B",
 	"source": "tnt-nigeria origin/main 378c14c",
 	"client": {
-		"name": "TnT Nigeria 🇳🇬",
+		"name": "TnT Nigeria \ud83c\uddf3\ud83c\uddec",
 		"title": "Track-and-Trace",
 		"shortName": "TnT",
-		"faviconSize": "48x48",
 		"apiUrl": "https://tnt-nigeria-api.vercel.app/api",
 		"colors": {
 			"lightest": "#B3C7BC",
@@ -61,10 +60,10 @@
 				"ssoPhone": "SSO Phone"
 			},
 			"fr": {
-				"state": "État",
+				"state": "\u00c9tat",
 				"lgea": "LGEA",
 				"ssoName": "Nom du SSO",
-				"ssoPhone": "Téléphone du SSO"
+				"ssoPhone": "T\u00e9l\u00e9phone du SSO"
 			}
 		},
 		"extraLocaleKeys": {}

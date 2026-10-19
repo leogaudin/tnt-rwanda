@@ -4,7 +4,6 @@ export default {
 	name: 'TnT Centrafrique 🇨🇫',
 	title: 'TnT Centrafrique',
 	shortName: 'TnT Centrafrique',
-	faviconSize: '96x96',
 	apiUrl: 'https://tnt-centrafrique-api.vercel.app/api',
 	colors: {
 		lightest: '#E8F0FE',
