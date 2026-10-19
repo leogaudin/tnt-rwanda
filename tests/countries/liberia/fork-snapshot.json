@@ -1,0 +1,155 @@
+{
+	"country": "liberia",
+	"group": "A",
+	"source": "tnt-liberia origin/main f9ea024",
+	"client": {
+		"name": "TnT Liberia 🇱🇷",
+		"title": "TnT Liberia",
+		"shortName": "TnT",
+		"faviconSize": "48x48",
+		"apiUrl": "https://tnt-liberia-api.vercel.app/api",
+		"colors": {
+			"lightest": "#E7EBF2",
+			"light": "#A9B4CC",
+			"main": "#00205B",
+			"dark": "#001845",
+			"darkest": "#000F2C"
+		},
+		"defaultLanguage": "en",
+		"languages": [
+			"en",
+			"fr"
+		],
+		"boxFields": {
+			"project": {
+				"required": true
+			},
+			"county": {
+				"required": true
+			},
+			"schoolCode": {
+				"required": true
+			},
+			"district": {
+				"required": true
+			},
+			"school": {
+				"required": true
+			},
+			"schoolType": {
+				"required": true
+			},
+			"schoolSession": {
+				"required": true
+			},
+			"htName": {
+				"required": false
+			},
+			"htPhone": {
+				"required": false
+			}
+		},
+		"gpsUpdateFields": [
+			"schoolCode"
+		],
+		"enableProjectEmails": false,
+		"labels": {
+			"en": {
+				"county": "County",
+				"school": "School Name",
+				"schoolType": "School Type",
+				"schoolSession": "School Session"
+			},
+			"fr": {
+				"county": "Comté",
+				"school": "Nom de l'école",
+				"schoolType": "Type d'école",
+				"schoolSession": "Session scolaire"
+			}
+		},
+		"extraLocaleKeys": {}
+	},
+	"server": {
+		"boxFields": {
+			"project": {
+				"required": true
+			},
+			"county": {
+				"required": true
+			},
+			"schoolCode": {
+				"required": true
+			},
+			"district": {
+				"required": true
+			},
+			"school": {
+				"required": true
+			},
+			"schoolType": {
+				"required": true
+			},
+			"schoolSession": {
+				"required": true
+			},
+			"htName": {
+				"required": false
+			},
+			"htPhone": {
+				"required": false
+			}
+		},
+		"productionBoxFields": {
+			"project": {
+				"required": true
+			},
+			"county": {
+				"required": true
+			},
+			"schoolCode": {
+				"required": true
+			},
+			"district": {
+				"required": true
+			},
+			"school": {
+				"required": true
+			},
+			"schoolType": {
+				"required": true
+			},
+			"schoolSession": {
+				"required": true
+			},
+			"htName": {
+				"required": false
+			},
+			"htPhone": {
+				"required": false
+			}
+		},
+		"reportFields": [
+			"project",
+			"school",
+			"district"
+		],
+		"gpsMatchFields": [
+			"schoolCode"
+		]
+	},
+	"knownIssues": [],
+	"app": {
+		"applicationId": "com.tntliberia.scanner",
+		"appName": "TnT Liberia",
+		"apiUrl": "https://tnt-liberia-api.vercel.app/api",
+		"colors": {
+			"lightest": "#E7EBF2",
+			"light": "#A9B4CC",
+			"main": "#00205B",
+			"dark": "#001845",
+			"darkest": "#000F2C"
+		},
+		"versionCode": 1,
+		"versionName": "1.0"
+	}
+}

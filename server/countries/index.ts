@@ -1,11 +1,29 @@
 import type { ServerCountryConfig } from './types';
 import defaultSelection from './default.json';
 import _default from './_default/config';
+import centrafrique from './centrafrique/config';
+import guineBissau from './guine-bissau/config';
+import liberia from './liberia/config';
+import malawi from './malawi/config';
+import mauritanie from './mauritanie/config';
+import nigeria from './nigeria/config';
+import rwanda from './rwanda/config';
+import senegal from './senegal/config';
+import sierraleone from './sierraleone/config';
 
 // Every country is imported statically on purpose: @vercel/node only bundles
 // files it can trace. Add new countries here (a test checks the folder list).
 export const countries: Record<string, ServerCountryConfig> = {
 	_default,
+	centrafrique,
+	'guine-bissau': guineBissau,
+	liberia,
+	malawi,
+	mauritanie,
+	nigeria,
+	rwanda,
+	senegal,
+	sierraleone,
 };
 
 export const TEST_ONLY_COUNTRY = '_default';

@@ -1,0 +1,135 @@
+{
+	"country": "malawi",
+	"group": "B",
+	"source": "tnt-malawi origin/main 6f3d443",
+	"client": {
+		"name": "TnT Malawi 🇲🇼",
+		"title": "Track-and-Trace",
+		"shortName": "TnT",
+		"faviconSize": "48x48",
+		"apiUrl": "https://tnt-malawi-api.vercel.app/api",
+		"colors": {
+			"lightest": "#FFE7E6",
+			"light": "#F5898B",
+			"main": "#CE1126",
+			"dark": "#A8051E",
+			"darkest": "#5C0014"
+		},
+		"defaultLanguage": "en",
+		"languages": [
+			"en",
+			"fr"
+		],
+		"boxFields": {
+			"project": {
+				"required": true
+			},
+			"division": {
+				"required": false
+			},
+			"district": {
+				"required": true
+			},
+			"zone": {
+				"required": false
+			},
+			"school": {
+				"required": true
+			},
+			"htName": {
+				"required": false
+			},
+			"htPhone": {
+				"required": false
+			},
+			"schoolCode": {
+				"required": false
+			}
+		},
+		"gpsUpdateFields": [
+			"schoolCode"
+		],
+		"enableProjectEmails": false,
+		"labels": {},
+		"extraLocaleKeys": {}
+	},
+	"server": {
+		"boxFields": {
+			"project": {
+				"required": true
+			},
+			"division": {
+				"required": false
+			},
+			"district": {
+				"required": true
+			},
+			"zone": {
+				"required": false
+			},
+			"school": {
+				"required": true
+			},
+			"htName": {
+				"required": false
+			},
+			"htPhone": {
+				"required": false
+			},
+			"schoolCode": {
+				"required": false
+			}
+		},
+		"productionBoxFields": {
+			"project": {
+				"required": true
+			},
+			"division": {
+				"required": false
+			},
+			"district": {
+				"required": true
+			},
+			"zone": {
+				"required": false
+			},
+			"school": {
+				"required": true
+			},
+			"htName": {
+				"required": false
+			},
+			"htPhone": {
+				"required": false
+			},
+			"schoolCode": {
+				"required": false
+			}
+		},
+		"reportFields": [
+			"schoolCode",
+			"division",
+			"district",
+			"zone",
+			"school"
+		],
+		"gpsMatchFields": [
+			"schoolCode"
+		]
+	},
+	"knownIssues": [],
+	"app": {
+		"applicationId": "com.tntmalawi.scanner",
+		"appName": "Track-and-Trace",
+		"apiUrl": "https://tnt-malawi-api.vercel.app/api",
+		"colors": {
+			"lightest": "#FFE7E6",
+			"light": "#F5898B",
+			"main": "#CE1126",
+			"dark": "#A8051E",
+			"darkest": "#5C0014"
+		},
+		"versionCode": 1,
+		"versionName": "1.0"
+	}
+}

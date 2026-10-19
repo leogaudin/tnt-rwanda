@@ -1,0 +1,216 @@
+import { describe, it, expect } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
+
+// Every country is checked by the same rules, one `it` per rule per country,
+// so a failure names the country and the rule.
+
+// @ts-ignore: plain JS config file
+import { applyCountryHtml } from '../../client/vite.config.js';
+
+const root = path.resolve(__dirname, '../..');
+const clientCfg = import.meta.glob('../../client/countries/*/config.ts', { eager: true, import: 'default' }) as Record<string, any>;
+const serverCfg = import.meta.glob('../../server/countries/*/config.ts', { eager: true, import: 'default' }) as Record<string, any>;
+const appCfg = import.meta.glob('../../app/countries/*/config.json', { eager: true, import: 'default' }) as Record<string, any>;
+const localeFiles = import.meta.glob('../../client/countries/*/locales/*.json', { eager: true, import: 'default' }) as Record<string, any>;
+const baseLocales = import.meta.glob('../../client/src/language/locales/*.json', { eager: true, import: 'default' }) as Record<string, Record<string, string>>;
+
+const byCountry = (files: Record<string, any>) =>
+	Object.fromEntries(Object.entries(files).map(([f, v]) => [f.split('/countries/')[1].split('/')[0], v]));
+const client = byCountry(clientCfg);
+const server = byCountry(serverCfg);
+const app = byCountry(appCfg);
+
+const dirs = (pkg: string) =>
+	fs.readdirSync(path.join(root, pkg, 'countries'), { withFileTypes: true })
+		.filter((d) => d.isDirectory()).map((d) => d.name).sort();
+
+const countries = dirs('server');
+const snapshotPath = (c: string) => path.join(root, 'tests/countries', c, 'fork-snapshot.json');
+const snapshot = (c: string) => (fs.existsSync(snapshotPath(c)) ? JSON.parse(fs.readFileSync(snapshotPath(c), 'utf8')) : null);
+
+// Rules a country is known to break in production today (recorded in its fork-snapshot.json).
+const knownIssue = (c: string, rule: string) => snapshot(c)?.knownIssues?.some((i: any) => i.rule === rule) ?? false;
+
+const keysWithRequired = (fields: Record<string, { required: boolean }>) =>
+	Object.fromEntries(Object.keys(fields).sort().map((k) => [k, fields[k].required]));
+
+const resolvedLanguage = (c: string, lng: string): Record<string, string> => {
+	const fromCountry = Object.entries(localeFiles)
+		.filter(([f]) => f.includes(`/countries/${c}/locales/${lng}.json`))
+		.map(([, v]) => v)[0] ?? {};
+	const base = baseLocales[`../../client/src/language/locales/${lng}.json`] ?? {};
+	return { ...base, ...fromCountry, ...(client[c].labels[lng] ?? {}) };
+};
+
+describe('country folders', () => {
+	it('client, server, app and tests list the same countries', () => {
+		const expected = countries;
+		expect(dirs('client')).toEqual(expected);
+		expect(dirs('app').filter((d) => d !== 'select.js')).toEqual(expected);
+		// tests/countries/<c>/ holds the fork snapshot of every real country (not the test-only _default)
+		expect(
+			fs.readdirSync(path.join(root, 'tests/countries'), { withFileTypes: true })
+				.filter((d) => d.isDirectory()).map((d) => d.name).sort(),
+		).toEqual(expected.filter((c) => c !== '_default'));
+	});
+
+	it('the server registry imports every country folder', async () => {
+		const { countries: registry } = await import('@server/countries');
+		expect(Object.keys(registry).sort()).toEqual(countries);
+	});
+
+	it('every package has a default.json naming an existing country', () => {
+		for (const pkg of ['client', 'server', 'app']) {
+			const { country } = JSON.parse(fs.readFileSync(path.join(root, pkg, 'countries/default.json'), 'utf8'));
+			expect(countries, `${pkg}/countries/default.json`).toContain(country);
+		}
+	});
+});
+
+describe.each(countries)('country %s', (c) => {
+	it('client and server boxFields have the same keys and required flags', () => {
+		if (knownIssue(c, 'client-server-boxFields')) return;
+		expect(keysWithRequired(server[c].boxFields)).toEqual(keysWithRequired(client[c].boxFields));
+	});
+
+	it('the order of boxFields is the client one (server uses the same order)', () => {
+		if (knownIssue(c, 'client-server-boxFields')) return;
+		expect(Object.keys(server[c].boxFields)).toEqual(Object.keys(client[c].boxFields));
+	});
+
+	it('client and app share the same colors and apiUrl', () => {
+		expect(app[c].colors).toEqual(client[c].colors);
+		expect(app[c].apiUrl).toBe(client[c].apiUrl);
+	});
+
+	it('server reportFields and gpsMatchFields are server boxFields', () => {
+		for (const f of [...server[c].reportFields, ...server[c].gpsMatchFields]) {
+			expect(server[c].boxFields, f).toHaveProperty(f);
+		}
+		expect(server[c].reportFields.length).toBeGreaterThan(0);
+		expect(server[c].gpsMatchFields.length).toBeGreaterThan(0);
+	});
+
+	it('client gpsUpdateFields include the fields the server matches on', () => {
+		if (knownIssue(c, 'gps-fields')) return;
+		for (const f of server[c].gpsMatchFields) expect(client[c].gpsUpdateFields, f).toContain(f);
+	});
+
+	it('client gpsUpdateFields and schoolView.fields are client boxFields', () => {
+		for (const f of [...client[c].gpsUpdateFields, ...client[c].schoolView.fields]) {
+			expect(client[c].boxFields, f).toHaveProperty(f);
+		}
+		expect(client[c].schoolView.fields.length).toBeGreaterThan(0);
+	});
+
+	it('defaultLanguage is offered, and every language has translations', () => {
+		expect(client[c].languages).toContain(client[c].defaultLanguage);
+		for (const lng of client[c].languages) {
+			expect(Object.keys(resolvedLanguage(c, lng)).length, `language ${lng}`).toBeGreaterThan(0);
+		}
+	});
+
+	it('every box field has a label in every language', () => {
+		for (const lng of client[c].languages) {
+			const strings = resolvedLanguage(c, lng);
+			for (const f of Object.keys(client[c].boxFields)) {
+				expect(strings, `${lng}: label for "${f}"`).toHaveProperty(f);
+			}
+		}
+	});
+
+	it('colors are hex values and apiUrl is an http(s) URL', () => {
+		for (const key of ['lightest', 'light', 'main', 'dark', 'darkest']) {
+			expect(client[c].colors[key], key).toMatch(/^#[0-9A-Fa-f]{6}$/);
+		}
+		expect(client[c].apiUrl).toMatch(/^https?:\/\/[^\s]+$/);
+	});
+
+	it('client public/ has every file index.html and the web manifest reference', () => {
+		const pub = path.join(root, 'client/countries', c, 'public');
+		const html = applyCountryHtml(fs.readFileSync(path.join(root, 'client/index.html'), 'utf8'), client[c]);
+		const refs = [...html.matchAll(/href='\/([^']+)'/g)].map((m) => m[1]);
+		const manifest = JSON.parse(fs.readFileSync(path.join(pub, 'site.webmanifest'), 'utf8'));
+		refs.push(...manifest.icons.map((i: any) => i.src.replace(/^\//, '')));
+		expect(refs.length).toBeGreaterThan(3);
+		for (const r of refs) expect(fs.existsSync(path.join(pub, r)), `${c}/public/${r}`).toBe(true);
+	});
+
+	it('index.html fields exist', () => {
+		expect(client[c].title.length).toBeGreaterThan(0);
+		expect(client[c].shortName.length).toBeGreaterThan(0);
+	});
+
+	it('app has its launcher icons and a package-style applicationId', () => {
+		for (const d of ['mdpi', 'hdpi', 'xhdpi', 'xxhdpi', 'xxxhdpi']) {
+			const f = path.join(root, 'app/countries', c, 'android/res', `mipmap-${d}`, 'ic_launcher.png');
+			// _default and countries without their own icons fall back to _default's
+			if (!fs.existsSync(path.join(root, 'app/countries', c, 'android/res'))) continue;
+			expect(fs.existsSync(f), f).toBe(true);
+		}
+		expect(app[c].applicationId).toMatch(/^[a-z][a-z0-9]*(\.[a-z][a-z0-9_]*)+$/);
+		expect(app[c].appName.length).toBeGreaterThan(0);
+	});
+
+	it('known issues recorded for the country still exist', () => {
+		for (const issue of snapshot(c)?.knownIssues ?? []) {
+			if (issue.rule === 'client-server-boxFields') {
+				expect(keysWithRequired(server[c].boxFields)).not.toEqual(keysWithRequired(client[c].boxFields));
+			} else if (issue.rule === 'gps-fields') {
+				expect(server[c].gpsMatchFields.every((f: string) => client[c].gpsUpdateFields.includes(f))).toBe(false);
+			} else {
+				throw new Error(`unknown known issue rule ${issue.rule}`);
+			}
+		}
+	});
+});
+
+describe('app identity', () => {
+	const ids = Object.values(app).map((a: any) => a.applicationId);
+
+	it('applicationId is unique across countries', () => {
+		expect(new Set(ids).size).toBe(ids.length);
+	});
+
+	it('the shared versionCode is above every published one', () => {
+		const version = JSON.parse(fs.readFileSync(path.join(root, 'app/package.json'), 'utf8')).version;
+		const [major, minor, patch] = version.split('.').map(Number);
+		const code = major * 10000 + minor * 100 + patch;
+		const published = countries.map((c) => snapshot(c)?.app.versionCode ?? 0);
+		expect(Math.max(...published)).toBeGreaterThan(0);
+		expect(code).toBeGreaterThan(Math.max(...published));
+	});
+});
+
+describe('fork snapshots: the configs equal what each fork had in production', () => {
+	describe.each(countries.filter((c) => c !== '_default'))('%s', (c) => {
+		const snap = snapshot(c);
+
+		it('client config', () => {
+			const k = client[c];
+			expect(snap).not.toBeNull();
+			expect({ name: k.name, title: k.title, shortName: k.shortName, apiUrl: k.apiUrl, colors: k.colors, defaultLanguage: k.defaultLanguage, languages: k.languages, gpsUpdateFields: k.gpsUpdateFields, labels: k.labels, enableProjectEmails: k.features.projectEmails })
+				.toEqual({ name: snap.client.name, title: snap.client.title, shortName: snap.client.shortName, apiUrl: snap.client.apiUrl, colors: snap.client.colors, defaultLanguage: snap.client.defaultLanguage, languages: snap.client.languages, gpsUpdateFields: snap.client.gpsUpdateFields, labels: snap.client.labels, enableProjectEmails: snap.client.enableProjectEmails });
+			expect(k.boxFields).toEqual(snap.client.boxFields);
+			expect(Object.keys(k.boxFields)).toEqual(Object.keys(snap.client.boxFields));
+		});
+
+		it('server config', () => {
+			expect(server[c].boxFields).toEqual(snap.server.boxFields);
+			expect(server[c].reportFields).toEqual(snap.server.reportFields);
+			expect(server[c].gpsMatchFields).toEqual(snap.server.gpsMatchFields);
+		});
+
+		it('app config (store identity)', () => {
+			expect(app[c]).toEqual({ applicationId: snap.app.applicationId, appName: snap.app.appName, apiUrl: snap.app.apiUrl, colors: snap.app.colors });
+		});
+
+		it('extra locale files hold the same number of strings as the fork', () => {
+			for (const [lng, count] of Object.entries(snap.client.extraLocaleKeys ?? {})) {
+				const f = Object.entries(localeFiles).find(([p]) => p.includes(`/countries/${c}/locales/${lng}.json`));
+				expect(Object.keys(f![1]).length).toBe(count);
+			}
+		});
+	});
+});

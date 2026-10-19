@@ -1,0 +1,12 @@
+{
+	"applicationId": "com.tntmalawi.scanner",
+	"appName": "Track-and-Trace",
+	"apiUrl": "https://tnt-malawi-api.vercel.app/api",
+	"colors": {
+		"lightest": "#FFE7E6",
+		"light": "#F5898B",
+		"main": "#CE1126",
+		"dark": "#A8051E",
+		"darkest": "#5C0014"
+	}
+}

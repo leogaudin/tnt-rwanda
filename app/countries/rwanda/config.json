@@ -1,0 +1,12 @@
+{
+	"applicationId": "com.tntrwanda.scanner",
+	"appName": "Track-and-Trace",
+	"apiUrl": "https://booktracking.reb.rw:8000/api",
+	"colors": {
+		"lightest": "#E6FCFF",
+		"light": "#A3F3FF",
+		"main": "#26BFED",
+		"dark": "#006394",
+		"darkest": "#00456E"
+	}
+}

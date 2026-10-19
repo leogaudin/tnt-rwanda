@@ -1,0 +1,12 @@
+{
+	"applicationId": "com.tnt.nigeria",
+	"appName": "TnT Scanner Nigeria",
+	"apiUrl": "https://tnt-nigeria-api.vercel.app/api",
+	"colors": {
+		"lightest": "#B3C7BC",
+		"light": "#51A87D",
+		"main": "#008751",
+		"dark": "#00613D",
+		"darkest": "#0F271E"
+	}
+}

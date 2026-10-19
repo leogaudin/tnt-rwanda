@@ -1,0 +1,135 @@
+{
+	"country": "mauritanie",
+	"group": "B",
+	"source": "tnt-mauritanie origin/main c93f17b",
+	"client": {
+		"name": "TnT Mauritanie 🇲🇷",
+		"title": "Track-and-Trace",
+		"shortName": "TnT",
+		"faviconSize": "48x48",
+		"apiUrl": "https://tnt-mauritanie-api.vercel.app/api",
+		"colors": {
+			"lightest": "#FFF0ED",
+			"light": "#F79F97",
+			"main": "#D01C1F",
+			"dark": "#85040F",
+			"darkest": "#380008"
+		},
+		"defaultLanguage": "fr",
+		"languages": [
+			"fr",
+			"en"
+		],
+		"boxFields": {
+			"project": {
+				"required": true
+			},
+			"wilaya": {
+				"required": true
+			},
+			"moughataa": {
+				"required": true
+			},
+			"commune": {
+				"required": true
+			},
+			"school": {
+				"required": true
+			},
+			"htName": {
+				"required": false
+			},
+			"htPhone": {
+				"required": false
+			}
+		},
+		"gpsUpdateFields": [
+			"school",
+			"wilaya"
+		],
+		"enableProjectEmails": false,
+		"labels": {
+			"en": {
+				"wilaya": "Wilaya",
+				"moughataa": "Moughataa",
+				"commune": "Commune"
+			},
+			"fr": {
+				"wilaya": "Wilaya",
+				"moughataa": "Moughataa",
+				"commune": "Commune"
+			}
+		},
+		"extraLocaleKeys": {}
+	},
+	"server": {
+		"boxFields": {
+			"project": {
+				"required": true
+			},
+			"wilaya": {
+				"required": true
+			},
+			"moughataa": {
+				"required": true
+			},
+			"commune": {
+				"required": true
+			},
+			"school": {
+				"required": true
+			},
+			"htName": {
+				"required": false
+			},
+			"htPhone": {
+				"required": false
+			}
+		},
+		"productionBoxFields": {
+			"project": {
+				"required": true
+			},
+			"wilaya": {
+				"required": true
+			},
+			"moughataa": {
+				"required": true
+			},
+			"commune": {
+				"required": true
+			},
+			"school": {
+				"required": true
+			},
+			"htName": {
+				"required": false
+			},
+			"htPhone": {
+				"required": false
+			}
+		},
+		"reportFields": [
+			"school",
+			"wilaya"
+		],
+		"gpsMatchFields": [
+			"school"
+		]
+	},
+	"knownIssues": [],
+	"app": {
+		"applicationId": "com.tntmauritanie.scanner",
+		"appName": "Track-and-Trace",
+		"apiUrl": "https://tnt-mauritanie-api.vercel.app/api",
+		"colors": {
+			"lightest": "#FFF0ED",
+			"light": "#F79F97",
+			"main": "#D01C1F",
+			"dark": "#85040F",
+			"darkest": "#380008"
+		},
+		"versionCode": 1,
+		"versionName": "1.0"
+	}
+}

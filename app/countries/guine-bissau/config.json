@@ -1,0 +1,12 @@
+{
+	"applicationId": "com.tntguinebissau.scanner",
+	"appName": "TnT Guiné-Bissau",
+	"apiUrl": "https://tnt-guine-bissau-api.vercel.app/api",
+	"colors": {
+		"lightest": "#E6F5EC",
+		"light": "#80CBA0",
+		"main": "#009739",
+		"dark": "#00712B",
+		"darkest": "#004219"
+	}
+}

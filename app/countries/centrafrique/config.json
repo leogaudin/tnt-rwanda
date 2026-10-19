@@ -1,0 +1,12 @@
+{
+	"applicationId": "com.tntcentrafrique.scanner",
+	"appName": "TnT Centrafrique",
+	"apiUrl": "https://tnt-centrafrique-api.vercel.app/api",
+	"colors": {
+		"lightest": "#E8F0FE",
+		"light": "#B3CBF7",
+		"main": "#003082",
+		"dark": "#002060",
+		"darkest": "#001340"
+	}
+}
