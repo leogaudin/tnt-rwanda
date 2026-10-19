@@ -39,13 +39,6 @@ export interface Scan {
 export interface Box {
 	id: string;
 	project: string;
-	division?: string;
-	district: string;
-	zone?: string;
-	school: string;
-	htName?: string;
-	htPhone?: string;
-	schoolCode?: string;
 	adminId: string;
 	createdAt: Date;
 	scans: Scan[];
@@ -56,6 +49,8 @@ export interface Box {
 	progress: Progress;
 	lastScan: StatusChange | null;
 	packingListId?: number;
+	// Country-specific box fields (server/countries/<country>/config.ts)
+	[field: string]: any;
 }
 
 export interface Admin {

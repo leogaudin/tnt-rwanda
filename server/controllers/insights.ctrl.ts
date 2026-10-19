@@ -5,6 +5,7 @@ import Scan from '../models/scans.model';
 import { getQuery, haversineDistance, sanitizeContent } from '../service/index';
 import { getLastScanWithConditions } from '../service/stats';
 import { requireApiKey } from '../service/apiKey';
+import { countryConfig } from '../countries';
 
 const router = express.Router();
 
@@ -68,7 +69,7 @@ router.post('/', async (req: Request, res: Response) => {
 
 router.post('/report', async (req: Request, res: Response) => {
 	try {
-		const reportFields = ['project', 'school', 'district'];
+		const { reportFields } = countryConfig;
 
 		const { skip, limit, filters } = getQuery(req);
 		if (typeof filters.adminId !== 'string' || !filters.adminId)
