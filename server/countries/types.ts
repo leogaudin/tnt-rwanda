@@ -3,8 +3,8 @@ export interface ServerCountryConfig {
 	boxFields: Record<string, { required: boolean }>;
 	/** Box fields exported as columns of the delivery report, in order. */
 	reportFields: string[];
-	/** Box field `/boxes/coords` uses to match boxes when updating GPS coordinates. */
-	gpsMatchField: string;
+	/** Box fields `/boxes/coords` uses to match boxes when updating GPS coordinates (all must match). */
+	gpsMatchFields: string[];
 	features: {
 		/** Daily email report (Rwanda). */
 		dailyReport: boolean;

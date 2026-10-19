@@ -178,12 +178,13 @@ router.delete('/', async (req: Request, res: Response) => {
 
 router.post('/coords', async (req: Request, res: Response) => {
 	try {
-		const { gpsMatchField } = countryConfig;
+		const { gpsMatchFields } = countryConfig;
+		const matchOn = (box: any) => Object.fromEntries(gpsMatchFields.map((field) => [field, box[field]]));
 		requireApiKey(req, res, async (admin: any) => {
 			const { coords } = req.body;
 			const coordsUpdate = coords.map((box: any) => ({
 				updateMany: {
-					filter: { [gpsMatchField]: box[gpsMatchField], adminId: admin.id },
+					filter: { ...matchOn(box), adminId: admin.id },
 					update: { $set: { schoolLatitude: box.schoolLatitude, schoolLongitude: box.schoolLongitude } },
 					multi: true,
 				},
@@ -199,7 +200,7 @@ router.post('/coords', async (req: Request, res: Response) => {
 			await recomputeBoxes(
 				{
 					adminId: admin.id,
-					$or: coords.map((box: any) => ({ [gpsMatchField]: box[gpsMatchField] })),
+					$or: coords.map(matchOn),
 				},
 				{ finalDestinations: true },
 			);

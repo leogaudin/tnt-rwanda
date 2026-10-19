@@ -12,6 +12,6 @@ export default {
 		schoolCode: { required: false },
 	},
 	reportFields: ['project', 'school', 'district'],
-	gpsMatchField: 'schoolCode',
+	gpsMatchFields: ['schoolCode'],
 	features: { dailyReport: false },
 } satisfies ServerCountryConfig;

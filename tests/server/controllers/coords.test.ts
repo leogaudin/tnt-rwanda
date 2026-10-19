@@ -2,9 +2,13 @@ import { describe, it, expect, vi, beforeEach, beforeAll, afterAll } from 'vites
 import express from 'express';
 import type { Server } from 'http';
 
-vi.mock('@server/countries', () => ({
-	countryConfig: { gpsMatchField: 'administrativeCode', reportFields: ['school'], boxFields: {}, features: {} },
+const countryConfig = vi.hoisted(() => ({
+	gpsMatchFields: ['administrativeCode'],
+	reportFields: ['school'],
+	boxFields: {},
+	features: {},
 }));
+vi.mock('@server/countries', () => ({ countryConfig }));
 vi.mock('@server/models/admins.model', () => ({ default: { findOne: vi.fn() } }));
 vi.mock('@server/models/boxes.model', () => ({ default: { bulkWrite: vi.fn() }, boxFields: {} }));
 vi.mock('@server/service/recompute', () => ({ recomputeBoxes: vi.fn() }));
@@ -30,7 +34,7 @@ beforeEach(() => {
 	(Admin.findOne as any).mockResolvedValue({ id: 'a1' });
 });
 
-describe('POST /boxes/coords matches on the country gpsMatchField', () => {
+describe('POST /boxes/coords matches on the country gpsMatchFields', () => {
 	const coords = [
 		{ administrativeCode: 'AC1', schoolCode: 'ignored', schoolLatitude: 1, schoolLongitude: 2 },
 		{ administrativeCode: 'AC2', schoolLatitude: 3, schoolLongitude: 4 },
@@ -66,5 +70,23 @@ describe('POST /boxes/coords matches on the country gpsMatchField', () => {
 		const res = await call();
 		expect(await res.json()).toEqual({ updated: 0, matched: 0, recalculated: 0 });
 		expect(recomputeBoxes).not.toHaveBeenCalled();
+	});
+
+	it('matches on every field of a composite key (Sierra Leone: school + district)', async () => {
+		countryConfig.gpsMatchFields = ['school', 'district'];
+		try {
+			coords.length = 0;
+			coords.push({ school: 'S1', district: 'D1', schoolLatitude: 1, schoolLongitude: 2 });
+			(Box.bulkWrite as any).mockResolvedValue({ modifiedCount: 1, matchedCount: 1 });
+			const res = await call();
+			expect(await res.json()).toEqual({ updated: 1, matched: 1 });
+			expect((Box.bulkWrite as any).mock.calls[0][0][0].updateMany.filter).toEqual({ school: 'S1', district: 'D1', adminId: 'a1' });
+			expect(recomputeBoxes).toHaveBeenCalledWith(
+				{ adminId: 'a1', $or: [{ school: 'S1', district: 'D1' }] },
+				{ finalDestinations: true },
+			);
+		} finally {
+			countryConfig.gpsMatchFields = ['administrativeCode'];
+		}
 	});
 });
