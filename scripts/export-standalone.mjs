@@ -12,7 +12,8 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PACKAGES = ['client', 'server', 'app'];
-const EXCLUDED_FILES = ['CENTRALIZATION_PLAN.md', 'OPTIMIZED_FIXES.md'];
+// The export tool's own test needs every country, which a standalone repo doesn't have.
+const EXCLUDED_FILES = ['CENTRALIZATION_PLAN.md', 'OPTIMIZED_FIXES.md', 'tests/scripts/export-standalone.test.ts'];
 
 export function listCountryFolders(pkg, base = root) {
 	return fs.readdirSync(path.join(base, pkg, 'countries'), { withFileTypes: true })

@@ -25,6 +25,7 @@ describe('isIncluded', () => {
 		expect(isIncluded('LICENSE', 'liberia')).toBe(true);
 		expect(isIncluded('.github/workflows/ci.yml', 'liberia')).toBe(false);
 		expect(isIncluded('CENTRALIZATION_PLAN.md', 'liberia')).toBe(false);
+		expect(isIncluded('tests/scripts/export-standalone.test.ts', 'liberia')).toBe(false);
 	});
 });
 
