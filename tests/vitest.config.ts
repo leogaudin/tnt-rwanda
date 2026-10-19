@@ -1,9 +1,15 @@
 import { defineConfig } from 'vitest/config';
 import path from 'path';
+import { countryDir } from './countries-select';
 
 export default defineConfig({
 	resolve: {
-		alias: {
+		alias: [
+			// Per-package country configs (client and app both use the alias `@country`).
+			{ find: /^@country\/config$/, replacement: path.join(countryDir('client'), 'config.ts') },
+			{ find: /^@country\/config\.json$/, replacement: path.join(countryDir('app'), 'config.json') },
+			{ find: /^@country\/locales\//, replacement: path.join(countryDir('client'), 'locales') + '/' },
+			...Object.entries({
 			'@server': path.resolve(__dirname, '../server'),
 			'@client': path.resolve(__dirname, '../client/src'),
 			'@app': path.resolve(__dirname, '../app/src'),
@@ -14,7 +20,8 @@ export default defineConfig({
 			'react-helmet-async': path.resolve(__dirname, '../client/node_modules/react-helmet-async'),
 			react: path.resolve(__dirname, '../client/node_modules/react'),
 			'react-dom': path.resolve(__dirname, '../client/node_modules/react-dom'),
-		},
+			}).map(([find, replacement]) => ({ find, replacement })),
+		],
 	},
 	test: {
 		include: ['**/*.test.ts', '**/*.test.tsx'],

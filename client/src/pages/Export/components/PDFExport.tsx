@@ -16,12 +16,14 @@ import JSZip from 'jszip';
 import { fetchBoxes, icons } from '../../../service';
 import { boxFields } from '../../../service/specific';
 import { Button, Text, Stack, HStack, Icon } from '@chakra-ui/react';
+import interRegular from '../../../assets/fonts/inter-regular.ttf?url';
+import interBlack from '../../../assets/fonts/inter-black.ttf?url';
 
 Font.register({
 	family: 'Inter',
 	fonts: [
-		{ src: '/inter-regular.ttf' },
-		{ src: '/inter-black.ttf', fontWeight: 900 },
+		{ src: interRegular },
+		{ src: interBlack, fontWeight: 900 },
 	],
 });
 
