@@ -31,6 +31,12 @@ describe('server country selection', () => {
 		expect(() => resolveCountry({ env: { VERCEL_ENV: 'production', TNT_COUNTRY: '_default' }, available })).toThrow(/test-only/);
 	});
 
+	it('allows _default in production only with the explicit TNT_ALLOW_DEFAULT_COUNTRY=true opt-in', () => {
+		const env = { NODE_ENV: 'production', TNT_COUNTRY: '_default' };
+		expect(resolveCountry({ env: { ...env, TNT_ALLOW_DEFAULT_COUNTRY: 'true' }, available }).code).toBe('_default');
+		expect(() => resolveCountry({ env: { ...env, TNT_ALLOW_DEFAULT_COUNTRY: '1' }, available })).toThrow(/test-only/);
+	});
+
 	it('allows _default outside production, and real countries in production', () => {
 		expect(resolveCountry({ env: { NODE_ENV: 'test' }, defaultCountry: '_default', available }).code).toBe('_default');
 		expect(resolveCountry({ env: { NODE_ENV: 'production', TNT_COUNTRY: 'liberia' }, available }).code).toBe('liberia');

@@ -42,6 +42,7 @@ interface ResolveOptions {
  * Picks the country: TNT_COUNTRY, else countries/default.json.
  * Throws on an unknown code, and refuses the test-only `_default` in production
  * so a project with a missing TNT_COUNTRY can't silently serve the test config.
+ * Central's own demo deployment opts in explicitly with TNT_ALLOW_DEFAULT_COUNTRY=true.
  */
 export function resolveCountry({
 	env = process.env,
@@ -56,9 +57,9 @@ export function resolveCountry({
 		);
 	}
 	const isProduction = env.NODE_ENV === 'production' || env.VERCEL_ENV === 'production';
-	if (isProduction && code === TEST_ONLY_COUNTRY) {
+	if (isProduction && code === TEST_ONLY_COUNTRY && env.TNT_ALLOW_DEFAULT_COUNTRY !== 'true') {
 		throw new Error(
-			`Refusing to run the test-only "${TEST_ONLY_COUNTRY}" country in production. Set TNT_COUNTRY.`,
+			`Refusing to run the test-only "${TEST_ONLY_COUNTRY}" country in production. Set TNT_COUNTRY (or TNT_ALLOW_DEFAULT_COUNTRY=true for central's own demo).`,
 		);
 	}
 	return { code, config };
