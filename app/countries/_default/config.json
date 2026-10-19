@@ -1,0 +1,12 @@
+{
+	"applicationId": "com.tnt.scanner",
+	"appName": "Track-and-Trace",
+	"apiUrl": "http://localhost:3000/api",
+	"colors": {
+		"lightest": "#F0F5FF",
+		"light": "#EBF0FE",
+		"main": "#0949FF",
+		"dark": "#0033C0",
+		"darkest": "#001D6A"
+	}
+}

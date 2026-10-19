@@ -25,3 +25,9 @@ dist-ssr
 
 .env
 .vercel
+
+# Android signing (never committed)
+app/countries/*/signing.properties
+*.keystore
+!app/android/app/debug.keystore
+/dist/
