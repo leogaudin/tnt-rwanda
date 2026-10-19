@@ -21,17 +21,13 @@ const GPS_FIELDS = [...gpsUpdateFields, 'schoolLatitude', 'schoolLongitude'];
 const matchFields = countryConfig.gpsMatchFields;
 const row = (key: string, lat = '48.8566', lng = '2.3522') => [...gpsUpdateFields.map((f) => `${key}_${f}`), lat, lng];
 
-// Sierra Leone's production client and server disagree here (recorded in its fork-snapshot.json
-// knownIssues, and checked by countries/consistency.test.ts), so the contract can't hold for it yet.
-const contractHolds = matchFields.every((f) => (gpsUpdateFields as readonly string[]).includes(f));
-
 describe('GPS update CSV → server /coords contract', () => {
-	it.runIf(contractHolds)('gpsUpdateFields contains the fields the server uses to match boxes', () => {
+	it('gpsUpdateFields contains the fields the server uses to match boxes', () => {
 		const missingFields = matchFields.filter((f) => !(gpsUpdateFields as readonly string[]).includes(f));
 		expect(missingFields).toHaveLength(0);
 	});
 
-	it.runIf(contractHolds)('parsed GPS row contains the fields used by the server for matching', () => {
+	it('parsed GPS row contains the fields used by the server for matching', () => {
 		const result: ParseResult = parseGPSUpdateRow(row('SC001'), false);
 		expect('box' in result).toBe(true);
 		if ('box' in result) {

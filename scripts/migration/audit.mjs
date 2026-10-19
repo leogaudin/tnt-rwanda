@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// READ-ONLY audit of a country's database before migrating it to `optimized` (plan, Phase 8.2).
+// READ-ONLY audit of a legacy (JavaScript-era) country database before it is served by the current server.
 //   STRING_URI=... node scripts/migration/audit.mjs <country> [--db <name>] [--out audit.json]
 // Uses only aggregate (no $out/$merge), find, countDocuments, indexes. One pass over boxes and one over scans, so it
 // stays usable on large databases. Prints no personal data: admins are numbered, box ids are only listed as examples.
@@ -92,7 +92,7 @@ run(async () => {
 	};
 	if (totals.boxes && totals.scannedWithoutStatus / totals.boxes > 0.01) stop.push(`more than 1% of boxes have a last scan but no statusChanges (${totals.scannedWithoutStatus}/${totals.boxes})`);
 
-	// ── embedded scans (legacy `box.scans`): optimized only reads the scans collection ──
+	// ── embedded scans (legacy `box.scans`): the current server only reads the scans collection ──
 	log('embedded scans (full check against the scans collection)');
 	const MAX_IDS = 3_000_000;
 	let embeddedReport;
@@ -123,7 +123,7 @@ run(async () => {
 			exampleBoxIds: examples,
 			boxesWithMissingPerAdmin: Object.fromEntries(report.perAdmin.map((a) => [a.admin, perAdminMissing.get(a.adminId) ?? 0]).filter(([, n]) => n)),
 		};
-		if (boxesWithMissing) stop.push(`${boxesWithMissing} boxes have embedded scans (${missingEntries} entries) that are missing from the scans collection: optimized would ignore them`);
+		if (boxesWithMissing) stop.push(`${boxesWithMissing} boxes have embedded scans (${missingEntries} entries) that are missing from the scans collection: the current server would ignore them`);
 	} else {
 		embeddedReport = { boxesWithEmbeddedScans: totals.withEmbeddedScans, note: `more than ${MAX_IDS} scans: full check skipped, check by hand` };
 	}

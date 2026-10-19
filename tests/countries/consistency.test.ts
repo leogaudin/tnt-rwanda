@@ -26,11 +26,9 @@ const dirs = (pkg: string) =>
 		.filter((d) => d.isDirectory()).map((d) => d.name).sort();
 
 const countries = dirs('server');
-const snapshotPath = (c: string) => path.join(root, 'tests/countries', c, 'fork-snapshot.json');
-const snapshot = (c: string) => (fs.existsSync(snapshotPath(c)) ? JSON.parse(fs.readFileSync(snapshotPath(c), 'utf8')) : null);
-
-// Rules a country is known to break in production today (recorded in its fork-snapshot.json).
-const knownIssue = (c: string, rule: string) => snapshot(c)?.knownIssues?.some((i: any) => i.rule === rule) ?? false;
+// versionCode of the app each country had on the Play Store before the shared version scheme (versionCode = major*10000 + minor*100 + patch).
+// The Play Store rejects a lower versionCode, so the shared one must stay above all of these.
+const PUBLISHED_VERSION_CODES: Record<string, number> = { nigeria: 10000, rwanda: 10001 };
 
 const keysWithRequired = (fields: Record<string, { required: boolean }>) =>
 	Object.fromEntries(Object.keys(fields).sort().map((k) => [k, fields[k].required]));
@@ -44,15 +42,9 @@ const resolvedLanguage = (c: string, lng: string): Record<string, string> => {
 };
 
 describe('country folders', () => {
-	it('client, server, app and tests list the same countries', () => {
-		const expected = countries;
-		expect(dirs('client')).toEqual(expected);
-		expect(dirs('app').filter((d) => d !== 'select.js')).toEqual(expected);
-		// tests/countries/<c>/ holds the fork snapshot of every real country (not the test-only _default)
-		expect(
-			fs.readdirSync(path.join(root, 'tests/countries'), { withFileTypes: true })
-				.filter((d) => d.isDirectory()).map((d) => d.name).sort(),
-		).toEqual(expected.filter((c) => c !== '_default'));
+	it('client, server and app list the same countries', () => {
+		expect(dirs('client')).toEqual(countries);
+		expect(dirs('app')).toEqual(countries);
 	});
 
 	it('the server registry imports every country folder', async () => {
@@ -70,12 +62,10 @@ describe('country folders', () => {
 
 describe.each(countries)('country %s', (c) => {
 	it('client and server boxFields have the same keys and required flags', () => {
-		if (knownIssue(c, 'client-server-boxFields')) return;
 		expect(keysWithRequired(server[c].boxFields)).toEqual(keysWithRequired(client[c].boxFields));
 	});
 
 	it('the order of boxFields is the client one (server uses the same order)', () => {
-		if (knownIssue(c, 'client-server-boxFields')) return;
 		expect(Object.keys(server[c].boxFields)).toEqual(Object.keys(client[c].boxFields));
 	});
 
@@ -93,7 +83,6 @@ describe.each(countries)('country %s', (c) => {
 	});
 
 	it('client gpsUpdateFields include the fields the server matches on', () => {
-		if (knownIssue(c, 'gps-fields')) return;
 		for (const f of server[c].gpsMatchFields) expect(client[c].gpsUpdateFields, f).toContain(f);
 	});
 
@@ -152,18 +141,6 @@ describe.each(countries)('country %s', (c) => {
 		expect(app[c].applicationId).toMatch(/^[a-z][a-z0-9]*(\.[a-z][a-z0-9_]*)+$/);
 		expect(app[c].appName.length).toBeGreaterThan(0);
 	});
-
-	it('known issues recorded for the country still exist', () => {
-		for (const issue of snapshot(c)?.knownIssues ?? []) {
-			if (issue.rule === 'client-server-boxFields') {
-				expect(keysWithRequired(server[c].boxFields)).not.toEqual(keysWithRequired(client[c].boxFields));
-			} else if (issue.rule === 'gps-fields') {
-				expect(server[c].gpsMatchFields.every((f: string) => client[c].gpsUpdateFields.includes(f))).toBe(false);
-			} else {
-				throw new Error(`unknown known issue rule ${issue.rule}`);
-			}
-		}
-	});
 });
 
 describe('app identity', () => {
@@ -177,40 +154,6 @@ describe('app identity', () => {
 		const version = JSON.parse(fs.readFileSync(path.join(root, 'app/package.json'), 'utf8')).version;
 		const [major, minor, patch] = version.split('.').map(Number);
 		const code = major * 10000 + minor * 100 + patch;
-		const published = countries.map((c) => snapshot(c)?.app.versionCode ?? 0);
-		expect(Math.max(...published)).toBeGreaterThan(0);
-		expect(code).toBeGreaterThan(Math.max(...published));
-	});
-});
-
-describe('fork snapshots: the configs equal what each fork had in production', () => {
-	describe.each(countries.filter((c) => c !== '_default'))('%s', (c) => {
-		const snap = snapshot(c);
-
-		it('client config', () => {
-			const k = client[c];
-			expect(snap).not.toBeNull();
-			expect({ name: k.name, title: k.title, shortName: k.shortName, apiUrl: k.apiUrl, colors: k.colors, defaultLanguage: k.defaultLanguage, languages: k.languages, gpsUpdateFields: k.gpsUpdateFields, labels: k.labels, enableProjectEmails: k.features.projectEmails })
-				.toEqual({ name: snap.client.name, title: snap.client.title, shortName: snap.client.shortName, apiUrl: snap.client.apiUrl, colors: snap.client.colors, defaultLanguage: snap.client.defaultLanguage, languages: snap.client.languages, gpsUpdateFields: snap.client.gpsUpdateFields, labels: snap.client.labels, enableProjectEmails: snap.client.enableProjectEmails });
-			expect(k.boxFields).toEqual(snap.client.boxFields);
-			expect(Object.keys(k.boxFields)).toEqual(Object.keys(snap.client.boxFields));
-		});
-
-		it('server config', () => {
-			expect(server[c].boxFields).toEqual(snap.server.boxFields);
-			expect(server[c].reportFields).toEqual(snap.server.reportFields);
-			expect(server[c].gpsMatchFields).toEqual(snap.server.gpsMatchFields);
-		});
-
-		it('app config (store identity)', () => {
-			expect(app[c]).toEqual({ applicationId: snap.app.applicationId, appName: snap.app.appName, apiUrl: snap.app.apiUrl, colors: snap.app.colors });
-		});
-
-		it('extra locale files hold the same number of strings as the fork', () => {
-			for (const [lng, count] of Object.entries(snap.client.extraLocaleKeys ?? {})) {
-				const f = Object.entries(localeFiles).find(([p]) => p.includes(`/countries/${c}/locales/${lng}.json`));
-				expect(Object.keys(f![1]).length).toBe(count);
-			}
-		});
+		expect(code).toBeGreaterThan(Math.max(...Object.values(PUBLISHED_VERSION_CODES)));
 	});
 });

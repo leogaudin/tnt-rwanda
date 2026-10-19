@@ -15,16 +15,15 @@ describe('isIncluded', () => {
 		expect(isIncluded('client/countries/senegal/config.ts', 'liberia')).toBe(false);
 		expect(isIncluded('server/countries/_default/config.ts', 'liberia')).toBe(false);
 		expect(isIncluded('app/countries/rwanda/config.json', 'liberia')).toBe(false);
-		expect(isIncluded('tests/countries/malawi/fork-snapshot.json', 'liberia')).toBe(false);
+		expect(isIncluded('tests/countries/malawi/anything.ts', 'liberia')).toBe(false);
 	});
 
-	it('keeps shared files and drops CI and planning docs', () => {
+	it('keeps shared files and drops central CI', () => {
 		expect(isIncluded('client/countries/index.ts', 'liberia')).toBe(true);
 		expect(isIncluded('client/countries/default.json', 'liberia')).toBe(true);
 		expect(isIncluded('server/index.ts', 'liberia')).toBe(true);
 		expect(isIncluded('LICENSE', 'liberia')).toBe(true);
 		expect(isIncluded('.github/workflows/ci.yml', 'liberia')).toBe(false);
-		expect(isIncluded('CENTRALIZATION_PLAN.md', 'liberia')).toBe(false);
 		expect(isIncluded('tests/scripts/export-standalone.test.ts', 'liberia')).toBe(false);
 	});
 });
@@ -61,14 +60,12 @@ describe('export-standalone run', () => {
 			expect(dirs).toEqual(['senegal']);
 			expect(JSON.parse(fs.readFileSync(path.join(out, pkg, 'countries/default.json'), 'utf8'))).toEqual({ country: 'senegal' });
 		}
-		expect(fs.readdirSync(path.join(out, 'tests/countries')).sort()).toEqual(['consistency.test.ts', 'senegal']);
 	});
 
-	it('has no env files, node_modules, planning docs or central CI; has a README and a single-country CI', () => {
+	it('has no env files, node_modules or central CI; has a README and a single-country CI', () => {
 		const all = (dir: string): string[] => fs.readdirSync(dir, { withFileTypes: true }).flatMap((d) => (d.isDirectory() ? all(path.join(dir, d.name)).map((f) => `${d.name}/${f}`) : [d.name]));
 		const files = all(out);
 		expect(files.filter((f) => /(^|\/)\.env/.test(f) || f.includes('node_modules'))).toEqual([]);
-		expect(files).not.toContain('CENTRALIZATION_PLAN.md');
 		expect(files).toContain('README.md');
 		expect(fs.readFileSync(path.join(out, '.github/workflows/ci.yml'), 'utf8')).not.toContain('setup-matrix');
 		expect(fs.readFileSync(path.join(out, 'client/tsconfig.json'), 'utf8')).toContain('countries/senegal/*');

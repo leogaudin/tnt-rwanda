@@ -57,7 +57,7 @@ export async function run(main) {
 	}
 }
 
-/** Indexes optimized needs (the old server only had _id and, on boxes, id). */
+/** Indexes the current server needs (the legacy server only had _id and, on boxes, id). */
 export const REQUIRED_INDEXES = {
 	boxes: [
 		{ key: { adminId: 1, packingListId: 1, _id: 1 } },

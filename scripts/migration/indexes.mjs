@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Creates the indexes `optimized` needs. Idempotent, never drops anything.
+// Creates the indexes the current server needs. Idempotent, never drops anything.
 //   STRING_URI=... node scripts/migration/indexes.mjs [--db <name>] [--confirm]
 // Without --confirm it only prints what is missing.
 import { connect, parseArgs, run, REQUIRED_INDEXES, sameKey } from './lib.mjs';

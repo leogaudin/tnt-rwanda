@@ -1,4 +1,4 @@
-// READ-ONLY checks after a migration (plan, Phase 8.6).
+// READ-ONLY checks after a legacy database has been migrated.
 //   STRING_URI=... npx --prefix server tsx scripts/migration/verify.ts [--audit audit.json] [--db <name>]
 import fs from 'node:fs';
 import { computeBoxState, groupScansByBox } from '../../server/service/stats';

@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [optimized, main]
+    branches: [main]
   pull_request:
-    branches: [optimized, main]
+    branches: [main]
 
 jobs:
   setup-matrix:
