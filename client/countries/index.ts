@@ -12,6 +12,8 @@ export interface CountryConfig {
 	title: string;
 	/** apple-mobile-web-app-title. */
 	shortName: string;
+	/** Size of the PNG favicon in public/ (favicon-<size>.png). Default 48x48. */
+	faviconSize?: '48x48' | '96x96';
 	apiUrl: string;
 	colors: {
 		lightest: string;

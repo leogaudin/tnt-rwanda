@@ -25,18 +25,28 @@ export function resolveCountry(env = process.env) {
 
 const escapeHtml = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/'/g, '&#39;')
 
-// Sets <title> (config.title) and apple-mobile-web-app-title from the country config.
+export const DEFAULT_FAVICON_SIZE = '48x48'
+
+// Applies the country to index.html: <title> (config.title), apple-mobile-web-app-title
+// (config.shortName) and the PNG favicon size (config.faviconSize).
+export function applyCountryHtml(html, config) {
+  const size = config.faviconSize || DEFAULT_FAVICON_SIZE
+  return html
+    .replace(/<title>.*?<\/title>/, `<title>${escapeHtml(config.title)}</title>`)
+    .replace(
+      /(<meta name='apple-mobile-web-app-title' content=')[^']*(')/,
+      `$1${escapeHtml(config.shortName)}$2`,
+    )
+    .replace(
+      /href='\/favicon-\d+x\d+\.png' sizes='\d+x\d+'/,
+      `href='/favicon-${size}.png' sizes='${size}'`,
+    )
+}
+
 function countryHtml(config) {
   return {
     name: 'tnt-country-html',
-    transformIndexHtml(html) {
-      return html
-        .replace(/<title>.*?<\/title>/, `<title>${escapeHtml(config.title)}</title>`)
-        .replace(
-          /(<meta name='apple-mobile-web-app-title' content=')[^']*(')/,
-          `$1${escapeHtml(config.shortName)}$2`,
-        )
-    },
+    transformIndexHtml: (html) => applyCountryHtml(html, config),
   }
 }
 
@@ -49,7 +59,8 @@ export function readHtmlFields(dir) {
     if (!m) throw new Error(`${dir}/config.ts: could not read "${key}"`)
     return m[2].replace(/\\(.)/g, '$1')
   }
-  return { title: pick('title'), shortName: pick('shortName') }
+  const size = src.match(/^\s*faviconSize:\s*'(\d+x\d+)'/m)
+  return { title: pick('title'), shortName: pick('shortName'), faviconSize: size ? size[1] : undefined }
 }
 
 // https://vitejs.dev/config/
