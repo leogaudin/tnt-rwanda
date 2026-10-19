@@ -40,7 +40,8 @@ describe('server country selection', () => {
 		expect(resolveCountry({ env: { NODE_ENV: 'production' }, defaultCountry: 'liberia', available }).code).toBe('liberia');
 	});
 
-	it('the shipped registry contains _default', () => {
-		expect(countries).toHaveProperty('_default');
+	it('the shipped registry contains the default.json country', async () => {
+		const { default: selection } = await import('@server/countries/default.json');
+		expect(countries).toHaveProperty(selection.country);
 	});
 });

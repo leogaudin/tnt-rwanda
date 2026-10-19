@@ -24,7 +24,8 @@ describe('client vite config helpers', () => {
 	});
 
 	it('resolveCountry: TNT_COUNTRY, default.json, and unknown code', () => {
-		expect(resolveCountry({ TNT_COUNTRY: '_default' }).country).toBe('_default');
+		const available = fs.readdirSync(path.resolve(__dirname, '../../client/countries'), { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name);
+		expect(resolveCountry({ TNT_COUNTRY: available[0] }).country).toBe(available[0]);
 		expect(resolveCountry({}).country).toBe(JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../client/countries/default.json'), 'utf8')).country);
 		expect(() => resolveCountry({ TNT_COUNTRY: 'atlantis' })).toThrow(/Unknown TNT_COUNTRY "atlantis"/);
 	});
