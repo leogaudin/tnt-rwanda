@@ -23,7 +23,8 @@
 		"allowJs": false,
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
-		"resolveJsonModule": true
+		"resolveJsonModule": true,
+		"paths": { "@country/*": ["./countries/_default/*"] }
 	},
-	"include": ["src"]
+	"include": ["src", "countries"]
 }

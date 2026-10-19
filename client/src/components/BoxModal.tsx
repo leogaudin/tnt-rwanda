@@ -19,6 +19,7 @@ import PagedTable from './PagedTable';
 import { timeAgo } from '../service/utils';
 import { excludedKeys } from '../service/specific';
 import SchoolModal from './SchoolModal';
+import { getSchoolView } from '../service/schoolView';
 import { callAPI, icons, fetchBoxScans, deleteBoxes } from '../service';
 import type { Box, Scan } from '../types';
 import { useEffect, useState } from 'react';
@@ -45,15 +46,22 @@ export default function BoxModal({
 	const { isOpen: isSchoolOpen, onOpen: onSchoolOpen, onClose: onSchoolClose } = useDisclosure();
 
 	const fetchSchool = async () => {
+		const view = getSchoolView(box);
+		if (!view) {
+			// Nothing to group by: an empty value would match every box of the account.
+			setSchool(null);
+			return;
+		}
+
 		const response = await callAPI(
 			'POST',
 			`boxes/query`,
-			{ filters: { school: box.school } }
+			{ filters: { [view.field]: view.value } }
 		);
 		const json = await response.json();
 
 		const school: School = {
-			name: box.school,
+			name: view.value,
 			boxes: json.boxes,
 		};
 

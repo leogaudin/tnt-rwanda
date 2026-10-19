@@ -130,7 +130,7 @@ export function computeInsights(
 		};
 	}
 
-	const projects = [...new Set(boxes.map((box) => box.project))];
+	const projects = projectsByRecency(boxes);
 
 	return Object.fromEntries(
 		projects
@@ -144,4 +144,36 @@ export function computeInsights(
 				}];
 			}),
 	);
+}
+
+type DatedBox = { project: string; createdAt?: string | Date | null };
+
+const timeOf = (date: string | Date | null | undefined): number | null => {
+	const time = date ? new Date(date).getTime() : NaN;
+	return Number.isNaN(time) ? null : time;
+};
+
+/**
+ * Project names ordered by when the project started (its oldest box's `createdAt`), newest project first.
+ * The position of a project does not change when more boxes are imported into it.
+ * Projects without a usable date come last; ties keep their order of appearance.
+ */
+export function projectsByRecency(boxes: readonly DatedBox[]): string[] {
+	const startOf = new Map<string, number | null>();
+
+	for (const { project, createdAt } of boxes) {
+		const time = timeOf(createdAt);
+		const known = startOf.get(project) ?? null;
+		startOf.set(project, time === null || (known !== null && known <= time) ? known : time);
+	}
+
+	return [...startOf]
+		.sort(([, a], [, b]) => (a === null || b === null ? Number(a === null) - Number(b === null) : b - a))
+		.map(([project]) => project);
+}
+
+/** `names` ordered like `projectsByRecency(boxes)`; names the boxes don't mention go last. */
+export function sortProjectsByRecency(names: readonly string[], boxes: readonly DatedBox[]): string[] {
+	const ranked = projectsByRecency(boxes).filter((project) => names.includes(project));
+	return [...ranked, ...names.filter((project) => !ranked.includes(project))];
 }

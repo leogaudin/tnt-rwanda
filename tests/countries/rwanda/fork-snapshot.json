@@ -1,0 +1,157 @@
+{
+	"country": "rwanda",
+	"group": "C",
+	"source": "tnt-rwanda origin/main 2649b0b",
+	"client": {
+		"name": "Rwanda Textbooks Distribution Tracking System \ud83c\uddf7\ud83c\uddfc",
+		"title": "Track-and-Trace",
+		"shortName": "TnT",
+		"apiUrl": "https://booktracking.reb.rw:8000/api",
+		"colors": {
+			"lightest": "#E6FCFF",
+			"light": "#A3F3FF",
+			"main": "#26BFED",
+			"dark": "#006394",
+			"darkest": "#00456E"
+		},
+		"defaultLanguage": "en",
+		"languages": [
+			"en",
+			"fr"
+		],
+		"boxFields": {
+			"project": {
+				"required": true
+			},
+			"district": {
+				"required": true
+			},
+			"sector": {
+				"required": true
+			},
+			"cell": {
+				"required": true
+			},
+			"village": {
+				"required": true
+			},
+			"school": {
+				"required": true
+			},
+			"schoolCode": {
+				"required": true
+			},
+			"htName": {
+				"required": false
+			},
+			"htPhone": {
+				"required": false
+			}
+		},
+		"gpsUpdateFields": [
+			"schoolCode"
+		],
+		"enableProjectEmails": true,
+		"labels": {
+			"en": {
+				"uploadPrompt": "Upload a packing list",
+				"sector": "Sector",
+				"cell": "Cell",
+				"village": "Village"
+			},
+			"fr": {
+				"sector": "Secteur",
+				"cell": "Cellule",
+				"village": "Village"
+			}
+		},
+		"extraLocaleKeys": {}
+	},
+	"server": {
+		"boxFields": {
+			"project": {
+				"required": true
+			},
+			"district": {
+				"required": true
+			},
+			"sector": {
+				"required": true
+			},
+			"cell": {
+				"required": true
+			},
+			"village": {
+				"required": true
+			},
+			"school": {
+				"required": true
+			},
+			"schoolCode": {
+				"required": true
+			},
+			"htName": {
+				"required": false
+			},
+			"htPhone": {
+				"required": false
+			}
+		},
+		"productionBoxFields": {
+			"project": {
+				"required": true
+			},
+			"district": {
+				"required": true
+			},
+			"sector": {
+				"required": true
+			},
+			"cell": {
+				"required": true
+			},
+			"village": {
+				"required": true
+			},
+			"school": {
+				"required": true
+			},
+			"schoolCode": {
+				"required": true
+			},
+			"htName": {
+				"required": false
+			},
+			"htPhone": {
+				"required": false
+			}
+		},
+		"reportFields": [
+			"project",
+			"district",
+			"sector",
+			"cell",
+			"village",
+			"school",
+			"schoolCode"
+		],
+		"gpsMatchFields": [
+			"schoolCode"
+		]
+	},
+	"knownIssues": [],
+	"app": {
+		"applicationId": "com.tntrwanda.scanner",
+		"appName": "Track-and-Trace",
+		"apiUrl": "https://booktracking.reb.rw:8000/api",
+		"colors": {
+			"lightest": "#E6FCFF",
+			"light": "#A3F3FF",
+			"main": "#26BFED",
+			"dark": "#006394",
+			"darkest": "#00456E"
+		},
+		"versionCode": 10001,
+		"versionName": "1.0.1"
+	}
+}

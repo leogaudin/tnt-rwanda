@@ -1,0 +1,121 @@
+name: CI
+
+on:
+  push:
+    branches: [optimized, main]
+  pull_request:
+    branches: [optimized, main]
+
+jobs:
+  setup-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      countries: ${{ steps.list.outputs.countries }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: list
+        # Every folder of server/countries, test-only _default included.
+        run: |
+          countries=$(ls -d server/countries/*/ | xargs -n1 basename | jq -R . | jq -sc .)
+          echo "countries=$countries" >> "$GITHUB_OUTPUT"
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: |
+            server/package-lock.json
+            client/package-lock.json
+            tests/package-lock.json
+            app/package-lock.json
+      - run: npm ci
+        working-directory: server
+      - run: npm ci
+        working-directory: client
+      - run: npm ci
+        working-directory: tests
+      - run: npm ci --ignore-scripts
+        working-directory: app
+      - run: npm run build
+        working-directory: server
+      - run: npx tsc --noEmit && npm run build
+        working-directory: client
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: |
+            server/package-lock.json
+            client/package-lock.json
+            tests/package-lock.json
+            app/package-lock.json
+      - run: npm ci
+        working-directory: server
+      - run: npm ci
+        working-directory: client
+      - run: npm ci
+        working-directory: tests
+      - run: npm ci --ignore-scripts
+        working-directory: app
+      - run: npx vitest run
+        working-directory: tests
+
+  country-tests:
+    needs: setup-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        country: ${{ fromJson(needs.setup-matrix.outputs.countries) }}
+    env:
+      TNT_COUNTRY: ${{ matrix.country }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+          cache-dependency-path: |
+            server/package-lock.json
+            client/package-lock.json
+            tests/package-lock.json
+            app/package-lock.json
+      - run: npm ci
+        working-directory: server
+      - run: npm ci
+        working-directory: client
+      - run: npm ci
+        working-directory: tests
+      - run: npm ci --ignore-scripts
+        working-directory: app
+      - run: npx vitest run
+        working-directory: tests
+      - run: npm run build
+        working-directory: client
+      - run: npm run build
+        working-directory: server
+
+  standalone-export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: Export liberia and check it builds and tests with no TNT_COUNTRY
+        run: |
+          node scripts/export-standalone.mjs liberia "$RUNNER_TEMP/liberia" --git
+          cd "$RUNNER_TEMP/liberia"
+          (cd server && npm ci && npm run build)
+          (cd client && npm ci && npx tsc --noEmit && npm run build)
+          (cd app && npm ci --ignore-scripts)
+          (cd tests && npm ci && npx vitest run)

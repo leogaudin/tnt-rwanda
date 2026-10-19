@@ -1,0 +1,12 @@
+{
+	"applicationId": "com.tntsierraleone.scanner",
+	"appName": "Track-and-Trace",
+	"apiUrl": "https://tnt-sierraleone-api.vercel.app/api",
+	"colors": {
+		"lightest": "#e5f0f9",
+		"light": "#b2d4ed",
+		"main": "#0072c6",
+		"dark": "#004f8a",
+		"darkest": "#00223b"
+	}
+}

@@ -1,3 +1,5 @@
+import groovy.json.JsonSlurper
+
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
@@ -6,6 +8,54 @@ apply plugin: "com.facebook.react"
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.
  */
+/**
+ * Country selection. Everything country-specific comes from app/countries/<country>/:
+ * config.json (applicationId, appName, apiUrl, colors) and android/res (icons).
+ * Use ./assemble <release|debug> <country>, which sets both -PtntCountry (here)
+ * and TNT_COUNTRY (read by Metro for the JS bundle).
+ */
+def countriesDir = file("../../countries")
+def tntCountryProp = project.findProperty("tntCountry")
+def tntCountryEnv = System.getenv("TNT_COUNTRY")
+if (tntCountryProp && tntCountryEnv && tntCountryProp != tntCountryEnv) {
+    throw new GradleException("-PtntCountry=${tntCountryProp} but TNT_COUNTRY=${tntCountryEnv}: the JS bundle and the Android app would be different countries. Use ./assemble.")
+}
+if (tntCountryProp && !tntCountryEnv) {
+    throw new GradleException("-PtntCountry needs TNT_COUNTRY=${tntCountryProp} in the environment too (Metro reads it). Use ./assemble.")
+}
+def tntCountry = tntCountryEnv ?: new JsonSlurper().parse(new File(countriesDir, "default.json")).country
+def countryDir = new File(countriesDir, tntCountry)
+def countryConfigFile = new File(countryDir, "config.json")
+if (!countryConfigFile.exists()) {
+    def available = countriesDir.listFiles().findAll { it.isDirectory() }*.name.sort().join(", ")
+    throw new GradleException("Unknown country '${tntCountry}'. Available: ${available}")
+}
+def countryConfig = new JsonSlurper().parse(countryConfigFile)
+
+// One version for every country: versionCode = major * 10000 + minor * 100 + patch.
+// Play Store rejects a lower versionCode than the one published, so never lower package.json's version.
+def appVersion = new JsonSlurper().parse(file("../../package.json")).version
+def (vMajor, vMinor, vPatch) = appVersion.tokenize(".").collect { it.toInteger() }
+def appVersionCode = vMajor * 10000 + vMinor * 100 + vPatch
+
+// Optional release signing: app/countries/<country>/signing.properties or
+// $TNT_KEYSTORE_DIR/<country>.properties (storeFile, storePassword, keyAlias, keyPassword).
+// Neither is committed. Without one, release builds keep using the debug keystore.
+def signingFile = new File(countryDir, "signing.properties")
+if (!signingFile.exists() && System.getenv("TNT_KEYSTORE_DIR")) {
+    signingFile = new File(System.getenv("TNT_KEYSTORE_DIR"), "${tntCountry}.properties")
+}
+def releaseSigning = null
+if (signingFile.exists()) {
+    releaseSigning = new Properties()
+    signingFile.withInputStream { releaseSigning.load(it) }
+}
+
+// Per-country icons; fall back to _default's when the country has none (one dir only:
+// two dirs defining the same resource would fail the build).
+def countryResDir = new File(countryDir, "android/res")
+if (!countryResDir.exists()) countryResDir = new File(countriesDir, "_default/android/res")
+
 react {
     /* Folders */
     //   The root of your project, i.e. where "package.json" lives. Default is '../..'
@@ -77,13 +127,19 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.tntrwanda.scanner"
+    namespace "com.tnt.scanner"
     defaultConfig {
-        applicationId "com.tntrwanda.scanner"
+        applicationId countryConfig.applicationId
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 10001
-        versionName "1.0.1"
+        versionCode appVersionCode
+        versionName appVersion
+        resValue "string", "app_name", countryConfig.appName
+    }
+    sourceSets {
+        main {
+            res.srcDirs += [countryResDir]
+        }
     }
     signingConfigs {
         debug {
@@ -92,12 +148,12 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
-        release {
-            if (project.hasProperty('TNT_RWANDA_UPLOAD_STORE_FILE')) {
-                storeFile file(TNT_RWANDA_UPLOAD_STORE_FILE)
-                storePassword TNT_RWANDA_UPLOAD_STORE_PASSWORD
-                keyAlias TNT_RWANDA_UPLOAD_KEY_ALIAS
-                keyPassword TNT_RWANDA_UPLOAD_KEY_PASSWORD
+        if (releaseSigning != null) {
+            release {
+                storeFile file(releaseSigning.getProperty("storeFile"))
+                storePassword releaseSigning.getProperty("storePassword")
+                keyAlias releaseSigning.getProperty("keyAlias")
+                keyPassword releaseSigning.getProperty("keyPassword")
             }
         }
     }
@@ -106,7 +162,9 @@ android {
             signingConfig signingConfigs.debug
         }
         release {
-            signingConfig signingConfigs.release
+            // Caution! In production, you need to generate your own keystore file.
+            // see https://reactnative.dev/docs/signed-apk-android.
+            signingConfig releaseSigning != null ? signingConfigs.release : signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }

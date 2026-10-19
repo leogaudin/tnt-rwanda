@@ -1,17 +1,10 @@
 import mongoose, { Document } from 'mongoose';
 import type { StatusChanges } from '../types';
+import { countryConfig } from '../countries';
 
 export interface IBox extends Document {
 	id: string;
 	project: string;
-	district: string;
-	sector: string;
-	cell: string;
-	village: string;
-	school: string;
-	schoolCode: string;
-	htName: string;
-	htPhone: string;
 	adminId: string;
 	createdAt: Date;
 	scans: any[];
@@ -22,20 +15,19 @@ export interface IBox extends Document {
 	progress: string;
 	lastScan: { scan: string; time: number } | null;
 	packingListId: number | null;
+	// Country-specific box fields (see server/countries/<country>/config.ts)
+	[field: string]: any;
 }
 
-// MUST MATCH boxFields VARIABLE IN client/src/service/specific.ts
-export const boxFields = {
-	project: { type: String, required: true },
-	district: { type: String, required: true },
-	sector: { type: String, required: true },
-	cell: { type: String, required: true },
-	village: { type: String, required: true },
-	school: { type: String, required: true },
-	schoolCode: { type: String, required: true },
-	htName: { type: String, required: false },
-	htPhone: { type: String, required: false },
-};
+// Built from the selected country's config (server/countries). The client has
+// its own copy in client/countries; a test keeps both equal.
+export const boxFields: Record<string, { type: StringConstructor; required: boolean }> =
+	Object.fromEntries(
+		Object.entries(countryConfig.boxFields).map(([name, def]) => [
+			name,
+			{ type: String, required: def.required },
+		]),
+	);
 
 const BoxSchema = new mongoose.Schema({
 	id: { type: String, required: true },

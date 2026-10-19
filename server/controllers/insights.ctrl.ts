@@ -7,6 +7,7 @@ import { getLastScanWithConditions } from '../service/stats';
 import fs from 'fs';
 import path from 'path';
 import { requireApiKey } from '../service/apiKey';
+import { countryConfig } from '../countries';
 
 const router = express.Router();
 
@@ -70,15 +71,7 @@ router.post('/', async (req: Request, res: Response) => {
 
 router.post('/report', async (req: Request, res: Response) => {
 	try {
-		const reportFields = [
-			'project',
-			'district',
-			'sector',
-			'cell',
-			'village',
-			'school',
-			'schoolCode',
-		];
+		const { reportFields } = countryConfig;
 
 		const { skip, limit, filters } = getQuery(req);
 		if (typeof filters.adminId !== 'string' || !filters.adminId)

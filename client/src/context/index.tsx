@@ -1,6 +1,7 @@
 import React, { createContext, useEffect, useState, type ReactNode, type Dispatch, type SetStateAction } from 'react';
 import { callAPI, fetchInsights, user } from '../service';
 import type { InsightBox } from '../types';
+import { defaultLanguage } from '../service/specific';
 
 interface AppContextType {
 	rawInsights: InsightBox[] | null;
@@ -10,12 +11,12 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType>({
 	rawInsights: null,
-	language: 'en',
+	language: defaultLanguage,
 	setLanguage: () => { },
 });
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-	const [language, setLanguage] = useState('en');
+	const [language, setLanguage] = useState(defaultLanguage);
 	const [rawInsights, setRawInsights] = useState<InsightBox[] | null>(null);
 
 	const initTnT = async () => {

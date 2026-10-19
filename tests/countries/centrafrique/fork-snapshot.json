@@ -1,0 +1,148 @@
+{
+	"country": "centrafrique",
+	"group": "A",
+	"source": "tnt-centrafrique origin/main 98c0484",
+	"client": {
+		"name": "TnT Centrafrique \ud83c\udde8\ud83c\uddeb",
+		"title": "TnT Centrafrique",
+		"shortName": "TnT Centrafrique",
+		"apiUrl": "https://tnt-centrafrique-api.vercel.app/api",
+		"colors": {
+			"lightest": "#E8F0FE",
+			"light": "#B3CBF7",
+			"main": "#003082",
+			"dark": "#002060",
+			"darkest": "#001340"
+		},
+		"defaultLanguage": "fr",
+		"languages": [
+			"en",
+			"fr"
+		],
+		"boxFields": {
+			"project": {
+				"required": true
+			},
+			"academicInspection": {
+				"required": true
+			},
+			"circonscription": {
+				"required": true
+			},
+			"sector": {
+				"required": true
+			},
+			"school": {
+				"required": true
+			},
+			"schoolCode": {
+				"required": true
+			},
+			"htName": {
+				"required": false
+			},
+			"htPhone": {
+				"required": false
+			}
+		},
+		"gpsUpdateFields": [
+			"schoolCode"
+		],
+		"enableProjectEmails": false,
+		"labels": {
+			"en": {
+				"academicInspection": "Academic Inspection",
+				"circonscription": "Circonscription",
+				"sector": "Sector",
+				"school": "School Name",
+				"schoolCode": "School Number"
+			},
+			"fr": {
+				"academicInspection": "Inspection Acad\u00e9mique",
+				"circonscription": "Circonscription",
+				"sector": "Secteur",
+				"school": "Nom de l'\u00e9cole",
+				"schoolCode": "Num\u00e9ro de l'\u00e9cole"
+			}
+		},
+		"extraLocaleKeys": {}
+	},
+	"server": {
+		"boxFields": {
+			"project": {
+				"required": true
+			},
+			"academicInspection": {
+				"required": true
+			},
+			"circonscription": {
+				"required": true
+			},
+			"sector": {
+				"required": true
+			},
+			"school": {
+				"required": true
+			},
+			"schoolCode": {
+				"required": true
+			},
+			"htName": {
+				"required": false
+			},
+			"htPhone": {
+				"required": false
+			}
+		},
+		"productionBoxFields": {
+			"project": {
+				"required": true
+			},
+			"academicInspection": {
+				"required": true
+			},
+			"circonscription": {
+				"required": true
+			},
+			"sector": {
+				"required": true
+			},
+			"school": {
+				"required": true
+			},
+			"schoolCode": {
+				"required": true
+			},
+			"htName": {
+				"required": false
+			},
+			"htPhone": {
+				"required": false
+			}
+		},
+		"reportFields": [
+			"project",
+			"school",
+			"circonscription",
+			"sector"
+		],
+		"gpsMatchFields": [
+			"schoolCode"
+		]
+	},
+	"knownIssues": [],
+	"app": {
+		"applicationId": "com.tntcentrafrique.scanner",
+		"appName": "TnT Centrafrique",
+		"apiUrl": "https://tnt-centrafrique-api.vercel.app/api",
+		"colors": {
+			"lightest": "#E8F0FE",
+			"light": "#B3CBF7",
+			"main": "#003082",
+			"dark": "#002060",
+			"darkest": "#001340"
+		},
+		"versionCode": 1,
+		"versionName": "1.0"
+	}
+}

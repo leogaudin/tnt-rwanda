@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import Admin from '../models/admins.model';
 import Box from '../models/boxes.model';
 import { requireApiKey } from '../service/apiKey';
+import { countryConfig } from '../countries';
 import { generateId, getQuery, sanitizeContent, tiebreakDirection } from '../service/index';
 import lzstring from 'lz-string';
 import { recomputeBoxes } from '../service/recompute';
@@ -177,11 +178,13 @@ router.delete('/', async (req: Request, res: Response) => {
 
 router.post('/coords', async (req: Request, res: Response) => {
 	try {
+		const { gpsMatchFields } = countryConfig;
+		const matchOn = (box: any) => Object.fromEntries(gpsMatchFields.map((field) => [field, box[field]]));
 		requireApiKey(req, res, async (admin: any) => {
 			const { coords } = req.body;
 			const coordsUpdate = coords.map((box: any) => ({
 				updateMany: {
-					filter: { schoolCode: box.schoolCode, adminId: admin.id },
+					filter: { ...matchOn(box), adminId: admin.id },
 					update: { $set: { schoolLatitude: box.schoolLatitude, schoolLongitude: box.schoolLongitude } },
 					multi: true,
 				},
@@ -197,7 +200,7 @@ router.post('/coords', async (req: Request, res: Response) => {
 			await recomputeBoxes(
 				{
 					adminId: admin.id,
-					$or: coords.map((box: any) => ({ schoolCode: box.schoolCode })),
+					$or: coords.map(matchOn),
 				},
 				{ finalDestinations: true },
 			);

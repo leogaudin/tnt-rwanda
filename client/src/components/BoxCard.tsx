@@ -18,6 +18,7 @@ import type { Box, Scan } from '../types';
 import BoxModal from './BoxModal';
 import { useEffect, useState } from 'react';
 import Loading from '../components/Loading';
+import { getSchoolView } from '../service/schoolView';
 
 export default function BoxCard({
 	box,
@@ -25,6 +26,7 @@ export default function BoxCard({
 	box: Box;
 }) {
 	const { t } = useTranslation();
+	const schoolView = getSchoolView(box);
 	const { onOpen, onClose, isOpen } = useDisclosure();
 	const [lastScan, setLastScan] = useState<Scan | null>(null);
 	const [loading, setLoading] = useState(false);
@@ -122,19 +124,21 @@ export default function BoxCard({
 							<Stack
 								maxWidth='60%'
 							>
-								<Heading
-									size='md'
-									fontWeight='light'
-								>
-									{t('to')}{' '}
-									<span
-										style={{
-											fontWeight: 'bold',
-										}}
+								{schoolView && (
+									<Heading
+										size='md'
+										fontWeight='light'
 									>
-										{box.school}
-									</span>
-								</Heading>
+										{t('to')}{' '}
+										<span
+											style={{
+												fontWeight: 'bold',
+											}}
+										>
+											{schoolView.value}
+										</span>
+									</Heading>
+								)}
 							</Stack>
 							<Stack
 								align='center'

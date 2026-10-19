@@ -11,7 +11,7 @@ import ProjectInsights from './ProjectInsights';
 import Loading from '../../../components/Loading';
 import { useTranslation } from 'react-i18next';
 import { callAPI, icons } from '../../../service';
-import { computeInsights } from '../../../service/stats';
+import { computeInsights, sortProjectsByRecency } from '../../../service/stats';
 
 import type { InsightBox } from '../../../types';
 
@@ -32,7 +32,7 @@ export default function GlobalInsights({ rawInsights, id }: { rawInsights: Insig
             { filters: { adminId: id } }
         )
         const json = await response.json();
-        return json.distinct;
+        return sortProjectsByRecency(json.distinct, rawInsights ?? []);
     }
 
     const getInsights = (selection: string[]) => {

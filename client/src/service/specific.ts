@@ -1,39 +1,35 @@
-export const name = 'Rwanda Textbooks Distribution Tracking System 🇷🇼';
+// Country-specific values. They come from client/countries/<country>/config.ts,
+// selected at build time by TNT_COUNTRY (see vite.config.js).
+import config from '@country/config';
 
-export const colors = {
-	lightest: '#E6FCFF',
-	light: '#A3F3FF',
-	main: '#26BFED',
-	dark: '#006394',
-	darkest: '#00456E',
-} as const;
+export const name = config.name;
+
+export const colors = config.colors;
 
 export const API_URL =
-	// process.env.NODE_ENV === 'development'
-	// 	? 'http://localhost:3000/api'
-	// 	:
-	'https://booktracking.reb.rw:8000/api';
+	process.env.NODE_ENV === 'development'
+		? 'http://localhost:3000/api'
+		: (import.meta.env?.VITE_API_URL as string | undefined) || config.apiUrl;
 
 interface FieldDef {
 	type: StringConstructor;
 	required: boolean;
 }
 
-export const boxFields: Record<string, FieldDef> = {
-	project: { type: String, required: true },
-	district: { type: String, required: true },
-	sector: { type: String, required: true },
-	cell: { type: String, required: true },
-	village: { type: String, required: true },
-	school: { type: String, required: true },
-	schoolCode: { type: String, required: true },
-	htName: { type: String, required: false },
-	htPhone: { type: String, required: false },
-};
+export const boxFields: Record<string, FieldDef> = Object.fromEntries(
+	Object.entries(config.boxFields).map(([field, def]) => [
+		field,
+		{ type: String, required: def.required },
+	]),
+);
 
-export const gpsUpdateFields = ['schoolCode'] as const;
+export const gpsUpdateFields: readonly string[] = config.gpsUpdateFields;
 
-export const enableProjectEmails = true;
+export const schoolView = config.schoolView;
+
+export const defaultLanguage = config.defaultLanguage;
+
+export const enableProjectEmails = config.features.projectEmails;
 
 export const excludedKeys = [
 	'_id',
